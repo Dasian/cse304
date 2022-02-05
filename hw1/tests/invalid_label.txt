@@ -1,0 +1,7 @@
+	ildc 10
+	ildc 20
+	iadd
+label1: ildc 45
+label2: ildc 25
+lab3l_3: jmp label1
+=1-34: pop
