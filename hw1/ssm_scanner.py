@@ -1,12 +1,8 @@
+# David Espiritu 112264228
 # A script to implement an ssm interpreter
 # take as input the filename
 # outputs the result of execution
 # usage: python3 ssm_scanner.py [filename]
-
-# TODO
-# 1. Run assuming input is always valid, and has no labels
-# 2. Deal with programs that have scan_errors but no labels
-# 3. Deal with progs with labels and comments
 
 import sys
 from os.path import exists
