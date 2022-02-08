@@ -1,1 +1,1 @@
-ildc 4 ildc -10 	loop: ildc 1 iadd store jz loop dup dup #tejoaienfe text ooo so fucking cool
+ildc 4 ildc -10 	loop: ildc 1 iadd store ildc 4 load #tejoaienfe text ooo so fucking cool
