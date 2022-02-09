@@ -34,7 +34,7 @@ label_args = []
 # imul - pop 2 elements, multiply, push product
 # idiv - pop 2 elements, divide, push quotient
 # imod - find the remainder of 2 elements
-# pop
+# pop - pop top most entry
 # dup - duplicate top most entry
 # swap - swap the top 2 elements
 # jmp label - jump to label
@@ -52,58 +52,62 @@ def ssm_execute():
             stack.append(arg)
         elif inst == "iadd":
             if len(stack) < 2:
-                error("Cannot access requested value(s) from stack")
+                exe_error("Cannot access requested value(s) from stack")
             first_operand = stack.pop()
             second_operand = stack.pop()
             stack.append(second_operand + first_operand)
         elif inst == "isub":
             if len(stack) < 2:
-                error("Cannot access requested value(s) from stack")
+                exe_error("Cannot access requested value(s) from stack")
             first_operand = stack.pop()
             second_operand = stack.pop()
             stack.append(second_operand - first_operand)
         elif inst == "imul":
             if len(stack) < 2:
-                error("Cannot access requested value(s) from stack")
+                exe_error("Cannot access requested value(s) from stack")
             first_operand = stack.pop()
             second_operand = stack.pop()
             stack.append(second_operand * first_operand)
         elif inst == "idiv":
             if len(stack) < 2:
-                error("Cannot access requested value(s) from stack")
+                exe_error("Cannot access requested value(s) from stack")
             first_operand = stack.pop()
+            if first_operand == 0:
+                exe_error("Cannot divide a value by 0")
             second_operand = stack.pop()
             stack.append(second_operand // first_operand)
         elif inst == "imod":
             if len(stack) < 2:
-                error("Cannot access requested value(s) from stack")
+                exe_error("Cannot access requested value(s) from stack")
             first_operand = stack.pop()
+            if first_operand == 0:
+                exe_error("Cannot divide a value by 0")
             second_operand = stack.pop()
             stack.append(second_operand % first_operand)
         elif inst == "pop":
             if len(stack) < 1:
-                error("Cannot access requested value(s) from stack")
+                exe_error("Cannot access requested value(s) from stack")
             stack.pop()
         elif inst == "dup":
             if len(stack) < 1:
-                error("Cannot access requested value(s) from stack")
+                exe_error("Cannot access requested value(s) from stack")
             stack.append(stack[-1])
         elif inst == "swap":
             if len(stack) < 2:
-                error("Cannot access requested value(s) from stack")
+                exe_error("Cannot access requested value(s) from stack")
             top = stack.pop()
             bottom = stack.pop()
             stack.append(top)
             stack.append(bottom)
         elif inst == "jz":
             if len(stack) < 1:
-                error("Cannot access requested value(s) from stack")
+                exe_error("Cannot access requested value(s) from stack")
             jump_value = stack.pop()
             if jump_value == 0:
                 index = labels.get(arg) - 1
         elif inst == "jnz":
             if len(stack) < 1:
-                error("Cannot access requested value(s) from stack")
+                exe_error("Cannot access requested value(s) from stack")
             jump_value = stack.pop()
             if jump_value != 0:
                 index = labels.get(arg) - 1
@@ -111,14 +115,14 @@ def ssm_execute():
             index = labels.get(arg) - 1
         elif inst == "load":
             if len(stack) < 1:
-                error("Cannot access requested value(s) from stack")
+                exe_error("Cannot access requested value(s) from stack")
             address = stack.pop()
             if store.get(address) is None:
-                error("Cannot access requested value from store")
+                exe_error("Cannot access requested value from store")
             stack.append(store.get(address))
         elif inst == "store":
             if len(stack) < 2:
-                error("Cannot access requested value(s) from stack")
+                exe_error("Cannot access requested value(s) from stack")
             element = stack.pop()
             address = stack.pop()
             store.update({address: element})
@@ -141,16 +145,16 @@ def ssm_execute():
 # can labels be the last statement, can a label declaration be the only statement, case of empty file?
 def ssm_scan(filename):
     # open
-    global f
-    f = open(filename)
+    global file
+    file = open(filename)
 
     # remove comments and make the file one continuous string
     file_string = ''
-    for l in f.readlines():
+    for line in file.readlines():
         # removing comments
-        if '#' in l:
-            l = l.replace(l[l.find('#'):l.find('\n')], '')
-        file_string += l
+        if '#' in line:
+            line = line.replace(line[line.find('#'):line.find('\n')], '')
+        file_string += line
 
     # create a list of consecutive characters (words) separated by 1+ whitespace
     file_string = file_string.replace('\n', ' ')
@@ -161,16 +165,13 @@ def ssm_scan(filename):
 
     # deal with empty files
     if len(words) == 0:
-        error("Empty file")
-
-    print(words)
+        scan_error("Empty file")
 
     # verify words (instructions, labels, integers, or label:instruction)
     # prevents sequential label declarations
     i = 0
     isPrevLabel = False  # is the previous word a label?
     for word in words:
-        print(word)
         # verify instructions and integers
         if word in valid_instructions or isInt(word):
             isPrevLabel = False
@@ -190,11 +191,10 @@ def ssm_scan(filename):
                 i += 1  # verified two words so counter must be updated
             # verify label arguments
             elif not isValidLabel(word + ':'):
-                error("Invalid word (split label)", [word, split, words])
+                scan_error("Invalid word (split label)", [word, split, words])
         else:
-            error("Invalid word (verify words)", [word])
+            scan_error("Invalid word (verify words)", [word])
         i += 1
-    print("\n")
     # all words at this point should be valid
     # argument checks and data structure insertion
     isCurrArg = False  # does the current word need to be an argument?
@@ -208,7 +208,7 @@ def ssm_scan(filename):
                 instructions.append((prev_word, word))
                 label_args.append(word)
             else:
-                error("Invalid argument", [word])
+                scan_error("Invalid argument", [word])
             isCurrArg = False
         # inserting labels
         elif isValidLabel(word):
@@ -223,12 +223,12 @@ def ssm_scan(filename):
         elif word in arg_instructions or word in jmp_instructions:
             isCurrArg = True
         else:
-            error("Invalid word (verify order)", [word])
+            scan_error("Invalid word (verify order)", [word])
         prev_word = word
 
     # determines if label args point to established labels
     verify_label_args()
-    f.close()
+    file.close()
     return
 
 
@@ -255,7 +255,7 @@ def isValidLabel(s):
         return False
     for c in s:
         if not (c.isalpha() or c.isdigit() or c == '_'):
-            error("Invalid label", [s])
+            scan_error("Invalid label", [s])
     return True
 
 
@@ -264,17 +264,24 @@ def verify_label_args():
     keys = labels.keys()
     for arg in label_args:
         if arg not in keys:
-            error("Invalid label", [arg])
+            scan_error("Invalid label", [arg])
 
 
-# prints an error message and optional list of arguments
-def error(s, args=[]):
+# prints an scan_error message and optional list of arguments
+def scan_error(s, args=[]):
     print(s)
     for a in args:
         print(a)
-    f.close()
+    file.close()
     exit()
 
+
+# prints an execution error message and optional list of arguments
+def exe_error(s, args=[]):
+    print(s)
+    for a in args:
+        print(a)
+    exit()
 
 def main():
     # take input from cmdline
@@ -284,14 +291,14 @@ def main():
         exit()
     filename = sys.argv[1]
     if not exists(filename):
-        error("File not found")
+        scan_error("File not found")
 
     # scan the file and place instructions into datastructures used for execution
     # handles compile time input errors
     ssm_scan(filename)
 
     # debug
-    # error("Instructions and labels", [instructions, labels])
+    # scan_error("Instructions and labels", [instructions, labels])
 
     # Execute the instructions
     ssm_execute()
