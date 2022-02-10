@@ -171,15 +171,23 @@ def ssm_scan(filename):
     # prevents sequential label declarations
     i = 0
     isPrevLabel = False  # is the previous word a label?
+    isPrevJmp = False # is the previous instruction a jmp instruction?
     for word in words:
         # verify instructions and integers
         if word in valid_instructions or isInt(word):
             isPrevLabel = False
+            if word in jmp_instructions:
+            	isPrevJmp = True
+            else:
+            	isPrevJmp = False
         # verify label definition
         elif isValidLabel(word) and not isPrevLabel:
             isPrevLabel = True
+            isPrevJmp = False
         # split label:instruction words
         elif word.find(':') != len(words[i]) - 1 and not isPrevLabel:
+            if word.find(':') == -1 and not isPrevJmp:
+                scan_error("Invalid Word")
             split = word.split(':')
             split[0] = split[0] + ':'
             # verify label followed by instruction (no whitespace)
@@ -188,8 +196,12 @@ def ssm_scan(filename):
                 words.insert(i, split[0])
                 words.insert(i + 1, split[1])
                 isPrevLabel = False
+                if split[1] in jmp_instructions:
+                	isPrevJmp = True
+                else:
+                	isPrevJmp = False
                 i += 1  # verified two words so counter must be updated
-            # verify label arguments
+            # verify label arguments (argument to a jmp command)
             elif not isValidLabel(word + ':'):
                 scan_error("Invalid word (split label)", [word, split, words])
         else:
