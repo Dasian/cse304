@@ -1,4 +1,4 @@
-# David Espiritu 112264228
+# David Espiritu despiritu 112264228
 # Sean Yang sjyang 110766661
 # A script to implement an ssm interpreter
 # take as input the filename
