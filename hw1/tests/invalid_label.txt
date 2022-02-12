@@ -4,4 +4,5 @@
 label1: ildc 45
 label2: ildc 25
 lab3l_3: jmp label1
-=1-34: pop
+=1-34: pop	#SOLUTION: Invalid word (verify words) =1-34:
+

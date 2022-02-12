@@ -10,4 +10,4 @@ here:   ildc 1
 	swap
 	jmp here
 there:
-	pop
+	pop	#SOLUTION: 60

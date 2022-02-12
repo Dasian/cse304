@@ -1,22 +1,20 @@
 # David Espiritu despiritu 112264228
 # Sean Yang sjyang 110766661
-# A script to implement an ssm interpreter
-# take as input the filename
-# outputs the result of execution
-# usage: python3 ssm_scanner.py [filename]
+# A script to implement an SSM interpreter
+# Input: The name of the file containing the SSM instructions
+# Output: The result of the execution of the SSM instructions in the input file
+# Usage: python3 ssm_scanner.py [filename]
 
 import sys
 from os.path import exists
 
 # Global vars
-# the stack to be used, just use the built in pop function
-stack = []
-# Key is the address, value is value
-store = {}
-# list of instructions
-# every element is a tuple that contains the instruction and argument
+stack = []  # The stack that holds operands for operations
+store = {}  # The store that is directly addressed
+# List of instructions from input file
+# Every element is a tuple that contains the instruction and argument
 instructions = []
-# map labels to the index where instructions should be executed
+# Map labels to the index where instructions should be executed
 # ex: 'here': 2; execute the instruction starting at index 2
 labels = {}
 valid_instructions = ['ildc', 'iadd', 'isub', 'imul', 'idiv', 'imod', 'pop', 'dup', 'swap', 'jmp', 'jz', 'jnz', 'load',
@@ -40,9 +38,9 @@ label_args = []
 # jmp label - jump to label
 # jz label - pop stack, if 0 jmp to label
 # jnz label- pop stack, jmp if not 0
-# load - pop stack, push value at that address in the store
+# load - pop stack as address, push value at that address in the store
 # store - top element is integer i and second from top is address
-#  Put integer i at the address index in the store
+# Put integer i at the address index in the store
 def ssm_execute():
     index = 0
     while index < len(instructions):
@@ -129,9 +127,6 @@ def ssm_execute():
         index = index + 1
 
 
-# TODO
-# Look into error_edgecases.txt, all other test cases show the interpreter working as intended
-
 # Takes as input a filename and parses the file
 # Assumes that filename checks have already been done
 # Instructions are placed into the ordered instruction list
@@ -140,11 +135,8 @@ def ssm_execute():
 # Labels are placed into the labels dictionary
 # the keys are the names and the values are a range of line numbers to execute (indices in the instructions list)
 # only the first index is placed for the labels 
-
-# deal with label as the last statement. What is mapped to in the labels dictionary?
-# can labels be the last statement, can a label declaration be the only statement, case of empty file?
 def ssm_scan(filename):
-    # open
+    # open file
     global file
     file = open(filename)
 
@@ -171,15 +163,15 @@ def ssm_scan(filename):
     # prevents sequential label declarations
     i = 0
     isPrevLabel = False  # is the previous word a label?
-    isPrevJmp = False # is the previous instruction a jmp instruction?
+    isPrevJmp = False  # is the previous instruction a jmp instruction?
     for word in words:
         # verify instructions and integers
         if word in valid_instructions or isInt(word):
             isPrevLabel = False
             if word in jmp_instructions:
-            	isPrevJmp = True
+                isPrevJmp = True
             else:
-            	isPrevJmp = False
+                isPrevJmp = False
         # verify label definition
         elif isValidLabel(word) and not isPrevLabel:
             isPrevLabel = True
@@ -197,9 +189,9 @@ def ssm_scan(filename):
                 words.insert(i + 1, split[1])
                 isPrevLabel = False
                 if split[1] in jmp_instructions:
-                	isPrevJmp = True
+                    isPrevJmp = True
                 else:
-                	isPrevJmp = False
+                    isPrevJmp = False
                 i += 1  # verified two words so counter must be updated
             # verify label arguments (argument to a jmp command)
             elif not isValidLabel(word + ':'):
@@ -244,7 +236,7 @@ def ssm_scan(filename):
     return
 
 
-# determines if a string literal i is an integer
+# Determines if a string literal i is an integer
 # An integer can be any number with an optional - in the first position
 def isInt(i):
     if i.find('-') == 0 and i[1:len(i)].isdigit():
@@ -255,7 +247,7 @@ def isInt(i):
 
 # Determines if str s is a valid label (end colon not removed)
 # Valid labels must start with an alphabetic character
-# followed by a sequence of alphabetic or numerica or underscore chars
+# followed by a sequence of alphabetic, numeric, or underscore chars
 def isValidLabel(s):
     # determines if : is at the end of the string
     if s.find(':') == len(s) - 1:
@@ -279,7 +271,7 @@ def verify_label_args():
             scan_error("Invalid label", [arg])
 
 
-# prints an scan_error message and optional list of arguments
+# Prints an scan_error message and optional list of arguments
 def scan_error(s, args=[]):
     print(s)
     for a in args:
@@ -288,16 +280,16 @@ def scan_error(s, args=[]):
     exit()
 
 
-# prints an execution error message and optional list of arguments
+# Prints an execution error message and optional list of arguments
 def exe_error(s, args=[]):
     print(s)
     for a in args:
         print(a)
     exit()
 
+
 def main():
-    # take input from cmdline
-    # possibly could also mean using input() but idk
+    # Takes input from cmdline
     if len(sys.argv) != 2:
         print("Usage:", sys.argv[0], "[filename]")
         exit()
@@ -305,17 +297,15 @@ def main():
     if not exists(filename):
         scan_error("File not found")
 
-    # scan the file and place instructions into datastructures used for execution
-    # handles compile time input errors
+    # Scans the file and place instructions into data structures used for execution
+    # Handles compile-time input errors
     ssm_scan(filename)
 
-    # debug
-    # scan_error("Instructions and labels", [instructions, labels])
-
     # Execute the instructions
+    # Handles errors with executing instructions
     ssm_execute()
 
-    # Print result (topmost stack element) and exit
+    # Prints result (topmost stack element) and exit
     if len(stack) == 0:
         print('Empty stack')
         exit()

@@ -1,1 +1,1 @@
-label:
+label:	#SOLUTION: Empty stack
