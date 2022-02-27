@@ -1,0 +1,3 @@
+int x == 12;
+float y = 3.01111;
+String z = "Value";

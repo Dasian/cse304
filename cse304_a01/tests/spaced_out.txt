@@ -1,0 +1,28 @@
+ildc
+10
+ildc
+
+
+
+
+30
+iadd
+ 
+
+	
+ 
+		
+ 
+	# there are tabs to
+cool_label:  				
+ 
+ 
+
+
+ 	 	 	
+dup
+# I meant too lmao
+jmp end
+ 
+       end:  
+idiv	#SOLUTION: 1

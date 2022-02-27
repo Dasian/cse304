@@ -1,0 +1,6 @@
+il dc 10
+il
+dc 10
+il	dc -4
+label:iadd
+iad     d	#SOLUTION: Invalid Word

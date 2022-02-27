@@ -1,0 +1,1 @@
+ildc 10 ildc 20 iadd dup  imul		ildc -15 isub	#SOLUTION: 915
