@@ -46,19 +46,6 @@ def main():
     file_string = ''
     multi_line_comment = False
     for line in file.readlines():
-        """# removing single-line comments
-        if "/*" in line and "*/" in line:
-            line = line.replace(line[line.find("/*"):line.find('*/')], '')
-
-        # removing multi-line comments
-        if "/*" in line and "*/" not in line:
-            line = line.replace(line[line.find("/*"):line.find('\n')], '')
-            multi_line_comment = True
-        if multi_line_comment and "*/" not in line:
-            line = ''
-        if multi_line_comment and "*/" in line:
-            line = line.replace(line[:line.find("*/") + 2], '')
-            multi_line_comment = False"""
         file_string += line
 
     lexer.input(file_string)

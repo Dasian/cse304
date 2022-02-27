@@ -3,6 +3,12 @@
 
 #  PLY/lex scanner specification file
 
+# A string containing ignored characters (spaces and tabs)
+t_ignore = ' \t'
+t_ignore_COMMENT = r'\/\/.*'
+t_ignore_MULTILINE_COMMENT = r'\\\*(.*|\n)*\*\\'
+
+
 reserved = {
     'boolean': 'BOOLEAN',
     'break': 'BREAK',
@@ -54,12 +60,6 @@ t_OR = r'\|\|'
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
-
-
-# A string containing ignored characters (spaces and tabs)
-t_ignore = ' \t'
-t_ignore_COMMENT = r'\/\/.*'
-
 
 # Error handling rule
 def t_error(t):
