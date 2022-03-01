@@ -1,3 +1,0 @@
-ildc 10
-ildc 20
-iadd	#SOLUTION: 30

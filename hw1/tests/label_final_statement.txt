@@ -1,5 +1,0 @@
-ildc  10
-ildc -10
-iadd
-
-end:
