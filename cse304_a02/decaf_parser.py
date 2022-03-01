@@ -6,6 +6,10 @@
 import ply.yacc as yacc
 from decaf_lexer import tokens
 
+
+line_start = 1
+
+
 precedence = (
     ('left', 'ASSIGN'),
     ('nonassoc', 'OR'),
@@ -49,11 +53,13 @@ def p_field_decl(p):
              | PUBLIC
              | STATIC
              | empty
-    var_decl : type variable ';'
+    var_decl : type variables ';'
     type : INT
          | FLOAT
          | BOOLEAN
          | ID
+    variables : variable
+              | variable ',' variables
     variable : ID '''
 
 
@@ -117,7 +123,7 @@ def p_expressions(p):
          | expr arith_op expr
          | expr bool_op expr
          | expr unary_op expr
-    assign : field_access '=' expr
+    assign : field_access ASSIGN expr
      | field_access PLUS PLUS
      | PLUS PLUS field_access
      | field_access MINUS MINUS
@@ -143,7 +149,7 @@ def p_expressions(p):
 
 # Error rule for syntax errors
 def p_error(p):
-    print("Syntax error in input!")
+    print("Syntax error at (%d, %d)" % (p.lexer.lineno, p.lexpos))
     exit()
 
 

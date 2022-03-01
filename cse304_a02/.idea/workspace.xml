@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="853c4294-b785-47d0-9a3a-8f4effe4f134" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/decaf_checker.py" beforeDir="false" afterPath="$PROJECT_DIR$/decaf_checker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/decaf_lexer.py" beforeDir="false" afterPath="$PROJECT_DIR$/decaf_lexer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/decaf_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/decaf_parser.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/constants.decaf" beforeDir="false" afterPath="$PROJECT_DIR$/tests/constants.decaf" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
