@@ -33,14 +33,12 @@ def main():
     file_string = file.read()
     file.close()
 
-    '''
     lexer.input(file_string)
     while True:
         tok = lexer.token()
         if not tok:
             break  # No more input
         print(tok)
-        '''
 
     parser.parse(file_string, lexer=lexer)
     print("YES")
