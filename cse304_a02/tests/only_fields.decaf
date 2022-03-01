@@ -1,0 +1,10 @@
+class fields{
+    int main(int x, String name){
+        if(1+3-x){
+            return x;
+        }
+        if(x-1){
+            return x;
+        }
+    }
+}
