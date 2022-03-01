@@ -39,7 +39,8 @@ def main():
         tok = lexer.token()
         if not tok:
             break  # No more input
-        print(tok)'''
+        print(tok)
+        '''
 
     parser.parse(file_string, lexer=lexer)
     print("YES")
