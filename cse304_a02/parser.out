@@ -81,7 +81,7 @@ Rule 71    expr -> primary
 Rule 72    expr -> assign
 Rule 73    expr -> expr arith_op expr
 Rule 74    expr -> expr bool_op expr
-Rule 75    expr -> expr unary_op expr
+Rule 75    expr -> unary_op expr
 Rule 76    assign -> field_access ASSIGN expr
 Rule 77    assign -> field_access PLUS PLUS
 Rule 78    assign -> PLUS PLUS field_access
@@ -169,7 +169,7 @@ class_body_decl      : 4 5 6 6
 class_decl           : 1 3 3
 constructor_decl     : 9
 empty                : 2 16 29 48 50
-expr                 : 36 37 38 47 60 65 66 73 73 74 74 75 75 76
+expr                 : 36 37 38 47 60 65 66 73 73 74 74 75 76
 field_access         : 63 69 70 76 77 78 79 80
 field_decl           : 7
 formal_param         : 30 31
@@ -1251,7 +1251,7 @@ state 64
     (72) expr -> . assign
     (73) expr -> . expr arith_op expr
     (74) expr -> . expr bool_op expr
-    (75) expr -> . expr unary_op expr
+    (75) expr -> . unary_op expr
     (57) primary -> . literal
     (58) primary -> . THIS
     (59) primary -> . SUPER
@@ -1265,6 +1265,9 @@ state 64
     (78) assign -> . PLUS PLUS field_access
     (79) assign -> . field_access MINUS MINUS
     (80) assign -> . MINUS MINUS field_access
+    (93) unary_op -> . PLUS
+    (94) unary_op -> . MINUS
+    (95) unary_op -> . NOT
     (51) literal -> . INT_CONST
     (52) literal -> . FLOAT_CONST
     (53) literal -> . STRING_CONST
@@ -1280,35 +1283,37 @@ state 64
     SUPER           shift and go to state 84
     (               shift and go to state 64
     NEW             shift and go to state 85
-    PLUS            shift and go to state 78
-    MINUS           shift and go to state 79
+    PLUS            shift and go to state 103
+    MINUS           shift and go to state 104
+    NOT             shift and go to state 105
     INT_CONST       shift and go to state 86
     FLOAT_CONST     shift and go to state 87
     STRING_CONST    shift and go to state 88
     NULL            shift and go to state 89
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
-    ID              shift and go to state 99
+    ID              shift and go to state 100
 
     expr                           shift and go to state 96
     primary                        shift and go to state 97
     assign                         shift and go to state 98
+    unary_op                       shift and go to state 99
     literal                        shift and go to state 82
-    field_access                   shift and go to state 100
-    method_invocation              shift and go to state 101
+    field_access                   shift and go to state 101
+    method_invocation              shift and go to state 102
 
 state 65
 
     (38) stmt -> WHILE . ( expr ) stmt
 
-    (               shift and go to state 102
+    (               shift and go to state 106
 
 
 state 66
 
     (39) stmt -> FOR . ( optional_stmt_expr ; optional_expr ; optional_stmt_expr ) stmt
 
-    (               shift and go to state 103
+    (               shift and go to state 107
 
 
 state 67
@@ -1352,7 +1357,7 @@ state 68
     (72) expr -> . assign
     (73) expr -> . expr arith_op expr
     (74) expr -> . expr bool_op expr
-    (75) expr -> . expr unary_op expr
+    (75) expr -> . unary_op expr
     (98) empty -> .
     (57) primary -> . literal
     (58) primary -> . THIS
@@ -1367,6 +1372,9 @@ state 68
     (78) assign -> . PLUS PLUS field_access
     (79) assign -> . field_access MINUS MINUS
     (80) assign -> . MINUS MINUS field_access
+    (93) unary_op -> . PLUS
+    (94) unary_op -> . MINUS
+    (95) unary_op -> . NOT
     (51) literal -> . INT_CONST
     (52) literal -> . FLOAT_CONST
     (53) literal -> . STRING_CONST
@@ -1383,44 +1391,46 @@ state 68
     SUPER           shift and go to state 84
     (               shift and go to state 64
     NEW             shift and go to state 85
-    PLUS            shift and go to state 78
-    MINUS           shift and go to state 79
+    PLUS            shift and go to state 103
+    MINUS           shift and go to state 104
+    NOT             shift and go to state 105
     INT_CONST       shift and go to state 86
     FLOAT_CONST     shift and go to state 87
     STRING_CONST    shift and go to state 88
     NULL            shift and go to state 89
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
-    ID              shift and go to state 99
+    ID              shift and go to state 100
 
-    optional_expr                  shift and go to state 104
-    expr                           shift and go to state 105
-    empty                          shift and go to state 106
+    optional_expr                  shift and go to state 108
+    expr                           shift and go to state 109
+    empty                          shift and go to state 110
     primary                        shift and go to state 97
     assign                         shift and go to state 98
+    unary_op                       shift and go to state 99
     literal                        shift and go to state 82
-    field_access                   shift and go to state 100
-    method_invocation              shift and go to state 101
+    field_access                   shift and go to state 101
+    method_invocation              shift and go to state 102
 
 state 69
 
     (41) stmt -> stmt_expr . ;
 
-    ;               shift and go to state 107
+    ;               shift and go to state 111
 
 
 state 70
 
     (42) stmt -> BREAK . ;
 
-    ;               shift and go to state 108
+    ;               shift and go to state 112
 
 
 state 71
 
     (43) stmt -> CONTINUE . ;
 
-    ;               shift and go to state 109
+    ;               shift and go to state 113
 
 
 state 72
@@ -1526,10 +1536,10 @@ state 77
     (70) method_invocation -> field_access . ( )
     (63) primary -> field_access .
 
-    ASSIGN          shift and go to state 110
-    PLUS            shift and go to state 111
-    MINUS           shift and go to state 112
-    (               shift and go to state 113
+    ASSIGN          shift and go to state 114
+    PLUS            shift and go to state 115
+    MINUS           shift and go to state 116
+    (               shift and go to state 117
     .               reduce using rule 63 (primary -> field_access .)
 
 
@@ -1537,14 +1547,14 @@ state 78
 
     (78) assign -> PLUS . PLUS field_access
 
-    PLUS            shift and go to state 114
+    PLUS            shift and go to state 118
 
 
 state 79
 
     (80) assign -> MINUS . MINUS field_access
 
-    MINUS           shift and go to state 115
+    MINUS           shift and go to state 119
 
 
 state 80
@@ -1564,7 +1574,7 @@ state 81
 
     (67) field_access -> primary . . ID
 
-    .               shift and go to state 116
+    .               shift and go to state 120
 
 
 state 82
@@ -1585,7 +1595,6 @@ state 82
     GREATER         reduce using rule 57 (primary -> literal .)
     LEQ             reduce using rule 57 (primary -> literal .)
     GEQ             reduce using rule 57 (primary -> literal .)
-    NOT             reduce using rule 57 (primary -> literal .)
     ;               reduce using rule 57 (primary -> literal .)
     ,               reduce using rule 57 (primary -> literal .)
 
@@ -1608,7 +1617,6 @@ state 83
     GREATER         reduce using rule 58 (primary -> THIS .)
     LEQ             reduce using rule 58 (primary -> THIS .)
     GEQ             reduce using rule 58 (primary -> THIS .)
-    NOT             reduce using rule 58 (primary -> THIS .)
     ;               reduce using rule 58 (primary -> THIS .)
     ,               reduce using rule 58 (primary -> THIS .)
 
@@ -1631,7 +1639,6 @@ state 84
     GREATER         reduce using rule 59 (primary -> SUPER .)
     LEQ             reduce using rule 59 (primary -> SUPER .)
     GEQ             reduce using rule 59 (primary -> SUPER .)
-    NOT             reduce using rule 59 (primary -> SUPER .)
     ;               reduce using rule 59 (primary -> SUPER .)
     ,               reduce using rule 59 (primary -> SUPER .)
 
@@ -1641,7 +1648,7 @@ state 85
     (61) primary -> NEW . ID ( arguments )
     (62) primary -> NEW . ID ( )
 
-    ID              shift and go to state 117
+    ID              shift and go to state 121
 
 
 state 86
@@ -1662,7 +1669,6 @@ state 86
     GREATER         reduce using rule 51 (literal -> INT_CONST .)
     LEQ             reduce using rule 51 (literal -> INT_CONST .)
     GEQ             reduce using rule 51 (literal -> INT_CONST .)
-    NOT             reduce using rule 51 (literal -> INT_CONST .)
     ;               reduce using rule 51 (literal -> INT_CONST .)
     ,               reduce using rule 51 (literal -> INT_CONST .)
 
@@ -1685,7 +1691,6 @@ state 87
     GREATER         reduce using rule 52 (literal -> FLOAT_CONST .)
     LEQ             reduce using rule 52 (literal -> FLOAT_CONST .)
     GEQ             reduce using rule 52 (literal -> FLOAT_CONST .)
-    NOT             reduce using rule 52 (literal -> FLOAT_CONST .)
     ;               reduce using rule 52 (literal -> FLOAT_CONST .)
     ,               reduce using rule 52 (literal -> FLOAT_CONST .)
 
@@ -1708,7 +1713,6 @@ state 88
     GREATER         reduce using rule 53 (literal -> STRING_CONST .)
     LEQ             reduce using rule 53 (literal -> STRING_CONST .)
     GEQ             reduce using rule 53 (literal -> STRING_CONST .)
-    NOT             reduce using rule 53 (literal -> STRING_CONST .)
     ;               reduce using rule 53 (literal -> STRING_CONST .)
     ,               reduce using rule 53 (literal -> STRING_CONST .)
 
@@ -1731,7 +1735,6 @@ state 89
     GREATER         reduce using rule 54 (literal -> NULL .)
     LEQ             reduce using rule 54 (literal -> NULL .)
     GEQ             reduce using rule 54 (literal -> NULL .)
-    NOT             reduce using rule 54 (literal -> NULL .)
     ;               reduce using rule 54 (literal -> NULL .)
     ,               reduce using rule 54 (literal -> NULL .)
 
@@ -1754,7 +1757,6 @@ state 90
     GREATER         reduce using rule 55 (literal -> TRUE .)
     LEQ             reduce using rule 55 (literal -> TRUE .)
     GEQ             reduce using rule 55 (literal -> TRUE .)
-    NOT             reduce using rule 55 (literal -> TRUE .)
     ;               reduce using rule 55 (literal -> TRUE .)
     ,               reduce using rule 55 (literal -> TRUE .)
 
@@ -1777,7 +1779,6 @@ state 91
     GREATER         reduce using rule 56 (literal -> FALSE .)
     LEQ             reduce using rule 56 (literal -> FALSE .)
     GEQ             reduce using rule 56 (literal -> FALSE .)
-    NOT             reduce using rule 56 (literal -> FALSE .)
     ;               reduce using rule 56 (literal -> FALSE .)
     ,               reduce using rule 56 (literal -> FALSE .)
 
@@ -1977,7 +1978,7 @@ state 95
     (72) expr -> . assign
     (73) expr -> . expr arith_op expr
     (74) expr -> . expr bool_op expr
-    (75) expr -> . expr unary_op expr
+    (75) expr -> . unary_op expr
     (57) primary -> . literal
     (58) primary -> . THIS
     (59) primary -> . SUPER
@@ -1991,6 +1992,9 @@ state 95
     (78) assign -> . PLUS PLUS field_access
     (79) assign -> . field_access MINUS MINUS
     (80) assign -> . MINUS MINUS field_access
+    (93) unary_op -> . PLUS
+    (94) unary_op -> . MINUS
+    (95) unary_op -> . NOT
     (51) literal -> . INT_CONST
     (52) literal -> . FLOAT_CONST
     (53) literal -> . STRING_CONST
@@ -2006,29 +2010,30 @@ state 95
     SUPER           shift and go to state 84
     (               shift and go to state 64
     NEW             shift and go to state 85
-    PLUS            shift and go to state 78
-    MINUS           shift and go to state 79
+    PLUS            shift and go to state 103
+    MINUS           shift and go to state 104
+    NOT             shift and go to state 105
     INT_CONST       shift and go to state 86
     FLOAT_CONST     shift and go to state 87
     STRING_CONST    shift and go to state 88
     NULL            shift and go to state 89
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
-    ID              shift and go to state 99
+    ID              shift and go to state 100
 
-    expr                           shift and go to state 118
+    expr                           shift and go to state 122
     primary                        shift and go to state 97
     assign                         shift and go to state 98
+    unary_op                       shift and go to state 99
     literal                        shift and go to state 82
-    field_access                   shift and go to state 100
-    method_invocation              shift and go to state 101
+    field_access                   shift and go to state 101
+    method_invocation              shift and go to state 102
 
 state 96
 
     (60) primary -> ( expr . )
     (73) expr -> expr . arith_op expr
     (74) expr -> expr . bool_op expr
-    (75) expr -> expr . unary_op expr
     (81) arith_op -> . PLUS
     (82) arith_op -> . MINUS
     (83) arith_op -> . TIMES
@@ -2041,28 +2046,23 @@ state 96
     (90) bool_op -> . GREATER
     (91) bool_op -> . LEQ
     (92) bool_op -> . GEQ
-    (93) unary_op -> . PLUS
-    (94) unary_op -> . MINUS
-    (95) unary_op -> . NOT
 
-    )               shift and go to state 119
-    PLUS            shift and go to state 123
-    MINUS           shift and go to state 124
-    TIMES           shift and go to state 125
-    DIVIDE          shift and go to state 126
-    AND             shift and go to state 127
-    OR              shift and go to state 128
-    EQUALITY        shift and go to state 129
-    INEQUALITY      shift and go to state 130
-    LESSER          shift and go to state 131
-    GREATER         shift and go to state 132
-    LEQ             shift and go to state 133
-    GEQ             shift and go to state 134
-    NOT             shift and go to state 135
+    )               shift and go to state 123
+    PLUS            shift and go to state 126
+    MINUS           shift and go to state 127
+    TIMES           shift and go to state 128
+    DIVIDE          shift and go to state 129
+    AND             shift and go to state 130
+    OR              shift and go to state 131
+    EQUALITY        shift and go to state 132
+    INEQUALITY      shift and go to state 133
+    LESSER          shift and go to state 134
+    GREATER         shift and go to state 135
+    LEQ             shift and go to state 136
+    GEQ             shift and go to state 137
 
-    arith_op                       shift and go to state 120
-    bool_op                        shift and go to state 121
-    unary_op                       shift and go to state 122
+    arith_op                       shift and go to state 124
+    bool_op                        shift and go to state 125
 
 state 97
 
@@ -2082,10 +2082,9 @@ state 97
     GREATER         reduce using rule 71 (expr -> primary .)
     LEQ             reduce using rule 71 (expr -> primary .)
     GEQ             reduce using rule 71 (expr -> primary .)
-    NOT             reduce using rule 71 (expr -> primary .)
     ;               reduce using rule 71 (expr -> primary .)
     ,               reduce using rule 71 (expr -> primary .)
-    .               shift and go to state 116
+    .               shift and go to state 120
 
 
 state 98
@@ -2105,12 +2104,69 @@ state 98
     GREATER         reduce using rule 72 (expr -> assign .)
     LEQ             reduce using rule 72 (expr -> assign .)
     GEQ             reduce using rule 72 (expr -> assign .)
-    NOT             reduce using rule 72 (expr -> assign .)
     ;               reduce using rule 72 (expr -> assign .)
     ,               reduce using rule 72 (expr -> assign .)
 
 
 state 99
+
+    (75) expr -> unary_op . expr
+    (71) expr -> . primary
+    (72) expr -> . assign
+    (73) expr -> . expr arith_op expr
+    (74) expr -> . expr bool_op expr
+    (75) expr -> . unary_op expr
+    (57) primary -> . literal
+    (58) primary -> . THIS
+    (59) primary -> . SUPER
+    (60) primary -> . ( expr )
+    (61) primary -> . NEW ID ( arguments )
+    (62) primary -> . NEW ID ( )
+    (63) primary -> . field_access
+    (64) primary -> . method_invocation
+    (76) assign -> . field_access ASSIGN expr
+    (77) assign -> . field_access PLUS PLUS
+    (78) assign -> . PLUS PLUS field_access
+    (79) assign -> . field_access MINUS MINUS
+    (80) assign -> . MINUS MINUS field_access
+    (93) unary_op -> . PLUS
+    (94) unary_op -> . MINUS
+    (95) unary_op -> . NOT
+    (51) literal -> . INT_CONST
+    (52) literal -> . FLOAT_CONST
+    (53) literal -> . STRING_CONST
+    (54) literal -> . NULL
+    (55) literal -> . TRUE
+    (56) literal -> . FALSE
+    (67) field_access -> . primary . ID
+    (68) field_access -> . ID
+    (69) method_invocation -> . field_access ( arguments )
+    (70) method_invocation -> . field_access ( )
+
+    THIS            shift and go to state 83
+    SUPER           shift and go to state 84
+    (               shift and go to state 64
+    NEW             shift and go to state 85
+    PLUS            shift and go to state 103
+    MINUS           shift and go to state 104
+    NOT             shift and go to state 105
+    INT_CONST       shift and go to state 86
+    FLOAT_CONST     shift and go to state 87
+    STRING_CONST    shift and go to state 88
+    NULL            shift and go to state 89
+    TRUE            shift and go to state 90
+    FALSE           shift and go to state 91
+    ID              shift and go to state 100
+
+    unary_op                       shift and go to state 99
+    expr                           shift and go to state 138
+    primary                        shift and go to state 97
+    assign                         shift and go to state 98
+    literal                        shift and go to state 82
+    field_access                   shift and go to state 101
+    method_invocation              shift and go to state 102
+
+state 100
 
     (68) field_access -> ID .
 
@@ -2130,12 +2186,11 @@ state 99
     GREATER         reduce using rule 68 (field_access -> ID .)
     LEQ             reduce using rule 68 (field_access -> ID .)
     GEQ             reduce using rule 68 (field_access -> ID .)
-    NOT             reduce using rule 68 (field_access -> ID .)
     ;               reduce using rule 68 (field_access -> ID .)
     ,               reduce using rule 68 (field_access -> ID .)
 
 
-state 100
+state 101
 
     (63) primary -> field_access .
     (76) assign -> field_access . ASSIGN expr
@@ -2158,19 +2213,18 @@ state 100
     GREATER         reduce using rule 63 (primary -> field_access .)
     LEQ             reduce using rule 63 (primary -> field_access .)
     GEQ             reduce using rule 63 (primary -> field_access .)
-    NOT             reduce using rule 63 (primary -> field_access .)
     ;               reduce using rule 63 (primary -> field_access .)
     ,               reduce using rule 63 (primary -> field_access .)
-    ASSIGN          shift and go to state 110
-    PLUS            shift and go to state 111
-    MINUS           shift and go to state 112
-    (               shift and go to state 113
+    ASSIGN          shift and go to state 114
+    PLUS            shift and go to state 115
+    MINUS           shift and go to state 116
+    (               shift and go to state 117
 
   ! PLUS            [ reduce using rule 63 (primary -> field_access .) ]
   ! MINUS           [ reduce using rule 63 (primary -> field_access .) ]
 
 
-state 101
+state 102
 
     (64) primary -> method_invocation .
 
@@ -2188,19 +2242,84 @@ state 101
     GREATER         reduce using rule 64 (primary -> method_invocation .)
     LEQ             reduce using rule 64 (primary -> method_invocation .)
     GEQ             reduce using rule 64 (primary -> method_invocation .)
-    NOT             reduce using rule 64 (primary -> method_invocation .)
     ;               reduce using rule 64 (primary -> method_invocation .)
     ,               reduce using rule 64 (primary -> method_invocation .)
 
 
-state 102
+state 103
+
+    (78) assign -> PLUS . PLUS field_access
+    (93) unary_op -> PLUS .
+
+    THIS            reduce using rule 93 (unary_op -> PLUS .)
+    SUPER           reduce using rule 93 (unary_op -> PLUS .)
+    (               reduce using rule 93 (unary_op -> PLUS .)
+    NEW             reduce using rule 93 (unary_op -> PLUS .)
+    PLUS            reduce using rule 93 (unary_op -> PLUS .)
+    MINUS           reduce using rule 93 (unary_op -> PLUS .)
+    NOT             reduce using rule 93 (unary_op -> PLUS .)
+    INT_CONST       reduce using rule 93 (unary_op -> PLUS .)
+    FLOAT_CONST     reduce using rule 93 (unary_op -> PLUS .)
+    STRING_CONST    reduce using rule 93 (unary_op -> PLUS .)
+    NULL            reduce using rule 93 (unary_op -> PLUS .)
+    TRUE            reduce using rule 93 (unary_op -> PLUS .)
+    FALSE           reduce using rule 93 (unary_op -> PLUS .)
+    ID              reduce using rule 93 (unary_op -> PLUS .)
+
+  ! PLUS            [ shift and go to state 118 ]
+
+
+state 104
+
+    (80) assign -> MINUS . MINUS field_access
+    (94) unary_op -> MINUS .
+
+    THIS            reduce using rule 94 (unary_op -> MINUS .)
+    SUPER           reduce using rule 94 (unary_op -> MINUS .)
+    (               reduce using rule 94 (unary_op -> MINUS .)
+    NEW             reduce using rule 94 (unary_op -> MINUS .)
+    PLUS            reduce using rule 94 (unary_op -> MINUS .)
+    MINUS           reduce using rule 94 (unary_op -> MINUS .)
+    NOT             reduce using rule 94 (unary_op -> MINUS .)
+    INT_CONST       reduce using rule 94 (unary_op -> MINUS .)
+    FLOAT_CONST     reduce using rule 94 (unary_op -> MINUS .)
+    STRING_CONST    reduce using rule 94 (unary_op -> MINUS .)
+    NULL            reduce using rule 94 (unary_op -> MINUS .)
+    TRUE            reduce using rule 94 (unary_op -> MINUS .)
+    FALSE           reduce using rule 94 (unary_op -> MINUS .)
+    ID              reduce using rule 94 (unary_op -> MINUS .)
+
+  ! MINUS           [ shift and go to state 119 ]
+
+
+state 105
+
+    (95) unary_op -> NOT .
+
+    THIS            reduce using rule 95 (unary_op -> NOT .)
+    SUPER           reduce using rule 95 (unary_op -> NOT .)
+    (               reduce using rule 95 (unary_op -> NOT .)
+    NEW             reduce using rule 95 (unary_op -> NOT .)
+    PLUS            reduce using rule 95 (unary_op -> NOT .)
+    MINUS           reduce using rule 95 (unary_op -> NOT .)
+    NOT             reduce using rule 95 (unary_op -> NOT .)
+    INT_CONST       reduce using rule 95 (unary_op -> NOT .)
+    FLOAT_CONST     reduce using rule 95 (unary_op -> NOT .)
+    STRING_CONST    reduce using rule 95 (unary_op -> NOT .)
+    NULL            reduce using rule 95 (unary_op -> NOT .)
+    TRUE            reduce using rule 95 (unary_op -> NOT .)
+    FALSE           reduce using rule 95 (unary_op -> NOT .)
+    ID              reduce using rule 95 (unary_op -> NOT .)
+
+
+state 106
 
     (38) stmt -> WHILE ( . expr ) stmt
     (71) expr -> . primary
     (72) expr -> . assign
     (73) expr -> . expr arith_op expr
     (74) expr -> . expr bool_op expr
-    (75) expr -> . expr unary_op expr
+    (75) expr -> . unary_op expr
     (57) primary -> . literal
     (58) primary -> . THIS
     (59) primary -> . SUPER
@@ -2214,6 +2333,9 @@ state 102
     (78) assign -> . PLUS PLUS field_access
     (79) assign -> . field_access MINUS MINUS
     (80) assign -> . MINUS MINUS field_access
+    (93) unary_op -> . PLUS
+    (94) unary_op -> . MINUS
+    (95) unary_op -> . NOT
     (51) literal -> . INT_CONST
     (52) literal -> . FLOAT_CONST
     (53) literal -> . STRING_CONST
@@ -2229,24 +2351,26 @@ state 102
     SUPER           shift and go to state 84
     (               shift and go to state 64
     NEW             shift and go to state 85
-    PLUS            shift and go to state 78
-    MINUS           shift and go to state 79
+    PLUS            shift and go to state 103
+    MINUS           shift and go to state 104
+    NOT             shift and go to state 105
     INT_CONST       shift and go to state 86
     FLOAT_CONST     shift and go to state 87
     STRING_CONST    shift and go to state 88
     NULL            shift and go to state 89
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
-    ID              shift and go to state 99
+    ID              shift and go to state 100
 
-    expr                           shift and go to state 136
+    expr                           shift and go to state 139
     primary                        shift and go to state 97
     assign                         shift and go to state 98
+    unary_op                       shift and go to state 99
     literal                        shift and go to state 82
-    field_access                   shift and go to state 100
-    method_invocation              shift and go to state 101
+    field_access                   shift and go to state 101
+    method_invocation              shift and go to state 102
 
-state 103
+state 107
 
     (39) stmt -> FOR ( . optional_stmt_expr ; optional_expr ; optional_stmt_expr ) stmt
     (49) optional_stmt_expr -> . stmt_expr
@@ -2281,7 +2405,7 @@ state 103
     ;               reduce using rule 98 (empty -> .)
     PLUS            shift and go to state 78
     MINUS           shift and go to state 79
-    ID              shift and go to state 99
+    ID              shift and go to state 100
     THIS            shift and go to state 83
     SUPER           shift and go to state 84
     (               shift and go to state 64
@@ -2293,28 +2417,27 @@ state 103
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
 
-    optional_stmt_expr             shift and go to state 137
-    stmt_expr                      shift and go to state 138
-    empty                          shift and go to state 139
+    optional_stmt_expr             shift and go to state 140
+    stmt_expr                      shift and go to state 141
+    empty                          shift and go to state 142
     assign                         shift and go to state 74
     method_invocation              shift and go to state 75
     field_access                   shift and go to state 77
     primary                        shift and go to state 81
     literal                        shift and go to state 82
 
-state 104
+state 108
 
     (40) stmt -> RETURN optional_expr . ;
 
-    ;               shift and go to state 140
+    ;               shift and go to state 143
 
 
-state 105
+state 109
 
     (47) optional_expr -> expr .
     (73) expr -> expr . arith_op expr
     (74) expr -> expr . bool_op expr
-    (75) expr -> expr . unary_op expr
     (81) arith_op -> . PLUS
     (82) arith_op -> . MINUS
     (83) arith_op -> . TIMES
@@ -2327,37 +2450,32 @@ state 105
     (90) bool_op -> . GREATER
     (91) bool_op -> . LEQ
     (92) bool_op -> . GEQ
-    (93) unary_op -> . PLUS
-    (94) unary_op -> . MINUS
-    (95) unary_op -> . NOT
 
     ;               reduce using rule 47 (optional_expr -> expr .)
-    PLUS            shift and go to state 123
-    MINUS           shift and go to state 124
-    TIMES           shift and go to state 125
-    DIVIDE          shift and go to state 126
-    AND             shift and go to state 127
-    OR              shift and go to state 128
-    EQUALITY        shift and go to state 129
-    INEQUALITY      shift and go to state 130
-    LESSER          shift and go to state 131
-    GREATER         shift and go to state 132
-    LEQ             shift and go to state 133
-    GEQ             shift and go to state 134
-    NOT             shift and go to state 135
+    PLUS            shift and go to state 126
+    MINUS           shift and go to state 127
+    TIMES           shift and go to state 128
+    DIVIDE          shift and go to state 129
+    AND             shift and go to state 130
+    OR              shift and go to state 131
+    EQUALITY        shift and go to state 132
+    INEQUALITY      shift and go to state 133
+    LESSER          shift and go to state 134
+    GREATER         shift and go to state 135
+    LEQ             shift and go to state 136
+    GEQ             shift and go to state 137
 
-    arith_op                       shift and go to state 120
-    bool_op                        shift and go to state 121
-    unary_op                       shift and go to state 122
+    arith_op                       shift and go to state 124
+    bool_op                        shift and go to state 125
 
-state 106
+state 110
 
     (48) optional_expr -> empty .
 
     ;               reduce using rule 48 (optional_expr -> empty .)
 
 
-state 107
+state 111
 
     (41) stmt -> stmt_expr ; .
 
@@ -2389,7 +2507,7 @@ state 107
     ELSE            reduce using rule 41 (stmt -> stmt_expr ; .)
 
 
-state 108
+state 112
 
     (42) stmt -> BREAK ; .
 
@@ -2421,7 +2539,7 @@ state 108
     ELSE            reduce using rule 42 (stmt -> BREAK ; .)
 
 
-state 109
+state 113
 
     (43) stmt -> CONTINUE ; .
 
@@ -2453,14 +2571,14 @@ state 109
     ELSE            reduce using rule 43 (stmt -> CONTINUE ; .)
 
 
-state 110
+state 114
 
     (76) assign -> field_access ASSIGN . expr
     (71) expr -> . primary
     (72) expr -> . assign
     (73) expr -> . expr arith_op expr
     (74) expr -> . expr bool_op expr
-    (75) expr -> . expr unary_op expr
+    (75) expr -> . unary_op expr
     (57) primary -> . literal
     (58) primary -> . THIS
     (59) primary -> . SUPER
@@ -2474,6 +2592,9 @@ state 110
     (78) assign -> . PLUS PLUS field_access
     (79) assign -> . field_access MINUS MINUS
     (80) assign -> . MINUS MINUS field_access
+    (93) unary_op -> . PLUS
+    (94) unary_op -> . MINUS
+    (95) unary_op -> . NOT
     (51) literal -> . INT_CONST
     (52) literal -> . FLOAT_CONST
     (53) literal -> . STRING_CONST
@@ -2489,38 +2610,40 @@ state 110
     SUPER           shift and go to state 84
     (               shift and go to state 64
     NEW             shift and go to state 85
-    PLUS            shift and go to state 78
-    MINUS           shift and go to state 79
+    PLUS            shift and go to state 103
+    MINUS           shift and go to state 104
+    NOT             shift and go to state 105
     INT_CONST       shift and go to state 86
     FLOAT_CONST     shift and go to state 87
     STRING_CONST    shift and go to state 88
     NULL            shift and go to state 89
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
-    ID              shift and go to state 99
+    ID              shift and go to state 100
 
-    field_access                   shift and go to state 100
-    expr                           shift and go to state 141
+    field_access                   shift and go to state 101
+    expr                           shift and go to state 144
     primary                        shift and go to state 97
     assign                         shift and go to state 98
+    unary_op                       shift and go to state 99
     literal                        shift and go to state 82
-    method_invocation              shift and go to state 101
+    method_invocation              shift and go to state 102
 
-state 111
+state 115
 
     (77) assign -> field_access PLUS . PLUS
 
-    PLUS            shift and go to state 142
+    PLUS            shift and go to state 145
 
 
-state 112
+state 116
 
     (79) assign -> field_access MINUS . MINUS
 
-    MINUS           shift and go to state 143
+    MINUS           shift and go to state 146
 
 
-state 113
+state 117
 
     (69) method_invocation -> field_access ( . arguments )
     (70) method_invocation -> field_access ( . )
@@ -2530,7 +2653,7 @@ state 113
     (72) expr -> . assign
     (73) expr -> . expr arith_op expr
     (74) expr -> . expr bool_op expr
-    (75) expr -> . expr unary_op expr
+    (75) expr -> . unary_op expr
     (57) primary -> . literal
     (58) primary -> . THIS
     (59) primary -> . SUPER
@@ -2544,6 +2667,9 @@ state 113
     (78) assign -> . PLUS PLUS field_access
     (79) assign -> . field_access MINUS MINUS
     (80) assign -> . MINUS MINUS field_access
+    (93) unary_op -> . PLUS
+    (94) unary_op -> . MINUS
+    (95) unary_op -> . NOT
     (51) literal -> . INT_CONST
     (52) literal -> . FLOAT_CONST
     (53) literal -> . STRING_CONST
@@ -2555,30 +2681,32 @@ state 113
     (69) method_invocation -> . field_access ( arguments )
     (70) method_invocation -> . field_access ( )
 
-    )               shift and go to state 145
+    )               shift and go to state 148
     THIS            shift and go to state 83
     SUPER           shift and go to state 84
     (               shift and go to state 64
     NEW             shift and go to state 85
-    PLUS            shift and go to state 78
-    MINUS           shift and go to state 79
+    PLUS            shift and go to state 103
+    MINUS           shift and go to state 104
+    NOT             shift and go to state 105
     INT_CONST       shift and go to state 86
     FLOAT_CONST     shift and go to state 87
     STRING_CONST    shift and go to state 88
     NULL            shift and go to state 89
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
-    ID              shift and go to state 99
+    ID              shift and go to state 100
 
-    field_access                   shift and go to state 100
-    arguments                      shift and go to state 144
-    expr                           shift and go to state 146
+    field_access                   shift and go to state 101
+    arguments                      shift and go to state 147
+    expr                           shift and go to state 149
     primary                        shift and go to state 97
     assign                         shift and go to state 98
+    unary_op                       shift and go to state 99
     literal                        shift and go to state 82
-    method_invocation              shift and go to state 101
+    method_invocation              shift and go to state 102
 
-state 114
+state 118
 
     (78) assign -> PLUS PLUS . field_access
     (67) field_access -> . primary . ID
@@ -2600,7 +2728,7 @@ state 114
     (69) method_invocation -> . field_access ( arguments )
     (70) method_invocation -> . field_access ( )
 
-    ID              shift and go to state 99
+    ID              shift and go to state 100
     THIS            shift and go to state 83
     SUPER           shift and go to state 84
     (               shift and go to state 64
@@ -2612,12 +2740,12 @@ state 114
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
 
-    field_access                   shift and go to state 147
+    field_access                   shift and go to state 150
     primary                        shift and go to state 81
     literal                        shift and go to state 82
-    method_invocation              shift and go to state 101
+    method_invocation              shift and go to state 102
 
-state 115
+state 119
 
     (80) assign -> MINUS MINUS . field_access
     (67) field_access -> . primary . ID
@@ -2639,7 +2767,7 @@ state 115
     (69) method_invocation -> . field_access ( arguments )
     (70) method_invocation -> . field_access ( )
 
-    ID              shift and go to state 99
+    ID              shift and go to state 100
     THIS            shift and go to state 83
     SUPER           shift and go to state 84
     (               shift and go to state 64
@@ -2651,33 +2779,32 @@ state 115
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
 
-    field_access                   shift and go to state 148
+    field_access                   shift and go to state 151
     primary                        shift and go to state 81
     literal                        shift and go to state 82
-    method_invocation              shift and go to state 101
+    method_invocation              shift and go to state 102
 
-state 116
+state 120
 
     (67) field_access -> primary . . ID
 
-    ID              shift and go to state 149
+    ID              shift and go to state 152
 
 
-state 117
+state 121
 
     (61) primary -> NEW ID . ( arguments )
     (62) primary -> NEW ID . ( )
 
-    (               shift and go to state 150
+    (               shift and go to state 153
 
 
-state 118
+state 122
 
     (36) stmt -> IF ( expr . ) stmt ELSE stmt
     (37) stmt -> IF ( expr . ) stmt
     (73) expr -> expr . arith_op expr
     (74) expr -> expr . bool_op expr
-    (75) expr -> expr . unary_op expr
     (81) arith_op -> . PLUS
     (82) arith_op -> . MINUS
     (83) arith_op -> . TIMES
@@ -2690,30 +2817,25 @@ state 118
     (90) bool_op -> . GREATER
     (91) bool_op -> . LEQ
     (92) bool_op -> . GEQ
-    (93) unary_op -> . PLUS
-    (94) unary_op -> . MINUS
-    (95) unary_op -> . NOT
 
-    )               shift and go to state 151
-    PLUS            shift and go to state 123
-    MINUS           shift and go to state 124
-    TIMES           shift and go to state 125
-    DIVIDE          shift and go to state 126
-    AND             shift and go to state 127
-    OR              shift and go to state 128
-    EQUALITY        shift and go to state 129
-    INEQUALITY      shift and go to state 130
-    LESSER          shift and go to state 131
-    GREATER         shift and go to state 132
-    LEQ             shift and go to state 133
-    GEQ             shift and go to state 134
-    NOT             shift and go to state 135
+    )               shift and go to state 154
+    PLUS            shift and go to state 126
+    MINUS           shift and go to state 127
+    TIMES           shift and go to state 128
+    DIVIDE          shift and go to state 129
+    AND             shift and go to state 130
+    OR              shift and go to state 131
+    EQUALITY        shift and go to state 132
+    INEQUALITY      shift and go to state 133
+    LESSER          shift and go to state 134
+    GREATER         shift and go to state 135
+    LEQ             shift and go to state 136
+    GEQ             shift and go to state 137
 
-    arith_op                       shift and go to state 120
-    bool_op                        shift and go to state 121
-    unary_op                       shift and go to state 122
+    arith_op                       shift and go to state 124
+    bool_op                        shift and go to state 125
 
-state 119
+state 123
 
     (60) primary -> ( expr ) .
 
@@ -2731,19 +2853,18 @@ state 119
     GREATER         reduce using rule 60 (primary -> ( expr ) .)
     LEQ             reduce using rule 60 (primary -> ( expr ) .)
     GEQ             reduce using rule 60 (primary -> ( expr ) .)
-    NOT             reduce using rule 60 (primary -> ( expr ) .)
     ;               reduce using rule 60 (primary -> ( expr ) .)
     ,               reduce using rule 60 (primary -> ( expr ) .)
 
 
-state 120
+state 124
 
     (73) expr -> expr arith_op . expr
     (71) expr -> . primary
     (72) expr -> . assign
     (73) expr -> . expr arith_op expr
     (74) expr -> . expr bool_op expr
-    (75) expr -> . expr unary_op expr
+    (75) expr -> . unary_op expr
     (57) primary -> . literal
     (58) primary -> . THIS
     (59) primary -> . SUPER
@@ -2757,6 +2878,9 @@ state 120
     (78) assign -> . PLUS PLUS field_access
     (79) assign -> . field_access MINUS MINUS
     (80) assign -> . MINUS MINUS field_access
+    (93) unary_op -> . PLUS
+    (94) unary_op -> . MINUS
+    (95) unary_op -> . NOT
     (51) literal -> . INT_CONST
     (52) literal -> . FLOAT_CONST
     (53) literal -> . STRING_CONST
@@ -2772,31 +2896,33 @@ state 120
     SUPER           shift and go to state 84
     (               shift and go to state 64
     NEW             shift and go to state 85
-    PLUS            shift and go to state 78
-    MINUS           shift and go to state 79
+    PLUS            shift and go to state 103
+    MINUS           shift and go to state 104
+    NOT             shift and go to state 105
     INT_CONST       shift and go to state 86
     FLOAT_CONST     shift and go to state 87
     STRING_CONST    shift and go to state 88
     NULL            shift and go to state 89
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
-    ID              shift and go to state 99
+    ID              shift and go to state 100
 
-    expr                           shift and go to state 152
+    expr                           shift and go to state 155
     primary                        shift and go to state 97
     assign                         shift and go to state 98
+    unary_op                       shift and go to state 99
     literal                        shift and go to state 82
-    field_access                   shift and go to state 100
-    method_invocation              shift and go to state 101
+    field_access                   shift and go to state 101
+    method_invocation              shift and go to state 102
 
-state 121
+state 125
 
     (74) expr -> expr bool_op . expr
     (71) expr -> . primary
     (72) expr -> . assign
     (73) expr -> . expr arith_op expr
     (74) expr -> . expr bool_op expr
-    (75) expr -> . expr unary_op expr
+    (75) expr -> . unary_op expr
     (57) primary -> . literal
     (58) primary -> . THIS
     (59) primary -> . SUPER
@@ -2810,6 +2936,9 @@ state 121
     (78) assign -> . PLUS PLUS field_access
     (79) assign -> . field_access MINUS MINUS
     (80) assign -> . MINUS MINUS field_access
+    (93) unary_op -> . PLUS
+    (94) unary_op -> . MINUS
+    (95) unary_op -> . NOT
     (51) literal -> . INT_CONST
     (52) literal -> . FLOAT_CONST
     (53) literal -> . STRING_CONST
@@ -2825,100 +2954,36 @@ state 121
     SUPER           shift and go to state 84
     (               shift and go to state 64
     NEW             shift and go to state 85
-    PLUS            shift and go to state 78
-    MINUS           shift and go to state 79
+    PLUS            shift and go to state 103
+    MINUS           shift and go to state 104
+    NOT             shift and go to state 105
     INT_CONST       shift and go to state 86
     FLOAT_CONST     shift and go to state 87
     STRING_CONST    shift and go to state 88
     NULL            shift and go to state 89
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
-    ID              shift and go to state 99
+    ID              shift and go to state 100
 
-    expr                           shift and go to state 153
+    expr                           shift and go to state 156
     primary                        shift and go to state 97
     assign                         shift and go to state 98
+    unary_op                       shift and go to state 99
     literal                        shift and go to state 82
-    field_access                   shift and go to state 100
-    method_invocation              shift and go to state 101
+    field_access                   shift and go to state 101
+    method_invocation              shift and go to state 102
 
-state 122
-
-    (75) expr -> expr unary_op . expr
-    (71) expr -> . primary
-    (72) expr -> . assign
-    (73) expr -> . expr arith_op expr
-    (74) expr -> . expr bool_op expr
-    (75) expr -> . expr unary_op expr
-    (57) primary -> . literal
-    (58) primary -> . THIS
-    (59) primary -> . SUPER
-    (60) primary -> . ( expr )
-    (61) primary -> . NEW ID ( arguments )
-    (62) primary -> . NEW ID ( )
-    (63) primary -> . field_access
-    (64) primary -> . method_invocation
-    (76) assign -> . field_access ASSIGN expr
-    (77) assign -> . field_access PLUS PLUS
-    (78) assign -> . PLUS PLUS field_access
-    (79) assign -> . field_access MINUS MINUS
-    (80) assign -> . MINUS MINUS field_access
-    (51) literal -> . INT_CONST
-    (52) literal -> . FLOAT_CONST
-    (53) literal -> . STRING_CONST
-    (54) literal -> . NULL
-    (55) literal -> . TRUE
-    (56) literal -> . FALSE
-    (67) field_access -> . primary . ID
-    (68) field_access -> . ID
-    (69) method_invocation -> . field_access ( arguments )
-    (70) method_invocation -> . field_access ( )
-
-    THIS            shift and go to state 83
-    SUPER           shift and go to state 84
-    (               shift and go to state 64
-    NEW             shift and go to state 85
-    PLUS            shift and go to state 78
-    MINUS           shift and go to state 79
-    INT_CONST       shift and go to state 86
-    FLOAT_CONST     shift and go to state 87
-    STRING_CONST    shift and go to state 88
-    NULL            shift and go to state 89
-    TRUE            shift and go to state 90
-    FALSE           shift and go to state 91
-    ID              shift and go to state 99
-
-    expr                           shift and go to state 154
-    primary                        shift and go to state 97
-    assign                         shift and go to state 98
-    literal                        shift and go to state 82
-    field_access                   shift and go to state 100
-    method_invocation              shift and go to state 101
-
-state 123
+state 126
 
     (81) arith_op -> PLUS .
-    (93) unary_op -> PLUS .
 
-  ! reduce/reduce conflict for THIS resolved using rule 81 (arith_op -> PLUS .)
-  ! reduce/reduce conflict for SUPER resolved using rule 81 (arith_op -> PLUS .)
-  ! reduce/reduce conflict for ( resolved using rule 81 (arith_op -> PLUS .)
-  ! reduce/reduce conflict for NEW resolved using rule 81 (arith_op -> PLUS .)
-  ! reduce/reduce conflict for PLUS resolved using rule 81 (arith_op -> PLUS .)
-  ! reduce/reduce conflict for MINUS resolved using rule 81 (arith_op -> PLUS .)
-  ! reduce/reduce conflict for INT_CONST resolved using rule 81 (arith_op -> PLUS .)
-  ! reduce/reduce conflict for FLOAT_CONST resolved using rule 81 (arith_op -> PLUS .)
-  ! reduce/reduce conflict for STRING_CONST resolved using rule 81 (arith_op -> PLUS .)
-  ! reduce/reduce conflict for NULL resolved using rule 81 (arith_op -> PLUS .)
-  ! reduce/reduce conflict for TRUE resolved using rule 81 (arith_op -> PLUS .)
-  ! reduce/reduce conflict for FALSE resolved using rule 81 (arith_op -> PLUS .)
-  ! reduce/reduce conflict for ID resolved using rule 81 (arith_op -> PLUS .)
     THIS            reduce using rule 81 (arith_op -> PLUS .)
     SUPER           reduce using rule 81 (arith_op -> PLUS .)
     (               reduce using rule 81 (arith_op -> PLUS .)
     NEW             reduce using rule 81 (arith_op -> PLUS .)
     PLUS            reduce using rule 81 (arith_op -> PLUS .)
     MINUS           reduce using rule 81 (arith_op -> PLUS .)
+    NOT             reduce using rule 81 (arith_op -> PLUS .)
     INT_CONST       reduce using rule 81 (arith_op -> PLUS .)
     FLOAT_CONST     reduce using rule 81 (arith_op -> PLUS .)
     STRING_CONST    reduce using rule 81 (arith_op -> PLUS .)
@@ -2927,45 +2992,18 @@ state 123
     FALSE           reduce using rule 81 (arith_op -> PLUS .)
     ID              reduce using rule 81 (arith_op -> PLUS .)
 
-  ! THIS            [ reduce using rule 93 (unary_op -> PLUS .) ]
-  ! SUPER           [ reduce using rule 93 (unary_op -> PLUS .) ]
-  ! (               [ reduce using rule 93 (unary_op -> PLUS .) ]
-  ! NEW             [ reduce using rule 93 (unary_op -> PLUS .) ]
-  ! PLUS            [ reduce using rule 93 (unary_op -> PLUS .) ]
-  ! MINUS           [ reduce using rule 93 (unary_op -> PLUS .) ]
-  ! INT_CONST       [ reduce using rule 93 (unary_op -> PLUS .) ]
-  ! FLOAT_CONST     [ reduce using rule 93 (unary_op -> PLUS .) ]
-  ! STRING_CONST    [ reduce using rule 93 (unary_op -> PLUS .) ]
-  ! NULL            [ reduce using rule 93 (unary_op -> PLUS .) ]
-  ! TRUE            [ reduce using rule 93 (unary_op -> PLUS .) ]
-  ! FALSE           [ reduce using rule 93 (unary_op -> PLUS .) ]
-  ! ID              [ reduce using rule 93 (unary_op -> PLUS .) ]
 
-
-state 124
+state 127
 
     (82) arith_op -> MINUS .
-    (94) unary_op -> MINUS .
 
-  ! reduce/reduce conflict for THIS resolved using rule 82 (arith_op -> MINUS .)
-  ! reduce/reduce conflict for SUPER resolved using rule 82 (arith_op -> MINUS .)
-  ! reduce/reduce conflict for ( resolved using rule 82 (arith_op -> MINUS .)
-  ! reduce/reduce conflict for NEW resolved using rule 82 (arith_op -> MINUS .)
-  ! reduce/reduce conflict for PLUS resolved using rule 82 (arith_op -> MINUS .)
-  ! reduce/reduce conflict for MINUS resolved using rule 82 (arith_op -> MINUS .)
-  ! reduce/reduce conflict for INT_CONST resolved using rule 82 (arith_op -> MINUS .)
-  ! reduce/reduce conflict for FLOAT_CONST resolved using rule 82 (arith_op -> MINUS .)
-  ! reduce/reduce conflict for STRING_CONST resolved using rule 82 (arith_op -> MINUS .)
-  ! reduce/reduce conflict for NULL resolved using rule 82 (arith_op -> MINUS .)
-  ! reduce/reduce conflict for TRUE resolved using rule 82 (arith_op -> MINUS .)
-  ! reduce/reduce conflict for FALSE resolved using rule 82 (arith_op -> MINUS .)
-  ! reduce/reduce conflict for ID resolved using rule 82 (arith_op -> MINUS .)
     THIS            reduce using rule 82 (arith_op -> MINUS .)
     SUPER           reduce using rule 82 (arith_op -> MINUS .)
     (               reduce using rule 82 (arith_op -> MINUS .)
     NEW             reduce using rule 82 (arith_op -> MINUS .)
     PLUS            reduce using rule 82 (arith_op -> MINUS .)
     MINUS           reduce using rule 82 (arith_op -> MINUS .)
+    NOT             reduce using rule 82 (arith_op -> MINUS .)
     INT_CONST       reduce using rule 82 (arith_op -> MINUS .)
     FLOAT_CONST     reduce using rule 82 (arith_op -> MINUS .)
     STRING_CONST    reduce using rule 82 (arith_op -> MINUS .)
@@ -2974,22 +3012,8 @@ state 124
     FALSE           reduce using rule 82 (arith_op -> MINUS .)
     ID              reduce using rule 82 (arith_op -> MINUS .)
 
-  ! THIS            [ reduce using rule 94 (unary_op -> MINUS .) ]
-  ! SUPER           [ reduce using rule 94 (unary_op -> MINUS .) ]
-  ! (               [ reduce using rule 94 (unary_op -> MINUS .) ]
-  ! NEW             [ reduce using rule 94 (unary_op -> MINUS .) ]
-  ! PLUS            [ reduce using rule 94 (unary_op -> MINUS .) ]
-  ! MINUS           [ reduce using rule 94 (unary_op -> MINUS .) ]
-  ! INT_CONST       [ reduce using rule 94 (unary_op -> MINUS .) ]
-  ! FLOAT_CONST     [ reduce using rule 94 (unary_op -> MINUS .) ]
-  ! STRING_CONST    [ reduce using rule 94 (unary_op -> MINUS .) ]
-  ! NULL            [ reduce using rule 94 (unary_op -> MINUS .) ]
-  ! TRUE            [ reduce using rule 94 (unary_op -> MINUS .) ]
-  ! FALSE           [ reduce using rule 94 (unary_op -> MINUS .) ]
-  ! ID              [ reduce using rule 94 (unary_op -> MINUS .) ]
 
-
-state 125
+state 128
 
     (83) arith_op -> TIMES .
 
@@ -2999,6 +3023,7 @@ state 125
     NEW             reduce using rule 83 (arith_op -> TIMES .)
     PLUS            reduce using rule 83 (arith_op -> TIMES .)
     MINUS           reduce using rule 83 (arith_op -> TIMES .)
+    NOT             reduce using rule 83 (arith_op -> TIMES .)
     INT_CONST       reduce using rule 83 (arith_op -> TIMES .)
     FLOAT_CONST     reduce using rule 83 (arith_op -> TIMES .)
     STRING_CONST    reduce using rule 83 (arith_op -> TIMES .)
@@ -3008,7 +3033,7 @@ state 125
     ID              reduce using rule 83 (arith_op -> TIMES .)
 
 
-state 126
+state 129
 
     (84) arith_op -> DIVIDE .
 
@@ -3018,6 +3043,7 @@ state 126
     NEW             reduce using rule 84 (arith_op -> DIVIDE .)
     PLUS            reduce using rule 84 (arith_op -> DIVIDE .)
     MINUS           reduce using rule 84 (arith_op -> DIVIDE .)
+    NOT             reduce using rule 84 (arith_op -> DIVIDE .)
     INT_CONST       reduce using rule 84 (arith_op -> DIVIDE .)
     FLOAT_CONST     reduce using rule 84 (arith_op -> DIVIDE .)
     STRING_CONST    reduce using rule 84 (arith_op -> DIVIDE .)
@@ -3027,7 +3053,7 @@ state 126
     ID              reduce using rule 84 (arith_op -> DIVIDE .)
 
 
-state 127
+state 130
 
     (85) bool_op -> AND .
 
@@ -3037,6 +3063,7 @@ state 127
     NEW             reduce using rule 85 (bool_op -> AND .)
     PLUS            reduce using rule 85 (bool_op -> AND .)
     MINUS           reduce using rule 85 (bool_op -> AND .)
+    NOT             reduce using rule 85 (bool_op -> AND .)
     INT_CONST       reduce using rule 85 (bool_op -> AND .)
     FLOAT_CONST     reduce using rule 85 (bool_op -> AND .)
     STRING_CONST    reduce using rule 85 (bool_op -> AND .)
@@ -3046,7 +3073,7 @@ state 127
     ID              reduce using rule 85 (bool_op -> AND .)
 
 
-state 128
+state 131
 
     (86) bool_op -> OR .
 
@@ -3056,6 +3083,7 @@ state 128
     NEW             reduce using rule 86 (bool_op -> OR .)
     PLUS            reduce using rule 86 (bool_op -> OR .)
     MINUS           reduce using rule 86 (bool_op -> OR .)
+    NOT             reduce using rule 86 (bool_op -> OR .)
     INT_CONST       reduce using rule 86 (bool_op -> OR .)
     FLOAT_CONST     reduce using rule 86 (bool_op -> OR .)
     STRING_CONST    reduce using rule 86 (bool_op -> OR .)
@@ -3065,7 +3093,7 @@ state 128
     ID              reduce using rule 86 (bool_op -> OR .)
 
 
-state 129
+state 132
 
     (87) bool_op -> EQUALITY .
 
@@ -3075,6 +3103,7 @@ state 129
     NEW             reduce using rule 87 (bool_op -> EQUALITY .)
     PLUS            reduce using rule 87 (bool_op -> EQUALITY .)
     MINUS           reduce using rule 87 (bool_op -> EQUALITY .)
+    NOT             reduce using rule 87 (bool_op -> EQUALITY .)
     INT_CONST       reduce using rule 87 (bool_op -> EQUALITY .)
     FLOAT_CONST     reduce using rule 87 (bool_op -> EQUALITY .)
     STRING_CONST    reduce using rule 87 (bool_op -> EQUALITY .)
@@ -3084,7 +3113,7 @@ state 129
     ID              reduce using rule 87 (bool_op -> EQUALITY .)
 
 
-state 130
+state 133
 
     (88) bool_op -> INEQUALITY .
 
@@ -3094,6 +3123,7 @@ state 130
     NEW             reduce using rule 88 (bool_op -> INEQUALITY .)
     PLUS            reduce using rule 88 (bool_op -> INEQUALITY .)
     MINUS           reduce using rule 88 (bool_op -> INEQUALITY .)
+    NOT             reduce using rule 88 (bool_op -> INEQUALITY .)
     INT_CONST       reduce using rule 88 (bool_op -> INEQUALITY .)
     FLOAT_CONST     reduce using rule 88 (bool_op -> INEQUALITY .)
     STRING_CONST    reduce using rule 88 (bool_op -> INEQUALITY .)
@@ -3103,7 +3133,7 @@ state 130
     ID              reduce using rule 88 (bool_op -> INEQUALITY .)
 
 
-state 131
+state 134
 
     (89) bool_op -> LESSER .
 
@@ -3113,6 +3143,7 @@ state 131
     NEW             reduce using rule 89 (bool_op -> LESSER .)
     PLUS            reduce using rule 89 (bool_op -> LESSER .)
     MINUS           reduce using rule 89 (bool_op -> LESSER .)
+    NOT             reduce using rule 89 (bool_op -> LESSER .)
     INT_CONST       reduce using rule 89 (bool_op -> LESSER .)
     FLOAT_CONST     reduce using rule 89 (bool_op -> LESSER .)
     STRING_CONST    reduce using rule 89 (bool_op -> LESSER .)
@@ -3122,7 +3153,7 @@ state 131
     ID              reduce using rule 89 (bool_op -> LESSER .)
 
 
-state 132
+state 135
 
     (90) bool_op -> GREATER .
 
@@ -3132,6 +3163,7 @@ state 132
     NEW             reduce using rule 90 (bool_op -> GREATER .)
     PLUS            reduce using rule 90 (bool_op -> GREATER .)
     MINUS           reduce using rule 90 (bool_op -> GREATER .)
+    NOT             reduce using rule 90 (bool_op -> GREATER .)
     INT_CONST       reduce using rule 90 (bool_op -> GREATER .)
     FLOAT_CONST     reduce using rule 90 (bool_op -> GREATER .)
     STRING_CONST    reduce using rule 90 (bool_op -> GREATER .)
@@ -3141,7 +3173,7 @@ state 132
     ID              reduce using rule 90 (bool_op -> GREATER .)
 
 
-state 133
+state 136
 
     (91) bool_op -> LEQ .
 
@@ -3151,6 +3183,7 @@ state 133
     NEW             reduce using rule 91 (bool_op -> LEQ .)
     PLUS            reduce using rule 91 (bool_op -> LEQ .)
     MINUS           reduce using rule 91 (bool_op -> LEQ .)
+    NOT             reduce using rule 91 (bool_op -> LEQ .)
     INT_CONST       reduce using rule 91 (bool_op -> LEQ .)
     FLOAT_CONST     reduce using rule 91 (bool_op -> LEQ .)
     STRING_CONST    reduce using rule 91 (bool_op -> LEQ .)
@@ -3160,7 +3193,7 @@ state 133
     ID              reduce using rule 91 (bool_op -> LEQ .)
 
 
-state 134
+state 137
 
     (92) bool_op -> GEQ .
 
@@ -3170,6 +3203,7 @@ state 134
     NEW             reduce using rule 92 (bool_op -> GEQ .)
     PLUS            reduce using rule 92 (bool_op -> GEQ .)
     MINUS           reduce using rule 92 (bool_op -> GEQ .)
+    NOT             reduce using rule 92 (bool_op -> GEQ .)
     INT_CONST       reduce using rule 92 (bool_op -> GEQ .)
     FLOAT_CONST     reduce using rule 92 (bool_op -> GEQ .)
     STRING_CONST    reduce using rule 92 (bool_op -> GEQ .)
@@ -3179,31 +3213,11 @@ state 134
     ID              reduce using rule 92 (bool_op -> GEQ .)
 
 
-state 135
+state 138
 
-    (95) unary_op -> NOT .
-
-    THIS            reduce using rule 95 (unary_op -> NOT .)
-    SUPER           reduce using rule 95 (unary_op -> NOT .)
-    (               reduce using rule 95 (unary_op -> NOT .)
-    NEW             reduce using rule 95 (unary_op -> NOT .)
-    PLUS            reduce using rule 95 (unary_op -> NOT .)
-    MINUS           reduce using rule 95 (unary_op -> NOT .)
-    INT_CONST       reduce using rule 95 (unary_op -> NOT .)
-    FLOAT_CONST     reduce using rule 95 (unary_op -> NOT .)
-    STRING_CONST    reduce using rule 95 (unary_op -> NOT .)
-    NULL            reduce using rule 95 (unary_op -> NOT .)
-    TRUE            reduce using rule 95 (unary_op -> NOT .)
-    FALSE           reduce using rule 95 (unary_op -> NOT .)
-    ID              reduce using rule 95 (unary_op -> NOT .)
-
-
-state 136
-
-    (38) stmt -> WHILE ( expr . ) stmt
+    (75) expr -> unary_op expr .
     (73) expr -> expr . arith_op expr
     (74) expr -> expr . bool_op expr
-    (75) expr -> expr . unary_op expr
     (81) arith_op -> . PLUS
     (82) arith_op -> . MINUS
     (83) arith_op -> . TIMES
@@ -3216,37 +3230,94 @@ state 136
     (90) bool_op -> . GREATER
     (91) bool_op -> . LEQ
     (92) bool_op -> . GEQ
-    (93) unary_op -> . PLUS
-    (94) unary_op -> . MINUS
-    (95) unary_op -> . NOT
 
-    )               shift and go to state 155
-    PLUS            shift and go to state 123
-    MINUS           shift and go to state 124
-    TIMES           shift and go to state 125
-    DIVIDE          shift and go to state 126
-    AND             shift and go to state 127
-    OR              shift and go to state 128
-    EQUALITY        shift and go to state 129
-    INEQUALITY      shift and go to state 130
-    LESSER          shift and go to state 131
-    GREATER         shift and go to state 132
-    LEQ             shift and go to state 133
-    GEQ             shift and go to state 134
-    NOT             shift and go to state 135
+  ! shift/reduce conflict for PLUS resolved as shift
+  ! shift/reduce conflict for MINUS resolved as shift
+  ! shift/reduce conflict for TIMES resolved as shift
+  ! shift/reduce conflict for DIVIDE resolved as shift
+  ! shift/reduce conflict for AND resolved as shift
+  ! shift/reduce conflict for OR resolved as shift
+  ! shift/reduce conflict for EQUALITY resolved as shift
+  ! shift/reduce conflict for INEQUALITY resolved as shift
+  ! shift/reduce conflict for LESSER resolved as shift
+  ! shift/reduce conflict for GREATER resolved as shift
+  ! shift/reduce conflict for LEQ resolved as shift
+  ! shift/reduce conflict for GEQ resolved as shift
+    )               reduce using rule 75 (expr -> unary_op expr .)
+    ;               reduce using rule 75 (expr -> unary_op expr .)
+    ,               reduce using rule 75 (expr -> unary_op expr .)
+    PLUS            shift and go to state 126
+    MINUS           shift and go to state 127
+    TIMES           shift and go to state 128
+    DIVIDE          shift and go to state 129
+    AND             shift and go to state 130
+    OR              shift and go to state 131
+    EQUALITY        shift and go to state 132
+    INEQUALITY      shift and go to state 133
+    LESSER          shift and go to state 134
+    GREATER         shift and go to state 135
+    LEQ             shift and go to state 136
+    GEQ             shift and go to state 137
 
-    arith_op                       shift and go to state 120
-    bool_op                        shift and go to state 121
-    unary_op                       shift and go to state 122
+  ! PLUS            [ reduce using rule 75 (expr -> unary_op expr .) ]
+  ! MINUS           [ reduce using rule 75 (expr -> unary_op expr .) ]
+  ! TIMES           [ reduce using rule 75 (expr -> unary_op expr .) ]
+  ! DIVIDE          [ reduce using rule 75 (expr -> unary_op expr .) ]
+  ! AND             [ reduce using rule 75 (expr -> unary_op expr .) ]
+  ! OR              [ reduce using rule 75 (expr -> unary_op expr .) ]
+  ! EQUALITY        [ reduce using rule 75 (expr -> unary_op expr .) ]
+  ! INEQUALITY      [ reduce using rule 75 (expr -> unary_op expr .) ]
+  ! LESSER          [ reduce using rule 75 (expr -> unary_op expr .) ]
+  ! GREATER         [ reduce using rule 75 (expr -> unary_op expr .) ]
+  ! LEQ             [ reduce using rule 75 (expr -> unary_op expr .) ]
+  ! GEQ             [ reduce using rule 75 (expr -> unary_op expr .) ]
 
-state 137
+    arith_op                       shift and go to state 124
+    bool_op                        shift and go to state 125
+
+state 139
+
+    (38) stmt -> WHILE ( expr . ) stmt
+    (73) expr -> expr . arith_op expr
+    (74) expr -> expr . bool_op expr
+    (81) arith_op -> . PLUS
+    (82) arith_op -> . MINUS
+    (83) arith_op -> . TIMES
+    (84) arith_op -> . DIVIDE
+    (85) bool_op -> . AND
+    (86) bool_op -> . OR
+    (87) bool_op -> . EQUALITY
+    (88) bool_op -> . INEQUALITY
+    (89) bool_op -> . LESSER
+    (90) bool_op -> . GREATER
+    (91) bool_op -> . LEQ
+    (92) bool_op -> . GEQ
+
+    )               shift and go to state 157
+    PLUS            shift and go to state 126
+    MINUS           shift and go to state 127
+    TIMES           shift and go to state 128
+    DIVIDE          shift and go to state 129
+    AND             shift and go to state 130
+    OR              shift and go to state 131
+    EQUALITY        shift and go to state 132
+    INEQUALITY      shift and go to state 133
+    LESSER          shift and go to state 134
+    GREATER         shift and go to state 135
+    LEQ             shift and go to state 136
+    GEQ             shift and go to state 137
+
+    arith_op                       shift and go to state 124
+    bool_op                        shift and go to state 125
+
+state 140
 
     (39) stmt -> FOR ( optional_stmt_expr . ; optional_expr ; optional_stmt_expr ) stmt
 
-    ;               shift and go to state 156
+    ;               shift and go to state 158
 
 
-state 138
+state 141
 
     (49) optional_stmt_expr -> stmt_expr .
 
@@ -3254,7 +3325,7 @@ state 138
     )               reduce using rule 49 (optional_stmt_expr -> stmt_expr .)
 
 
-state 139
+state 142
 
     (50) optional_stmt_expr -> empty .
 
@@ -3262,7 +3333,7 @@ state 139
     )               reduce using rule 50 (optional_stmt_expr -> empty .)
 
 
-state 140
+state 143
 
     (40) stmt -> RETURN optional_expr ; .
 
@@ -3294,12 +3365,11 @@ state 140
     ELSE            reduce using rule 40 (stmt -> RETURN optional_expr ; .)
 
 
-state 141
+state 144
 
     (76) assign -> field_access ASSIGN expr .
     (73) expr -> expr . arith_op expr
     (74) expr -> expr . bool_op expr
-    (75) expr -> expr . unary_op expr
     (81) arith_op -> . PLUS
     (82) arith_op -> . MINUS
     (83) arith_op -> . TIMES
@@ -3312,26 +3382,22 @@ state 141
     (90) bool_op -> . GREATER
     (91) bool_op -> . LEQ
     (92) bool_op -> . GEQ
-    (93) unary_op -> . PLUS
-    (94) unary_op -> . MINUS
-    (95) unary_op -> . NOT
 
     ;               reduce using rule 76 (assign -> field_access ASSIGN expr .)
     )               reduce using rule 76 (assign -> field_access ASSIGN expr .)
     ,               reduce using rule 76 (assign -> field_access ASSIGN expr .)
-    PLUS            shift and go to state 123
-    MINUS           shift and go to state 124
-    TIMES           shift and go to state 125
-    DIVIDE          shift and go to state 126
-    AND             shift and go to state 127
-    OR              shift and go to state 128
-    EQUALITY        shift and go to state 129
-    INEQUALITY      shift and go to state 130
-    LESSER          shift and go to state 131
-    GREATER         shift and go to state 132
-    LEQ             shift and go to state 133
-    GEQ             shift and go to state 134
-    NOT             shift and go to state 135
+    PLUS            shift and go to state 126
+    MINUS           shift and go to state 127
+    TIMES           shift and go to state 128
+    DIVIDE          shift and go to state 129
+    AND             shift and go to state 130
+    OR              shift and go to state 131
+    EQUALITY        shift and go to state 132
+    INEQUALITY      shift and go to state 133
+    LESSER          shift and go to state 134
+    GREATER         shift and go to state 135
+    LEQ             shift and go to state 136
+    GEQ             shift and go to state 137
 
   ! PLUS            [ reduce using rule 76 (assign -> field_access ASSIGN expr .) ]
   ! MINUS           [ reduce using rule 76 (assign -> field_access ASSIGN expr .) ]
@@ -3345,13 +3411,11 @@ state 141
   ! GREATER         [ reduce using rule 76 (assign -> field_access ASSIGN expr .) ]
   ! LEQ             [ reduce using rule 76 (assign -> field_access ASSIGN expr .) ]
   ! GEQ             [ reduce using rule 76 (assign -> field_access ASSIGN expr .) ]
-  ! NOT             [ reduce using rule 76 (assign -> field_access ASSIGN expr .) ]
 
-    arith_op                       shift and go to state 120
-    bool_op                        shift and go to state 121
-    unary_op                       shift and go to state 122
+    arith_op                       shift and go to state 124
+    bool_op                        shift and go to state 125
 
-state 142
+state 145
 
     (77) assign -> field_access PLUS PLUS .
 
@@ -3369,11 +3433,10 @@ state 142
     GREATER         reduce using rule 77 (assign -> field_access PLUS PLUS .)
     LEQ             reduce using rule 77 (assign -> field_access PLUS PLUS .)
     GEQ             reduce using rule 77 (assign -> field_access PLUS PLUS .)
-    NOT             reduce using rule 77 (assign -> field_access PLUS PLUS .)
     ,               reduce using rule 77 (assign -> field_access PLUS PLUS .)
 
 
-state 143
+state 146
 
     (79) assign -> field_access MINUS MINUS .
 
@@ -3391,18 +3454,17 @@ state 143
     GREATER         reduce using rule 79 (assign -> field_access MINUS MINUS .)
     LEQ             reduce using rule 79 (assign -> field_access MINUS MINUS .)
     GEQ             reduce using rule 79 (assign -> field_access MINUS MINUS .)
-    NOT             reduce using rule 79 (assign -> field_access MINUS MINUS .)
     ,               reduce using rule 79 (assign -> field_access MINUS MINUS .)
 
 
-state 144
+state 147
 
     (69) method_invocation -> field_access ( arguments . )
 
-    )               shift and go to state 157
+    )               shift and go to state 159
 
 
-state 145
+state 148
 
     (70) method_invocation -> field_access ( ) .
 
@@ -3421,17 +3483,15 @@ state 145
     GREATER         reduce using rule 70 (method_invocation -> field_access ( ) .)
     LEQ             reduce using rule 70 (method_invocation -> field_access ( ) .)
     GEQ             reduce using rule 70 (method_invocation -> field_access ( ) .)
-    NOT             reduce using rule 70 (method_invocation -> field_access ( ) .)
     ,               reduce using rule 70 (method_invocation -> field_access ( ) .)
 
 
-state 146
+state 149
 
     (65) arguments -> expr .
     (66) arguments -> expr . , arguments
     (73) expr -> expr . arith_op expr
     (74) expr -> expr . bool_op expr
-    (75) expr -> expr . unary_op expr
     (81) arith_op -> . PLUS
     (82) arith_op -> . MINUS
     (83) arith_op -> . TIMES
@@ -3444,31 +3504,26 @@ state 146
     (90) bool_op -> . GREATER
     (91) bool_op -> . LEQ
     (92) bool_op -> . GEQ
-    (93) unary_op -> . PLUS
-    (94) unary_op -> . MINUS
-    (95) unary_op -> . NOT
 
     )               reduce using rule 65 (arguments -> expr .)
-    ,               shift and go to state 158
-    PLUS            shift and go to state 123
-    MINUS           shift and go to state 124
-    TIMES           shift and go to state 125
-    DIVIDE          shift and go to state 126
-    AND             shift and go to state 127
-    OR              shift and go to state 128
-    EQUALITY        shift and go to state 129
-    INEQUALITY      shift and go to state 130
-    LESSER          shift and go to state 131
-    GREATER         shift and go to state 132
-    LEQ             shift and go to state 133
-    GEQ             shift and go to state 134
-    NOT             shift and go to state 135
+    ,               shift and go to state 160
+    PLUS            shift and go to state 126
+    MINUS           shift and go to state 127
+    TIMES           shift and go to state 128
+    DIVIDE          shift and go to state 129
+    AND             shift and go to state 130
+    OR              shift and go to state 131
+    EQUALITY        shift and go to state 132
+    INEQUALITY      shift and go to state 133
+    LESSER          shift and go to state 134
+    GREATER         shift and go to state 135
+    LEQ             shift and go to state 136
+    GEQ             shift and go to state 137
 
-    arith_op                       shift and go to state 120
-    bool_op                        shift and go to state 121
-    unary_op                       shift and go to state 122
+    arith_op                       shift and go to state 124
+    bool_op                        shift and go to state 125
 
-state 147
+state 150
 
     (78) assign -> PLUS PLUS field_access .
     (63) primary -> field_access .
@@ -3489,13 +3544,12 @@ state 147
     GREATER         reduce using rule 78 (assign -> PLUS PLUS field_access .)
     LEQ             reduce using rule 78 (assign -> PLUS PLUS field_access .)
     GEQ             reduce using rule 78 (assign -> PLUS PLUS field_access .)
-    NOT             reduce using rule 78 (assign -> PLUS PLUS field_access .)
     ,               reduce using rule 78 (assign -> PLUS PLUS field_access .)
     .               reduce using rule 63 (primary -> field_access .)
-    (               shift and go to state 113
+    (               shift and go to state 117
 
 
-state 148
+state 151
 
     (80) assign -> MINUS MINUS field_access .
     (63) primary -> field_access .
@@ -3516,13 +3570,12 @@ state 148
     GREATER         reduce using rule 80 (assign -> MINUS MINUS field_access .)
     LEQ             reduce using rule 80 (assign -> MINUS MINUS field_access .)
     GEQ             reduce using rule 80 (assign -> MINUS MINUS field_access .)
-    NOT             reduce using rule 80 (assign -> MINUS MINUS field_access .)
     ,               reduce using rule 80 (assign -> MINUS MINUS field_access .)
     .               reduce using rule 63 (primary -> field_access .)
-    (               shift and go to state 113
+    (               shift and go to state 117
 
 
-state 149
+state 152
 
     (67) field_access -> primary . ID .
 
@@ -3542,12 +3595,11 @@ state 149
     GREATER         reduce using rule 67 (field_access -> primary . ID .)
     LEQ             reduce using rule 67 (field_access -> primary . ID .)
     GEQ             reduce using rule 67 (field_access -> primary . ID .)
-    NOT             reduce using rule 67 (field_access -> primary . ID .)
     ;               reduce using rule 67 (field_access -> primary . ID .)
     ,               reduce using rule 67 (field_access -> primary . ID .)
 
 
-state 150
+state 153
 
     (61) primary -> NEW ID ( . arguments )
     (62) primary -> NEW ID ( . )
@@ -3557,7 +3609,7 @@ state 150
     (72) expr -> . assign
     (73) expr -> . expr arith_op expr
     (74) expr -> . expr bool_op expr
-    (75) expr -> . expr unary_op expr
+    (75) expr -> . unary_op expr
     (57) primary -> . literal
     (58) primary -> . THIS
     (59) primary -> . SUPER
@@ -3571,6 +3623,9 @@ state 150
     (78) assign -> . PLUS PLUS field_access
     (79) assign -> . field_access MINUS MINUS
     (80) assign -> . MINUS MINUS field_access
+    (93) unary_op -> . PLUS
+    (94) unary_op -> . MINUS
+    (95) unary_op -> . NOT
     (51) literal -> . INT_CONST
     (52) literal -> . FLOAT_CONST
     (53) literal -> . STRING_CONST
@@ -3582,30 +3637,32 @@ state 150
     (69) method_invocation -> . field_access ( arguments )
     (70) method_invocation -> . field_access ( )
 
-    )               shift and go to state 160
+    )               shift and go to state 162
     THIS            shift and go to state 83
     SUPER           shift and go to state 84
     (               shift and go to state 64
     NEW             shift and go to state 85
-    PLUS            shift and go to state 78
-    MINUS           shift and go to state 79
+    PLUS            shift and go to state 103
+    MINUS           shift and go to state 104
+    NOT             shift and go to state 105
     INT_CONST       shift and go to state 86
     FLOAT_CONST     shift and go to state 87
     STRING_CONST    shift and go to state 88
     NULL            shift and go to state 89
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
-    ID              shift and go to state 99
+    ID              shift and go to state 100
 
-    arguments                      shift and go to state 159
-    expr                           shift and go to state 146
+    arguments                      shift and go to state 161
+    expr                           shift and go to state 149
     primary                        shift and go to state 97
     assign                         shift and go to state 98
+    unary_op                       shift and go to state 99
     literal                        shift and go to state 82
-    field_access                   shift and go to state 100
-    method_invocation              shift and go to state 101
+    field_access                   shift and go to state 101
+    method_invocation              shift and go to state 102
 
-state 151
+state 154
 
     (36) stmt -> IF ( expr ) . stmt ELSE stmt
     (37) stmt -> IF ( expr ) . stmt
@@ -3679,7 +3736,7 @@ state 151
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
 
-    stmt                           shift and go to state 161
+    stmt                           shift and go to state 163
     stmt_expr                      shift and go to state 69
     block                          shift and go to state 72
     var_decl                       shift and go to state 73
@@ -3690,12 +3747,11 @@ state 151
     primary                        shift and go to state 81
     literal                        shift and go to state 82
 
-state 152
+state 155
 
     (73) expr -> expr arith_op expr .
     (73) expr -> expr . arith_op expr
     (74) expr -> expr . bool_op expr
-    (75) expr -> expr . unary_op expr
     (81) arith_op -> . PLUS
     (82) arith_op -> . MINUS
     (83) arith_op -> . TIMES
@@ -3708,9 +3764,6 @@ state 152
     (90) bool_op -> . GREATER
     (91) bool_op -> . LEQ
     (92) bool_op -> . GEQ
-    (93) unary_op -> . PLUS
-    (94) unary_op -> . MINUS
-    (95) unary_op -> . NOT
 
   ! shift/reduce conflict for PLUS resolved as shift
   ! shift/reduce conflict for MINUS resolved as shift
@@ -3724,23 +3777,21 @@ state 152
   ! shift/reduce conflict for GREATER resolved as shift
   ! shift/reduce conflict for LEQ resolved as shift
   ! shift/reduce conflict for GEQ resolved as shift
-  ! shift/reduce conflict for NOT resolved as shift
     )               reduce using rule 73 (expr -> expr arith_op expr .)
     ;               reduce using rule 73 (expr -> expr arith_op expr .)
     ,               reduce using rule 73 (expr -> expr arith_op expr .)
-    PLUS            shift and go to state 123
-    MINUS           shift and go to state 124
-    TIMES           shift and go to state 125
-    DIVIDE          shift and go to state 126
-    AND             shift and go to state 127
-    OR              shift and go to state 128
-    EQUALITY        shift and go to state 129
-    INEQUALITY      shift and go to state 130
-    LESSER          shift and go to state 131
-    GREATER         shift and go to state 132
-    LEQ             shift and go to state 133
-    GEQ             shift and go to state 134
-    NOT             shift and go to state 135
+    PLUS            shift and go to state 126
+    MINUS           shift and go to state 127
+    TIMES           shift and go to state 128
+    DIVIDE          shift and go to state 129
+    AND             shift and go to state 130
+    OR              shift and go to state 131
+    EQUALITY        shift and go to state 132
+    INEQUALITY      shift and go to state 133
+    LESSER          shift and go to state 134
+    GREATER         shift and go to state 135
+    LEQ             shift and go to state 136
+    GEQ             shift and go to state 137
 
   ! PLUS            [ reduce using rule 73 (expr -> expr arith_op expr .) ]
   ! MINUS           [ reduce using rule 73 (expr -> expr arith_op expr .) ]
@@ -3754,18 +3805,15 @@ state 152
   ! GREATER         [ reduce using rule 73 (expr -> expr arith_op expr .) ]
   ! LEQ             [ reduce using rule 73 (expr -> expr arith_op expr .) ]
   ! GEQ             [ reduce using rule 73 (expr -> expr arith_op expr .) ]
-  ! NOT             [ reduce using rule 73 (expr -> expr arith_op expr .) ]
 
-    arith_op                       shift and go to state 120
-    bool_op                        shift and go to state 121
-    unary_op                       shift and go to state 122
+    arith_op                       shift and go to state 124
+    bool_op                        shift and go to state 125
 
-state 153
+state 156
 
     (74) expr -> expr bool_op expr .
     (73) expr -> expr . arith_op expr
     (74) expr -> expr . bool_op expr
-    (75) expr -> expr . unary_op expr
     (81) arith_op -> . PLUS
     (82) arith_op -> . MINUS
     (83) arith_op -> . TIMES
@@ -3778,9 +3826,6 @@ state 153
     (90) bool_op -> . GREATER
     (91) bool_op -> . LEQ
     (92) bool_op -> . GEQ
-    (93) unary_op -> . PLUS
-    (94) unary_op -> . MINUS
-    (95) unary_op -> . NOT
 
   ! shift/reduce conflict for PLUS resolved as shift
   ! shift/reduce conflict for MINUS resolved as shift
@@ -3794,23 +3839,21 @@ state 153
   ! shift/reduce conflict for GREATER resolved as shift
   ! shift/reduce conflict for LEQ resolved as shift
   ! shift/reduce conflict for GEQ resolved as shift
-  ! shift/reduce conflict for NOT resolved as shift
     )               reduce using rule 74 (expr -> expr bool_op expr .)
     ;               reduce using rule 74 (expr -> expr bool_op expr .)
     ,               reduce using rule 74 (expr -> expr bool_op expr .)
-    PLUS            shift and go to state 123
-    MINUS           shift and go to state 124
-    TIMES           shift and go to state 125
-    DIVIDE          shift and go to state 126
-    AND             shift and go to state 127
-    OR              shift and go to state 128
-    EQUALITY        shift and go to state 129
-    INEQUALITY      shift and go to state 130
-    LESSER          shift and go to state 131
-    GREATER         shift and go to state 132
-    LEQ             shift and go to state 133
-    GEQ             shift and go to state 134
-    NOT             shift and go to state 135
+    PLUS            shift and go to state 126
+    MINUS           shift and go to state 127
+    TIMES           shift and go to state 128
+    DIVIDE          shift and go to state 129
+    AND             shift and go to state 130
+    OR              shift and go to state 131
+    EQUALITY        shift and go to state 132
+    INEQUALITY      shift and go to state 133
+    LESSER          shift and go to state 134
+    GREATER         shift and go to state 135
+    LEQ             shift and go to state 136
+    GEQ             shift and go to state 137
 
   ! PLUS            [ reduce using rule 74 (expr -> expr bool_op expr .) ]
   ! MINUS           [ reduce using rule 74 (expr -> expr bool_op expr .) ]
@@ -3824,83 +3867,11 @@ state 153
   ! GREATER         [ reduce using rule 74 (expr -> expr bool_op expr .) ]
   ! LEQ             [ reduce using rule 74 (expr -> expr bool_op expr .) ]
   ! GEQ             [ reduce using rule 74 (expr -> expr bool_op expr .) ]
-  ! NOT             [ reduce using rule 74 (expr -> expr bool_op expr .) ]
 
-    bool_op                        shift and go to state 121
-    arith_op                       shift and go to state 120
-    unary_op                       shift and go to state 122
+    bool_op                        shift and go to state 125
+    arith_op                       shift and go to state 124
 
-state 154
-
-    (75) expr -> expr unary_op expr .
-    (73) expr -> expr . arith_op expr
-    (74) expr -> expr . bool_op expr
-    (75) expr -> expr . unary_op expr
-    (81) arith_op -> . PLUS
-    (82) arith_op -> . MINUS
-    (83) arith_op -> . TIMES
-    (84) arith_op -> . DIVIDE
-    (85) bool_op -> . AND
-    (86) bool_op -> . OR
-    (87) bool_op -> . EQUALITY
-    (88) bool_op -> . INEQUALITY
-    (89) bool_op -> . LESSER
-    (90) bool_op -> . GREATER
-    (91) bool_op -> . LEQ
-    (92) bool_op -> . GEQ
-    (93) unary_op -> . PLUS
-    (94) unary_op -> . MINUS
-    (95) unary_op -> . NOT
-
-  ! shift/reduce conflict for PLUS resolved as shift
-  ! shift/reduce conflict for MINUS resolved as shift
-  ! shift/reduce conflict for TIMES resolved as shift
-  ! shift/reduce conflict for DIVIDE resolved as shift
-  ! shift/reduce conflict for AND resolved as shift
-  ! shift/reduce conflict for OR resolved as shift
-  ! shift/reduce conflict for EQUALITY resolved as shift
-  ! shift/reduce conflict for INEQUALITY resolved as shift
-  ! shift/reduce conflict for LESSER resolved as shift
-  ! shift/reduce conflict for GREATER resolved as shift
-  ! shift/reduce conflict for LEQ resolved as shift
-  ! shift/reduce conflict for GEQ resolved as shift
-  ! shift/reduce conflict for NOT resolved as shift
-    )               reduce using rule 75 (expr -> expr unary_op expr .)
-    ;               reduce using rule 75 (expr -> expr unary_op expr .)
-    ,               reduce using rule 75 (expr -> expr unary_op expr .)
-    PLUS            shift and go to state 123
-    MINUS           shift and go to state 124
-    TIMES           shift and go to state 125
-    DIVIDE          shift and go to state 126
-    AND             shift and go to state 127
-    OR              shift and go to state 128
-    EQUALITY        shift and go to state 129
-    INEQUALITY      shift and go to state 130
-    LESSER          shift and go to state 131
-    GREATER         shift and go to state 132
-    LEQ             shift and go to state 133
-    GEQ             shift and go to state 134
-    NOT             shift and go to state 135
-
-  ! PLUS            [ reduce using rule 75 (expr -> expr unary_op expr .) ]
-  ! MINUS           [ reduce using rule 75 (expr -> expr unary_op expr .) ]
-  ! TIMES           [ reduce using rule 75 (expr -> expr unary_op expr .) ]
-  ! DIVIDE          [ reduce using rule 75 (expr -> expr unary_op expr .) ]
-  ! AND             [ reduce using rule 75 (expr -> expr unary_op expr .) ]
-  ! OR              [ reduce using rule 75 (expr -> expr unary_op expr .) ]
-  ! EQUALITY        [ reduce using rule 75 (expr -> expr unary_op expr .) ]
-  ! INEQUALITY      [ reduce using rule 75 (expr -> expr unary_op expr .) ]
-  ! LESSER          [ reduce using rule 75 (expr -> expr unary_op expr .) ]
-  ! GREATER         [ reduce using rule 75 (expr -> expr unary_op expr .) ]
-  ! LEQ             [ reduce using rule 75 (expr -> expr unary_op expr .) ]
-  ! GEQ             [ reduce using rule 75 (expr -> expr unary_op expr .) ]
-  ! NOT             [ reduce using rule 75 (expr -> expr unary_op expr .) ]
-
-    unary_op                       shift and go to state 122
-    arith_op                       shift and go to state 120
-    bool_op                        shift and go to state 121
-
-state 155
+state 157
 
     (38) stmt -> WHILE ( expr ) . stmt
     (35) stmt -> . stmt stmt
@@ -3973,7 +3944,7 @@ state 155
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
 
-    stmt                           shift and go to state 162
+    stmt                           shift and go to state 164
     stmt_expr                      shift and go to state 69
     block                          shift and go to state 72
     var_decl                       shift and go to state 73
@@ -3984,7 +3955,7 @@ state 155
     primary                        shift and go to state 81
     literal                        shift and go to state 82
 
-state 156
+state 158
 
     (39) stmt -> FOR ( optional_stmt_expr ; . optional_expr ; optional_stmt_expr ) stmt
     (47) optional_expr -> . expr
@@ -3993,7 +3964,7 @@ state 156
     (72) expr -> . assign
     (73) expr -> . expr arith_op expr
     (74) expr -> . expr bool_op expr
-    (75) expr -> . expr unary_op expr
+    (75) expr -> . unary_op expr
     (98) empty -> .
     (57) primary -> . literal
     (58) primary -> . THIS
@@ -4008,6 +3979,9 @@ state 156
     (78) assign -> . PLUS PLUS field_access
     (79) assign -> . field_access MINUS MINUS
     (80) assign -> . MINUS MINUS field_access
+    (93) unary_op -> . PLUS
+    (94) unary_op -> . MINUS
+    (95) unary_op -> . NOT
     (51) literal -> . INT_CONST
     (52) literal -> . FLOAT_CONST
     (53) literal -> . STRING_CONST
@@ -4024,26 +3998,28 @@ state 156
     SUPER           shift and go to state 84
     (               shift and go to state 64
     NEW             shift and go to state 85
-    PLUS            shift and go to state 78
-    MINUS           shift and go to state 79
+    PLUS            shift and go to state 103
+    MINUS           shift and go to state 104
+    NOT             shift and go to state 105
     INT_CONST       shift and go to state 86
     FLOAT_CONST     shift and go to state 87
     STRING_CONST    shift and go to state 88
     NULL            shift and go to state 89
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
-    ID              shift and go to state 99
+    ID              shift and go to state 100
 
-    optional_expr                  shift and go to state 163
-    expr                           shift and go to state 105
-    empty                          shift and go to state 106
+    optional_expr                  shift and go to state 165
+    expr                           shift and go to state 109
+    empty                          shift and go to state 110
     primary                        shift and go to state 97
     assign                         shift and go to state 98
+    unary_op                       shift and go to state 99
     literal                        shift and go to state 82
-    field_access                   shift and go to state 100
-    method_invocation              shift and go to state 101
+    field_access                   shift and go to state 101
+    method_invocation              shift and go to state 102
 
-state 157
+state 159
 
     (69) method_invocation -> field_access ( arguments ) .
 
@@ -4062,11 +4038,10 @@ state 157
     GREATER         reduce using rule 69 (method_invocation -> field_access ( arguments ) .)
     LEQ             reduce using rule 69 (method_invocation -> field_access ( arguments ) .)
     GEQ             reduce using rule 69 (method_invocation -> field_access ( arguments ) .)
-    NOT             reduce using rule 69 (method_invocation -> field_access ( arguments ) .)
     ,               reduce using rule 69 (method_invocation -> field_access ( arguments ) .)
 
 
-state 158
+state 160
 
     (66) arguments -> expr , . arguments
     (65) arguments -> . expr
@@ -4075,7 +4050,7 @@ state 158
     (72) expr -> . assign
     (73) expr -> . expr arith_op expr
     (74) expr -> . expr bool_op expr
-    (75) expr -> . expr unary_op expr
+    (75) expr -> . unary_op expr
     (57) primary -> . literal
     (58) primary -> . THIS
     (59) primary -> . SUPER
@@ -4089,6 +4064,9 @@ state 158
     (78) assign -> . PLUS PLUS field_access
     (79) assign -> . field_access MINUS MINUS
     (80) assign -> . MINUS MINUS field_access
+    (93) unary_op -> . PLUS
+    (94) unary_op -> . MINUS
+    (95) unary_op -> . NOT
     (51) literal -> . INT_CONST
     (52) literal -> . FLOAT_CONST
     (53) literal -> . STRING_CONST
@@ -4104,32 +4082,34 @@ state 158
     SUPER           shift and go to state 84
     (               shift and go to state 64
     NEW             shift and go to state 85
-    PLUS            shift and go to state 78
-    MINUS           shift and go to state 79
+    PLUS            shift and go to state 103
+    MINUS           shift and go to state 104
+    NOT             shift and go to state 105
     INT_CONST       shift and go to state 86
     FLOAT_CONST     shift and go to state 87
     STRING_CONST    shift and go to state 88
     NULL            shift and go to state 89
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
-    ID              shift and go to state 99
+    ID              shift and go to state 100
 
-    expr                           shift and go to state 146
-    arguments                      shift and go to state 164
+    expr                           shift and go to state 149
+    arguments                      shift and go to state 166
     primary                        shift and go to state 97
     assign                         shift and go to state 98
+    unary_op                       shift and go to state 99
     literal                        shift and go to state 82
-    field_access                   shift and go to state 100
-    method_invocation              shift and go to state 101
+    field_access                   shift and go to state 101
+    method_invocation              shift and go to state 102
 
-state 159
+state 161
 
     (61) primary -> NEW ID ( arguments . )
 
-    )               shift and go to state 165
+    )               shift and go to state 167
 
 
-state 160
+state 162
 
     (62) primary -> NEW ID ( ) .
 
@@ -4147,12 +4127,11 @@ state 160
     GREATER         reduce using rule 62 (primary -> NEW ID ( ) .)
     LEQ             reduce using rule 62 (primary -> NEW ID ( ) .)
     GEQ             reduce using rule 62 (primary -> NEW ID ( ) .)
-    NOT             reduce using rule 62 (primary -> NEW ID ( ) .)
     ;               reduce using rule 62 (primary -> NEW ID ( ) .)
     ,               reduce using rule 62 (primary -> NEW ID ( ) .)
 
 
-state 161
+state 163
 
     (36) stmt -> IF ( expr ) stmt . ELSE stmt
     (37) stmt -> IF ( expr ) stmt .
@@ -4227,7 +4206,7 @@ state 161
   ! shift/reduce conflict for NULL resolved as shift
   ! shift/reduce conflict for TRUE resolved as shift
   ! shift/reduce conflict for FALSE resolved as shift
-    ELSE            shift and go to state 166
+    ELSE            shift and go to state 168
     }               reduce using rule 37 (stmt -> IF ( expr ) stmt .)
     IF              shift and go to state 63
     WHILE           shift and go to state 65
@@ -4291,7 +4270,7 @@ state 161
     primary                        shift and go to state 81
     literal                        shift and go to state 82
 
-state 162
+state 164
 
     (38) stmt -> WHILE ( expr ) stmt .
     (35) stmt -> stmt . stmt
@@ -4427,21 +4406,21 @@ state 162
     primary                        shift and go to state 81
     literal                        shift and go to state 82
 
-state 163
+state 165
 
     (39) stmt -> FOR ( optional_stmt_expr ; optional_expr . ; optional_stmt_expr ) stmt
 
-    ;               shift and go to state 167
+    ;               shift and go to state 169
 
 
-state 164
+state 166
 
     (66) arguments -> expr , arguments .
 
     )               reduce using rule 66 (arguments -> expr , arguments .)
 
 
-state 165
+state 167
 
     (61) primary -> NEW ID ( arguments ) .
 
@@ -4459,12 +4438,11 @@ state 165
     GREATER         reduce using rule 61 (primary -> NEW ID ( arguments ) .)
     LEQ             reduce using rule 61 (primary -> NEW ID ( arguments ) .)
     GEQ             reduce using rule 61 (primary -> NEW ID ( arguments ) .)
-    NOT             reduce using rule 61 (primary -> NEW ID ( arguments ) .)
     ;               reduce using rule 61 (primary -> NEW ID ( arguments ) .)
     ,               reduce using rule 61 (primary -> NEW ID ( arguments ) .)
 
 
-state 166
+state 168
 
     (36) stmt -> IF ( expr ) stmt ELSE . stmt
     (35) stmt -> . stmt stmt
@@ -4537,7 +4515,7 @@ state 166
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
 
-    stmt                           shift and go to state 168
+    stmt                           shift and go to state 170
     stmt_expr                      shift and go to state 69
     block                          shift and go to state 72
     var_decl                       shift and go to state 73
@@ -4548,7 +4526,7 @@ state 166
     primary                        shift and go to state 81
     literal                        shift and go to state 82
 
-state 167
+state 169
 
     (39) stmt -> FOR ( optional_stmt_expr ; optional_expr ; . optional_stmt_expr ) stmt
     (49) optional_stmt_expr -> . stmt_expr
@@ -4583,7 +4561,7 @@ state 167
     )               reduce using rule 98 (empty -> .)
     PLUS            shift and go to state 78
     MINUS           shift and go to state 79
-    ID              shift and go to state 99
+    ID              shift and go to state 100
     THIS            shift and go to state 83
     SUPER           shift and go to state 84
     (               shift and go to state 64
@@ -4595,16 +4573,16 @@ state 167
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
 
-    optional_stmt_expr             shift and go to state 169
-    stmt_expr                      shift and go to state 138
-    empty                          shift and go to state 139
+    optional_stmt_expr             shift and go to state 171
+    stmt_expr                      shift and go to state 141
+    empty                          shift and go to state 142
     assign                         shift and go to state 74
     method_invocation              shift and go to state 75
     field_access                   shift and go to state 77
     primary                        shift and go to state 81
     literal                        shift and go to state 82
 
-state 168
+state 170
 
     (36) stmt -> IF ( expr ) stmt ELSE stmt .
     (35) stmt -> stmt . stmt
@@ -4740,14 +4718,14 @@ state 168
     primary                        shift and go to state 81
     literal                        shift and go to state 82
 
-state 169
+state 171
 
     (39) stmt -> FOR ( optional_stmt_expr ; optional_expr ; optional_stmt_expr . ) stmt
 
-    )               shift and go to state 170
+    )               shift and go to state 172
 
 
-state 170
+state 172
 
     (39) stmt -> FOR ( optional_stmt_expr ; optional_expr ; optional_stmt_expr ) . stmt
     (35) stmt -> . stmt stmt
@@ -4820,7 +4798,7 @@ state 170
     TRUE            shift and go to state 90
     FALSE           shift and go to state 91
 
-    stmt                           shift and go to state 171
+    stmt                           shift and go to state 173
     stmt_expr                      shift and go to state 69
     block                          shift and go to state 72
     var_decl                       shift and go to state 73
@@ -4831,7 +4809,7 @@ state 170
     primary                        shift and go to state 81
     literal                        shift and go to state 82
 
-state 171
+state 173
 
     (39) stmt -> FOR ( optional_stmt_expr ; optional_expr ; optional_stmt_expr ) stmt .
     (35) stmt -> stmt . stmt
@@ -4997,149 +4975,140 @@ WARNING: shift/reduce conflict for STRING_CONST in state 93 resolved as shift
 WARNING: shift/reduce conflict for NULL in state 93 resolved as shift
 WARNING: shift/reduce conflict for TRUE in state 93 resolved as shift
 WARNING: shift/reduce conflict for FALSE in state 93 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 100 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 100 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 152 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 152 resolved as shift
-WARNING: shift/reduce conflict for TIMES in state 152 resolved as shift
-WARNING: shift/reduce conflict for DIVIDE in state 152 resolved as shift
-WARNING: shift/reduce conflict for AND in state 152 resolved as shift
-WARNING: shift/reduce conflict for OR in state 152 resolved as shift
-WARNING: shift/reduce conflict for EQUALITY in state 152 resolved as shift
-WARNING: shift/reduce conflict for INEQUALITY in state 152 resolved as shift
-WARNING: shift/reduce conflict for LESSER in state 152 resolved as shift
-WARNING: shift/reduce conflict for GREATER in state 152 resolved as shift
-WARNING: shift/reduce conflict for LEQ in state 152 resolved as shift
-WARNING: shift/reduce conflict for GEQ in state 152 resolved as shift
-WARNING: shift/reduce conflict for NOT in state 152 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 153 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 153 resolved as shift
-WARNING: shift/reduce conflict for TIMES in state 153 resolved as shift
-WARNING: shift/reduce conflict for DIVIDE in state 153 resolved as shift
-WARNING: shift/reduce conflict for AND in state 153 resolved as shift
-WARNING: shift/reduce conflict for OR in state 153 resolved as shift
-WARNING: shift/reduce conflict for EQUALITY in state 153 resolved as shift
-WARNING: shift/reduce conflict for INEQUALITY in state 153 resolved as shift
-WARNING: shift/reduce conflict for LESSER in state 153 resolved as shift
-WARNING: shift/reduce conflict for GREATER in state 153 resolved as shift
-WARNING: shift/reduce conflict for LEQ in state 153 resolved as shift
-WARNING: shift/reduce conflict for GEQ in state 153 resolved as shift
-WARNING: shift/reduce conflict for NOT in state 153 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 154 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 154 resolved as shift
-WARNING: shift/reduce conflict for TIMES in state 154 resolved as shift
-WARNING: shift/reduce conflict for DIVIDE in state 154 resolved as shift
-WARNING: shift/reduce conflict for AND in state 154 resolved as shift
-WARNING: shift/reduce conflict for OR in state 154 resolved as shift
-WARNING: shift/reduce conflict for EQUALITY in state 154 resolved as shift
-WARNING: shift/reduce conflict for INEQUALITY in state 154 resolved as shift
-WARNING: shift/reduce conflict for LESSER in state 154 resolved as shift
-WARNING: shift/reduce conflict for GREATER in state 154 resolved as shift
-WARNING: shift/reduce conflict for LEQ in state 154 resolved as shift
-WARNING: shift/reduce conflict for GEQ in state 154 resolved as shift
-WARNING: shift/reduce conflict for NOT in state 154 resolved as shift
-WARNING: shift/reduce conflict for ELSE in state 161 resolved as shift
-WARNING: shift/reduce conflict for IF in state 161 resolved as shift
-WARNING: shift/reduce conflict for WHILE in state 161 resolved as shift
-WARNING: shift/reduce conflict for FOR in state 161 resolved as shift
-WARNING: shift/reduce conflict for RETURN in state 161 resolved as shift
-WARNING: shift/reduce conflict for BREAK in state 161 resolved as shift
-WARNING: shift/reduce conflict for CONTINUE in state 161 resolved as shift
-WARNING: shift/reduce conflict for ; in state 161 resolved as shift
-WARNING: shift/reduce conflict for { in state 161 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 161 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 161 resolved as shift
-WARNING: shift/reduce conflict for INT in state 161 resolved as shift
-WARNING: shift/reduce conflict for FLOAT in state 161 resolved as shift
-WARNING: shift/reduce conflict for BOOLEAN in state 161 resolved as shift
-WARNING: shift/reduce conflict for ID in state 161 resolved as shift
-WARNING: shift/reduce conflict for THIS in state 161 resolved as shift
-WARNING: shift/reduce conflict for SUPER in state 161 resolved as shift
-WARNING: shift/reduce conflict for ( in state 161 resolved as shift
-WARNING: shift/reduce conflict for NEW in state 161 resolved as shift
-WARNING: shift/reduce conflict for INT_CONST in state 161 resolved as shift
-WARNING: shift/reduce conflict for FLOAT_CONST in state 161 resolved as shift
-WARNING: shift/reduce conflict for STRING_CONST in state 161 resolved as shift
-WARNING: shift/reduce conflict for NULL in state 161 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 161 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 161 resolved as shift
-WARNING: shift/reduce conflict for IF in state 162 resolved as shift
-WARNING: shift/reduce conflict for WHILE in state 162 resolved as shift
-WARNING: shift/reduce conflict for FOR in state 162 resolved as shift
-WARNING: shift/reduce conflict for RETURN in state 162 resolved as shift
-WARNING: shift/reduce conflict for BREAK in state 162 resolved as shift
-WARNING: shift/reduce conflict for CONTINUE in state 162 resolved as shift
-WARNING: shift/reduce conflict for ; in state 162 resolved as shift
-WARNING: shift/reduce conflict for { in state 162 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 162 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 162 resolved as shift
-WARNING: shift/reduce conflict for INT in state 162 resolved as shift
-WARNING: shift/reduce conflict for FLOAT in state 162 resolved as shift
-WARNING: shift/reduce conflict for BOOLEAN in state 162 resolved as shift
-WARNING: shift/reduce conflict for ID in state 162 resolved as shift
-WARNING: shift/reduce conflict for THIS in state 162 resolved as shift
-WARNING: shift/reduce conflict for SUPER in state 162 resolved as shift
-WARNING: shift/reduce conflict for ( in state 162 resolved as shift
-WARNING: shift/reduce conflict for NEW in state 162 resolved as shift
-WARNING: shift/reduce conflict for INT_CONST in state 162 resolved as shift
-WARNING: shift/reduce conflict for FLOAT_CONST in state 162 resolved as shift
-WARNING: shift/reduce conflict for STRING_CONST in state 162 resolved as shift
-WARNING: shift/reduce conflict for NULL in state 162 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 162 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 162 resolved as shift
-WARNING: shift/reduce conflict for IF in state 168 resolved as shift
-WARNING: shift/reduce conflict for WHILE in state 168 resolved as shift
-WARNING: shift/reduce conflict for FOR in state 168 resolved as shift
-WARNING: shift/reduce conflict for RETURN in state 168 resolved as shift
-WARNING: shift/reduce conflict for BREAK in state 168 resolved as shift
-WARNING: shift/reduce conflict for CONTINUE in state 168 resolved as shift
-WARNING: shift/reduce conflict for ; in state 168 resolved as shift
-WARNING: shift/reduce conflict for { in state 168 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 168 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 168 resolved as shift
-WARNING: shift/reduce conflict for INT in state 168 resolved as shift
-WARNING: shift/reduce conflict for FLOAT in state 168 resolved as shift
-WARNING: shift/reduce conflict for BOOLEAN in state 168 resolved as shift
-WARNING: shift/reduce conflict for ID in state 168 resolved as shift
-WARNING: shift/reduce conflict for THIS in state 168 resolved as shift
-WARNING: shift/reduce conflict for SUPER in state 168 resolved as shift
-WARNING: shift/reduce conflict for ( in state 168 resolved as shift
-WARNING: shift/reduce conflict for NEW in state 168 resolved as shift
-WARNING: shift/reduce conflict for INT_CONST in state 168 resolved as shift
-WARNING: shift/reduce conflict for FLOAT_CONST in state 168 resolved as shift
-WARNING: shift/reduce conflict for STRING_CONST in state 168 resolved as shift
-WARNING: shift/reduce conflict for NULL in state 168 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 168 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 168 resolved as shift
-WARNING: shift/reduce conflict for IF in state 171 resolved as shift
-WARNING: shift/reduce conflict for WHILE in state 171 resolved as shift
-WARNING: shift/reduce conflict for FOR in state 171 resolved as shift
-WARNING: shift/reduce conflict for RETURN in state 171 resolved as shift
-WARNING: shift/reduce conflict for BREAK in state 171 resolved as shift
-WARNING: shift/reduce conflict for CONTINUE in state 171 resolved as shift
-WARNING: shift/reduce conflict for ; in state 171 resolved as shift
-WARNING: shift/reduce conflict for { in state 171 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 171 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 171 resolved as shift
-WARNING: shift/reduce conflict for INT in state 171 resolved as shift
-WARNING: shift/reduce conflict for FLOAT in state 171 resolved as shift
-WARNING: shift/reduce conflict for BOOLEAN in state 171 resolved as shift
-WARNING: shift/reduce conflict for ID in state 171 resolved as shift
-WARNING: shift/reduce conflict for THIS in state 171 resolved as shift
-WARNING: shift/reduce conflict for SUPER in state 171 resolved as shift
-WARNING: shift/reduce conflict for ( in state 171 resolved as shift
-WARNING: shift/reduce conflict for NEW in state 171 resolved as shift
-WARNING: shift/reduce conflict for INT_CONST in state 171 resolved as shift
-WARNING: shift/reduce conflict for FLOAT_CONST in state 171 resolved as shift
-WARNING: shift/reduce conflict for STRING_CONST in state 171 resolved as shift
-WARNING: shift/reduce conflict for NULL in state 171 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 171 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 171 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 101 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 101 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 138 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 138 resolved as shift
+WARNING: shift/reduce conflict for TIMES in state 138 resolved as shift
+WARNING: shift/reduce conflict for DIVIDE in state 138 resolved as shift
+WARNING: shift/reduce conflict for AND in state 138 resolved as shift
+WARNING: shift/reduce conflict for OR in state 138 resolved as shift
+WARNING: shift/reduce conflict for EQUALITY in state 138 resolved as shift
+WARNING: shift/reduce conflict for INEQUALITY in state 138 resolved as shift
+WARNING: shift/reduce conflict for LESSER in state 138 resolved as shift
+WARNING: shift/reduce conflict for GREATER in state 138 resolved as shift
+WARNING: shift/reduce conflict for LEQ in state 138 resolved as shift
+WARNING: shift/reduce conflict for GEQ in state 138 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 155 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 155 resolved as shift
+WARNING: shift/reduce conflict for TIMES in state 155 resolved as shift
+WARNING: shift/reduce conflict for DIVIDE in state 155 resolved as shift
+WARNING: shift/reduce conflict for AND in state 155 resolved as shift
+WARNING: shift/reduce conflict for OR in state 155 resolved as shift
+WARNING: shift/reduce conflict for EQUALITY in state 155 resolved as shift
+WARNING: shift/reduce conflict for INEQUALITY in state 155 resolved as shift
+WARNING: shift/reduce conflict for LESSER in state 155 resolved as shift
+WARNING: shift/reduce conflict for GREATER in state 155 resolved as shift
+WARNING: shift/reduce conflict for LEQ in state 155 resolved as shift
+WARNING: shift/reduce conflict for GEQ in state 155 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 156 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 156 resolved as shift
+WARNING: shift/reduce conflict for TIMES in state 156 resolved as shift
+WARNING: shift/reduce conflict for DIVIDE in state 156 resolved as shift
+WARNING: shift/reduce conflict for AND in state 156 resolved as shift
+WARNING: shift/reduce conflict for OR in state 156 resolved as shift
+WARNING: shift/reduce conflict for EQUALITY in state 156 resolved as shift
+WARNING: shift/reduce conflict for INEQUALITY in state 156 resolved as shift
+WARNING: shift/reduce conflict for LESSER in state 156 resolved as shift
+WARNING: shift/reduce conflict for GREATER in state 156 resolved as shift
+WARNING: shift/reduce conflict for LEQ in state 156 resolved as shift
+WARNING: shift/reduce conflict for GEQ in state 156 resolved as shift
+WARNING: shift/reduce conflict for ELSE in state 163 resolved as shift
+WARNING: shift/reduce conflict for IF in state 163 resolved as shift
+WARNING: shift/reduce conflict for WHILE in state 163 resolved as shift
+WARNING: shift/reduce conflict for FOR in state 163 resolved as shift
+WARNING: shift/reduce conflict for RETURN in state 163 resolved as shift
+WARNING: shift/reduce conflict for BREAK in state 163 resolved as shift
+WARNING: shift/reduce conflict for CONTINUE in state 163 resolved as shift
+WARNING: shift/reduce conflict for ; in state 163 resolved as shift
+WARNING: shift/reduce conflict for { in state 163 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 163 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 163 resolved as shift
+WARNING: shift/reduce conflict for INT in state 163 resolved as shift
+WARNING: shift/reduce conflict for FLOAT in state 163 resolved as shift
+WARNING: shift/reduce conflict for BOOLEAN in state 163 resolved as shift
+WARNING: shift/reduce conflict for ID in state 163 resolved as shift
+WARNING: shift/reduce conflict for THIS in state 163 resolved as shift
+WARNING: shift/reduce conflict for SUPER in state 163 resolved as shift
+WARNING: shift/reduce conflict for ( in state 163 resolved as shift
+WARNING: shift/reduce conflict for NEW in state 163 resolved as shift
+WARNING: shift/reduce conflict for INT_CONST in state 163 resolved as shift
+WARNING: shift/reduce conflict for FLOAT_CONST in state 163 resolved as shift
+WARNING: shift/reduce conflict for STRING_CONST in state 163 resolved as shift
+WARNING: shift/reduce conflict for NULL in state 163 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 163 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 163 resolved as shift
+WARNING: shift/reduce conflict for IF in state 164 resolved as shift
+WARNING: shift/reduce conflict for WHILE in state 164 resolved as shift
+WARNING: shift/reduce conflict for FOR in state 164 resolved as shift
+WARNING: shift/reduce conflict for RETURN in state 164 resolved as shift
+WARNING: shift/reduce conflict for BREAK in state 164 resolved as shift
+WARNING: shift/reduce conflict for CONTINUE in state 164 resolved as shift
+WARNING: shift/reduce conflict for ; in state 164 resolved as shift
+WARNING: shift/reduce conflict for { in state 164 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 164 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 164 resolved as shift
+WARNING: shift/reduce conflict for INT in state 164 resolved as shift
+WARNING: shift/reduce conflict for FLOAT in state 164 resolved as shift
+WARNING: shift/reduce conflict for BOOLEAN in state 164 resolved as shift
+WARNING: shift/reduce conflict for ID in state 164 resolved as shift
+WARNING: shift/reduce conflict for THIS in state 164 resolved as shift
+WARNING: shift/reduce conflict for SUPER in state 164 resolved as shift
+WARNING: shift/reduce conflict for ( in state 164 resolved as shift
+WARNING: shift/reduce conflict for NEW in state 164 resolved as shift
+WARNING: shift/reduce conflict for INT_CONST in state 164 resolved as shift
+WARNING: shift/reduce conflict for FLOAT_CONST in state 164 resolved as shift
+WARNING: shift/reduce conflict for STRING_CONST in state 164 resolved as shift
+WARNING: shift/reduce conflict for NULL in state 164 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 164 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 164 resolved as shift
+WARNING: shift/reduce conflict for IF in state 170 resolved as shift
+WARNING: shift/reduce conflict for WHILE in state 170 resolved as shift
+WARNING: shift/reduce conflict for FOR in state 170 resolved as shift
+WARNING: shift/reduce conflict for RETURN in state 170 resolved as shift
+WARNING: shift/reduce conflict for BREAK in state 170 resolved as shift
+WARNING: shift/reduce conflict for CONTINUE in state 170 resolved as shift
+WARNING: shift/reduce conflict for ; in state 170 resolved as shift
+WARNING: shift/reduce conflict for { in state 170 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 170 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 170 resolved as shift
+WARNING: shift/reduce conflict for INT in state 170 resolved as shift
+WARNING: shift/reduce conflict for FLOAT in state 170 resolved as shift
+WARNING: shift/reduce conflict for BOOLEAN in state 170 resolved as shift
+WARNING: shift/reduce conflict for ID in state 170 resolved as shift
+WARNING: shift/reduce conflict for THIS in state 170 resolved as shift
+WARNING: shift/reduce conflict for SUPER in state 170 resolved as shift
+WARNING: shift/reduce conflict for ( in state 170 resolved as shift
+WARNING: shift/reduce conflict for NEW in state 170 resolved as shift
+WARNING: shift/reduce conflict for INT_CONST in state 170 resolved as shift
+WARNING: shift/reduce conflict for FLOAT_CONST in state 170 resolved as shift
+WARNING: shift/reduce conflict for STRING_CONST in state 170 resolved as shift
+WARNING: shift/reduce conflict for NULL in state 170 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 170 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 170 resolved as shift
+WARNING: shift/reduce conflict for IF in state 173 resolved as shift
+WARNING: shift/reduce conflict for WHILE in state 173 resolved as shift
+WARNING: shift/reduce conflict for FOR in state 173 resolved as shift
+WARNING: shift/reduce conflict for RETURN in state 173 resolved as shift
+WARNING: shift/reduce conflict for BREAK in state 173 resolved as shift
+WARNING: shift/reduce conflict for CONTINUE in state 173 resolved as shift
+WARNING: shift/reduce conflict for ; in state 173 resolved as shift
+WARNING: shift/reduce conflict for { in state 173 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 173 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 173 resolved as shift
+WARNING: shift/reduce conflict for INT in state 173 resolved as shift
+WARNING: shift/reduce conflict for FLOAT in state 173 resolved as shift
+WARNING: shift/reduce conflict for BOOLEAN in state 173 resolved as shift
+WARNING: shift/reduce conflict for ID in state 173 resolved as shift
+WARNING: shift/reduce conflict for THIS in state 173 resolved as shift
+WARNING: shift/reduce conflict for SUPER in state 173 resolved as shift
+WARNING: shift/reduce conflict for ( in state 173 resolved as shift
+WARNING: shift/reduce conflict for NEW in state 173 resolved as shift
+WARNING: shift/reduce conflict for INT_CONST in state 173 resolved as shift
+WARNING: shift/reduce conflict for FLOAT_CONST in state 173 resolved as shift
+WARNING: shift/reduce conflict for STRING_CONST in state 173 resolved as shift
+WARNING: shift/reduce conflict for NULL in state 173 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 173 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 173 resolved as shift
 WARNING: reduce/reduce conflict in state 20 resolved using rule (class_body_decl -> class_body_decl class_body_decl)
 WARNING: rejected rule (empty -> <empty>) in state 20
-WARNING: reduce/reduce conflict in state 123 resolved using rule (arith_op -> PLUS)
-WARNING: rejected rule (unary_op -> PLUS) in state 123
-WARNING: reduce/reduce conflict in state 124 resolved using rule (arith_op -> MINUS)
-WARNING: rejected rule (unary_op -> MINUS) in state 124
-WARNING: Rule (unary_op -> PLUS) is never reduced
-WARNING: Rule (unary_op -> MINUS) is never reduced

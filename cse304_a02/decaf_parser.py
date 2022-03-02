@@ -7,17 +7,14 @@ import ply.yacc as yacc
 from decaf_lexer import tokens
 
 
-line_start = 1
-
-
 precedence = (
     ('nonassoc', 'ASSIGN'),
     ('nonassoc', 'OR'),
     ('nonassoc', 'AND'),
     ('nonassoc', 'EQUALITY', 'INEQUALITY'),
     ('nonassoc', 'LESSER', 'GREATER', 'GEQ', 'LEQ'),
-    ('nonassoc', 'PLUS', 'MINUS'),
-    ('nonassoc', 'TIMES', 'DIVIDE'),
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'TIMES', 'DIVIDE'),
     ('nonassoc', 'NOT')
 )
 
@@ -122,7 +119,7 @@ def p_expressions(p):
          | assign
          | expr arith_op expr
          | expr bool_op expr
-         | expr unary_op expr
+         | unary_op expr
     assign : field_access ASSIGN expr
      | field_access PLUS PLUS
      | PLUS PLUS field_access
@@ -149,7 +146,7 @@ def p_expressions(p):
 
 # Error rule for syntax errors
 def p_error(p):
-    print("Syntax error at (%d, %d)" % (p.lexer.lineno, p.lexpos))
+    print("Syntax error at (%d, %d)" % (p.lexer.lineno, p.lexpos+1))
     exit()
 
 
