@@ -27,7 +27,7 @@ def main():
     import decaf_lexer
     import decaf_parser
     lexer = lex.lex(module=decaf_lexer)
-    parser = yacc.yacc(module=decaf_parser, debug=1)
+    parser = yacc.yacc(module=decaf_parser, debug=True)
 
     file = open(filename, 'r')
     file_string = file.read()
