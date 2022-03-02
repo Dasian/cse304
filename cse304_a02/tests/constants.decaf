@@ -2,6 +2,9 @@
 This is a multi-line
 comment
 */
-int x = 12;
-float y = .11;
-String z $= "Value";
+int x;
+x = 12;
+float y;
+y = .11;
+String z;
+z = "Value";

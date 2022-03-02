@@ -146,8 +146,9 @@ def p_expressions(p):
 
 # Error rule for syntax errors
 def p_error(p):
-    print("Syntax error at (%d, %d)" % (p.lexer.lineno, p.lexpos+1))
-    exit()
+    if p is not None:
+        print("Syntax error at (%d, %d)" % (p.lexer.lineno, p.lexpos))
+        exit()
 
 
 # Handles empty productions
