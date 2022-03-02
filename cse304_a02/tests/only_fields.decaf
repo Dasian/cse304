@@ -1,5 +1,15 @@
-class field{
-    public static void main(){
-        return 10+x;
+class IntList{
+    public boolean search(int v) {
+        if (this.value == v)
+            {
+                return true;
+            }
+        else
+            if (next == null)
+                { /* end of list, so search fails */
+                    return false;
+                }
+            else /* end of list, so search fails */
+                return next.search(v);
     }
 }
