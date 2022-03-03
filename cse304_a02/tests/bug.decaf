@@ -1,5 +1,5 @@
-class IntList{
-    public boolean search(int v) {
-        i = a + 1;
-    }
+class Bug{
+    public boolean bug() {
+        b = a - 3;
+        a = a + 3;
 }
