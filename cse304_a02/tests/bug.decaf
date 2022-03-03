@@ -1,11 +1,5 @@
 class IntList{
     public boolean search(int v) {
-        if (true) /* */ 
-            return;
-            /* */
-    }
-    public int length() {
-        if (next == null) return 1;
-        else return 1 + next.length();
+        i = a + 1;
     }
 }
