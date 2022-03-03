@@ -1,5 +1,6 @@
 class t{
     void m(){
-        int x = 10 + s;
+        int x;
+        x = s + 10;
     }
 }

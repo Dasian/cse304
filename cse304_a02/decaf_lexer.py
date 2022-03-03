@@ -31,7 +31,7 @@ reserved = {
 
 tokens = list(reserved.values()) + ['ID', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE',
                                     'ASSIGN', 'EQUALITY', 'STRING_CONST', 'FLOAT_CONST',
-                                    'INT_CONST', 'NOT',
+                                    'INT_CONST', 'NOT', 'INCREMENT', 'DECREMENT',
                                     'GREATER', 'LESSER', 'GEQ', 'LEQ', 'INEQUALITY', 'AND', 'OR']
 
 # A string containing ignored characters (spaces and tabs)
@@ -59,6 +59,8 @@ t_INEQUALITY = r'!='
 t_AND = r'&&'
 t_OR = r'\|\|'
 t_NOT = r'!'
+t_INCREMENT = r'\+\+'
+t_DECREMENT = r'--'
 
 
 # Define a rule so we can track line numbers

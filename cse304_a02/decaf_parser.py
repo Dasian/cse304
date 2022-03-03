@@ -7,7 +7,6 @@ import ply.yacc as yacc
 from decaf_lexer import tokens
 import decaf_lexer as lexer
 
-
 # Assignment is right-associative, relational operators are non-associative, and all others are left-associative
 precedence = (
     ('right', 'ASSIGN'),
@@ -123,11 +122,16 @@ def p_expressions(p):
          | expr bool_op expr
          | unary_op expr
     assign : field_access ASSIGN expr
-     | field_access PLUS PLUS
-     | PLUS PLUS field_access
-     | field_access MINUS MINUS
-     | MINUS MINUS field_access
-    arith_op : PLUS
+     | field_access INCREMENT
+     | INCREMENT field_access
+     | field_access DECREMENT
+     | DECREMENT field_access
+    stmt_expr : assign
+              | method_invocation'''
+
+
+def p_operators(p):
+    """arith_op : PLUS
             | MINUS
             | TIMES
             | DIVIDE
@@ -141,15 +145,13 @@ def p_expressions(p):
             | GEQ
     unary_op : PLUS
             | MINUS
-            | NOT
-    stmt_expr : assign
-              | method_invocation'''
+            | NOT"""
 
 
 # Error rule for syntax errors
 def p_error(p):
     if p is not None:
-        print("Syntax error at (%d, %d)" % (p.lexer.lineno, p.lexpos - lexer.line_start + 2))
+        print("Syntax error at (%d, %d)" % (p.lexer.lineno, p.lexpos - lexer.line_start))
         exit()
 
 
