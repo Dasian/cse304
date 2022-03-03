@@ -90,14 +90,14 @@ def t_ID(t):
 
 # String constants
 def t_STRING_CONST(t):
-    r'\".*\"'
+    r'\".*?\"'
     t.value = t.value[1:len(t.value) - 1]
     return t
 
 
 # Float constants
 def t_FLOAT_CONST(t):
-    r'\d+.\d+'
+    r'\d+\.\d+'
     t.value = float(t.value)
     return t
 

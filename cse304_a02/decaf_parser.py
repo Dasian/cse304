@@ -7,7 +7,7 @@ import ply.yacc as yacc
 from decaf_lexer import tokens
 
 
-# Assignment is right-associative, relational operators are nonassociative, and all others are left-associative
+# Assignment is right-associative, relational operators are non-associative, and all others are left-associative
 precedence = (
     ('right', 'ASSIGN'),
     ('left', 'OR'),
