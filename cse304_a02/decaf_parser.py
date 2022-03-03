@@ -5,6 +5,7 @@
 
 import ply.yacc as yacc
 from decaf_lexer import tokens
+import decaf_lexer as lexer
 
 
 # Assignment is right-associative, relational operators are non-associative, and all others are left-associative
@@ -148,7 +149,7 @@ def p_expressions(p):
 # Error rule for syntax errors
 def p_error(p):
     if p is not None:
-        print("Syntax error at (%d, %d)" % (p.lexer.lineno, p.lexpos))
+        print("Syntax error at (%d, %d)" % (p.lexer.lineno, p.lexpos - lexer.line_start + 2))
         exit()
 
 
