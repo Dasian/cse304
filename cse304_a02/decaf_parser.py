@@ -151,7 +151,7 @@ def p_operators(p):
 # Error rule for syntax errors
 def p_error(p):
     if p is not None:
-        print("Syntax error at line: %d column: %d" % (p.lexer.lineno, p.lexpos - lexer.line_start)
+        print("Syntax error at line: %d column: %d" % (p.lexer.lineno, p.lexpos - lexer.line_start))
         exit()
 
 
