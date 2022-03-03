@@ -32,15 +32,13 @@ def main():
     file = open(filename, 'r')
     file_string = file.read()
     file.close()
-
-    """ Testing purposes
     
     lexer.input(file_string)
     while True:
         tok = lexer.token()
         if not tok:
             break  # No more input
-        print(tok)"""
+        print(tok)
 
     parser.parse(file_string, lexer=lexer)
     print("YES")
