@@ -1,15 +1,13 @@
 class IntList{
-    public boolean search(int v) {
-        if (this.value == v)
+    public boolean search(int x) {
+        if (10 == x)
             {
+                x = 10;
                 return true;
             }
         else
-            if (next == null)
-                { /* end of list, so search fails */
-                    return false;
-                }
-            else /* end of list, so search fails */
-                return next.search(v);
+            for(x = 0; x < 10; x=x+1){
+                z++;
+            }
     }
 }
