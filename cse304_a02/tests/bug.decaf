@@ -1,5 +1,1 @@
-class Bug{
-    public boolean bug() {
-        b = a - 3;
-        a = a + 3;
-}
+class B{public boolean b(){a = 1 + 1;}}
