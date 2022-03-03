@@ -71,7 +71,7 @@ def t_newline(t):
 
 # Define a rule so we can track line numbers within multi-line comments
 def t_multi_line_comment(t):
-    r'/\*(.|\n)*?\*/'
+    r'\/\*(.|\n)*?\*\/'
     t.lexer.lineno += t.value.count('\n')
 
 
