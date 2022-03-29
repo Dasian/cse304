@@ -152,3 +152,4 @@ fabric.properties
 
 # parser debug files
 parser.out
+parsetab.py
