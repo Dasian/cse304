@@ -1,13 +1,13 @@
 # David Espiritu despiritu 112264228
 # Sean Yang sjyang 110766661
 
-# File containing the main python function to put together
-# the lexer and parser, take the input from the Decaf
-# program file, etc., and perform syntax checking
-# Input: The name of the file containing the Decaf program
-# Output: "Yes" if the Decaf program is syntactically correct or an error message describing the first
-# error and where it occurred (line and column number)
-# Usage: python3 decaf_checker.py [filename]
+"""
+    hw3
+    Takes as input a DECAF file 
+    Outputs 
+        AST if program or
+        Error message of first syntax error (line + col)
+"""
 
 import sys
 from os.path import exists
