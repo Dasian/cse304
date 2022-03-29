@@ -152,7 +152,9 @@ def p_operators(p):
 def p_error(p):
     if p is not None:
         print("Syntax error at line: %d column: %d" % (p.lexer.lineno, p.lexpos - lexer.line_start))
-        exit()
+    else:
+        print("Unexpected EOF")
+    exit()
 
 
 # Handles empty productions

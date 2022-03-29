@@ -109,3 +109,7 @@ def t_INT_CONST(t):
     r'\d+'
     t.value = int(t.value)
     return t
+
+# EOF handling rule
+def t_eof(t):
+    return None
