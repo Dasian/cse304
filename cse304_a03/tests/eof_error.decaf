@@ -3,4 +3,3 @@ class t{
         int x;
         x = s + 10;
     }
-}
