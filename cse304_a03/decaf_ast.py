@@ -17,10 +17,10 @@ class ClassRecord:
 
 class ConstructorRecord:
 
-    def __init__(self, id=-1, visibility="", paramaters=[], variableTable=[], body=None):
+    def __init__(self, id=-1, visibility="", parameters=[], variableTable=[], body=None):
         self.id = id
         self.visibility = visibility
-        self.paramaters = paramaters
+        self.parameters = parameters
         self.variableTable = variableTable
         self.body = body
 
@@ -39,11 +39,11 @@ class MethodRecord:
 
 class FieldRecord:
 
-    def __init__(self, name="", id=-1, containingClass="", visibilty="", applicability="", type=None):
+    def __init__(self, name="", id=-1, containingClass="", visibility="", applicability="", type=None):
         self.name = name
         self.id = id
         self.containingClass = containingClass
-        self.visibility = visibilty
+        self.visibility = visibility
         self.applicability = applicability
         self.type = type
 
