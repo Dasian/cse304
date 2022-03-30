@@ -18,25 +18,37 @@ import decaf_ast
 # Abstract Syntax Tree Table
 """
     TODO
-    Error Checking Section 
-    Implement Expressions
+    Error Checking
 """
 class AST:
 
     # Initialize In and Out class
     def __init__(self):
         # list of ClassRecord objects, each of these are the root
+        # this is essentially the class table
         self.classes = []
         
         # In class
-        inClass = decaf_ast.ClassRecord()
+        scanInt = decaf_ast.MethodRecord(name="scan_int", id=1, containingClass="In", visibility="public", applicability="static", returnType="int")
+        scanFloat = decaf_ast.MethodRecord(name="scan_float", id=2, containingClass="In", visibility="public", applicability="static", returnType="float")
+        inMethods = [scanInt, scanFloat]
+        inClass = decaf_ast.ClassRecord(name="In", methods=inMethods)
 
         # Out class
-        outClass = decaf_ast.ClassRecord()
+        i = decaf_ast.VariableRecord(name="i", id=1, kind="formal", type=decaf_ast.TypeRecord(name="int"))
+        f = decaf_ast.VariableRecord(name="f", id=2, kind="formal", type=decaf_ast.TypeRecord(name="float"))
+        b = decaf_ast.VariableRecord(name="b", id=3, kind="formal", type=decaf_ast.TypeRecord(name="boolean"))
+        s = decaf_ast.VariableRecord(name="s", id=4, kind="formal", type=decaf_ast.TypeRecord(name="string"))
+        print1 = decaf_ast.MethodRecord(name="print", id=1, containingClass="Out", visibility="public", applicability="static", paramaters=[i], variableTable=[i])
+        print2 = decaf_ast.MethodRecord(name="print", id=2, containingClass="Out", visibility="public", applicability="static", paramaters=[f], variableTable=[f])
+        print3 = decaf_ast.MethodRecord(name="print", id=3, containingClass="Out", visibility="public", applicability="static", paramaters=[b], variableTable=[b])
+        print4 = decaf_ast.MethodRecord(name="print", id=4, containingClass="Out", visibility="public", applicability="static", paramaters=[s], variableTable=[s])
+        outMethods = [print1, print2, print3, print4]
+        outClass = decaf_ast.ClassRecord(name="Out", methods=outMethods)
 
         # adding classes
-        self.classes.push(inClass)
-        self.classes.push(outClass)
+        self.classes.append(inClass)
+        self.classes.append(outClass)
 
     # adds class to the tree
     # the class must be completed at this point
@@ -46,9 +58,9 @@ class AST:
     # prints the contents of the AST
     def print_table(self):
         delimiter = '--------------------------------------------------------------------------'
+        print(delimiter)
         for c in self.classes:
-            print(delimiter)
-            self.print_class(self, c)
+            self.print_class(c)
             print(delimiter)
 
     def print_class(self, c):
@@ -56,19 +68,19 @@ class AST:
         print("Superclass Name:", c.superName)
         print("Fields:")
         for f in c.fields:
-            self.print_field(self, f)
+            self.print_field(f)
         print("Constructors:")
         for constr in c.constructors:
-            self.print_constructor(self, constr)
-        print("Methods")
+            self.print_constructor(constr)
+        print("Methods:")
         for m in c.methods:
-            self.print_method(self, m)
+            self.print_method(m)
 
     def print_field(self, f):
-        print("FIELD:", f.id, ',', f.name, ',', f.containingClass, ',', f.visibility, ',', f.applicability, ',', f.type)
+        print("FIELD: "+ f.id+ ', '+ f.name+ ', '+ f.containingClass+ ', '+ f.visibility+ ', '+ f.applicability+ ', '+ f.type)
 
     def print_constructor(self, c):
-        print("CONSTRUCTOR", c.id, ',', c.visibility)
+        print("CONSTRUCTOR: "+ c.id+ ', '+ c.visibility)
         params = ''
         for p in c.paramaters:
             if(params == ''):
@@ -76,12 +88,12 @@ class AST:
             else:
                 params += ', ' + p.id
         print("Constructor Paramaters:", params)
-        self.print_var_table(self, c.variableTable)
+        self.print_var_table(c.variableTable)
         print("Constructor Body:")
-        self.print_body(self, c.body)
+        self.print_body( c.body)
 
     def print_method(self, m):
-        print("METHOD", m.id, ',', m.name, ',', m.containingClass, ',', m.visibility)
+        print("METHOD: "+ str(m.id)+ ', '+ m.name+ ', '+ m.containingClass+ ', '+ m.visibility)
         params = ''
         for p in m.paramaters:
             if(params == ''):
@@ -89,9 +101,9 @@ class AST:
             else:
                 params += ', ' + p.id
         print("Method Paramaters:", params)
-        self.print_var_table(self, m.variableTable)
+        self.print_var_table(m.variableTable)
         print("Method Body:")
-        self.print_body(self, m.body)
+        self.print_body(m.body)
 
 
     def print_var_table(self, vt):
@@ -100,49 +112,93 @@ class AST:
         # type needs to be represented as (int, float, boolean)
         # or user(name)
         for t in vt:
-            ty = t.type
+            ty = t.type.name
             if ty not in base_types:
-                ty = 'user(' + t.type+ ')'
-            print("VARIABLE", t.id, ',', t.name, ',', t.kind, ',', ty)
+                ty = 'user(' + str(t.type.name) + ')'
+            print("VARIABLE "+ str(t.id) + ', '+ t.name + ', ' + t.kind + ', ' + ty)
 
-    def print_body(self, b):
-        # TODO
-        # print expression
-        for i in b:
-            if(type(i) == decaf_ast.Statement):
-                if(i.kind == 'Block'):
-                    print(self.print_block(self, i.attributes['stmnts']))
-                else:
-                    print(self.gen_print_stmnt(self, i))
-            elif (type(i) == decaf_ast.Expression):
-                print(i.kind, '(', ')')
+    # prints the body object
+    # input: stmnt is a Statement Object
+    def print_body(self, stmnt):
+        if stmnt is None:
+            return
+        content = ''
+        if(stmnt.kind == 'Block'):
+            content = self.block_str(stmnt.attributes['stmnts'])
+        else:
+            content = self.stmnt_str(stmnt)
+        print(content)
     
     # returns the string of a block to be printed
-    def print_block(self, stmnts):
+    # always a sequence of statements
+    # input: stmnts is a list of Statement Objects
+    def block_str(self, stmnts):
         content = ''
         for stmnt in stmnts:
-            if content == '':
-                content = self.gen_print_stmnt(self, stmnt)
-            elif stmnt.kind == 'Block':
-                content += ', ' + self.print_block(self, stmnt.attributes['stmnts'])
+            if stmnt.kind == 'Block':
+                content += self.block_str(stmnt.attributes['stmnts']) + ', '
             else:
-                content += ', ' + self.gen_print_stmnt(self, stmnt)
-        s = "Block ([" + content + "])"
+                content += self.stmnt_str(stmnt) + ', '
+        content = content[0:-2] # delete extra comma and space
+        s = "Block ([\n" + content + "\n])"
         return s
 
-    # returns the string of a statement to be printed
-    def gen_print_stmnt(self, stmnt):
+    # returns the string of a single statement to be printed
+    # can contain expressions or statements as attributes
+    # the input statement can't be/isn't a block
+    # input: stmnt is a Statement Object
+    def stmnt_str(self, stmnt):
         content = ''
         for val in stmnt.attributes.values():
-            if content == '':
-                content = val
+            if type(val) is decaf_ast.Statement:
+                if val.kind == 'Block':
+                    content += self.block_str(val.attributes['stmnts'])
+                else:
+                    content += self.stmnt_str(val)
+            elif type(val) is decaf_ast.Expression:
+                content += self.expr_str(val)
             else:
-                content += val + ', '
-        s = stmnt.kind +'(' + content + ')'
+                content += val
+            content += ', '
+        # remove () for statements without attributes
+        if content == '':
+            s = stmnt.kind
+        else:
+            s = stmnt.kind +'(' + content[0:-2] + ')' # delete extra comma and space
         return s
+
+    # returns the string of an expression to be printed
+    # attribute values can only be other expressions/list of expressions, not a statement
+    def expr_str(self, expr):
+        content = ''
+        for val in expr.attributes.values():
+            if type(val) is decaf_ast.Expression:
+                content += self.expr_str(val)
+            elif type(val) is list:
+                content += self.expr_list_str(val)
+            else:
+                content += val
+            content += ', '
+        # remove () for expressions without attribute values
+        if content == '':
+            s = expr.kind
+        else:
+            s = expr.kind + '(' + content[0:-2] + ')'
+        return s
+
+    # returns the string of a list of expressions to be printed
+    def expr_list_str(self, list):
+        content = ''
+        for expr in list:
+            content += self.expr_str(expr)
+        return content
 
 
 def main():
+
+    ast = AST()
+    ast.print_table()
+
     if len(sys.argv) != 2:  # Takes input from cmdline
         print("USAGE: python3 decaf_checker.py [filename]")
         exit()
