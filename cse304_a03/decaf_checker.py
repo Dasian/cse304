@@ -9,6 +9,7 @@
         Error message of first syntax error (line + col)
 """
 
+from array import array
 import sys
 from os.path import exists
 import ply.lex as lex
@@ -18,8 +19,8 @@ import decaf_ast
 # Abstract Syntax Tree Table
 """
     TODO
+    Initialization
     Error Checking Section 
-    Implement Expressions
 """
 class AST:
 
@@ -35,8 +36,8 @@ class AST:
         outClass = decaf_ast.ClassRecord()
 
         # adding classes
-        self.classes.push(inClass)
-        self.classes.push(outClass)
+        self.classes.append(inClass)
+        self.classes.append(outClass)
 
     # adds class to the tree
     # the class must be completed at this point
@@ -60,7 +61,7 @@ class AST:
         print("Constructors:")
         for constr in c.constructors:
             self.print_constructor(self, constr)
-        print("Methods")
+        print("Methods:")
         for m in c.methods:
             self.print_method(self, m)
 
@@ -68,7 +69,7 @@ class AST:
         print("FIELD:", f.id, ',', f.name, ',', f.containingClass, ',', f.visibility, ',', f.applicability, ',', f.type)
 
     def print_constructor(self, c):
-        print("CONSTRUCTOR", c.id, ',', c.visibility)
+        print("CONSTRUCTOR:", c.id, ',', c.visibility)
         params = ''
         for p in c.paramaters:
             if(params == ''):
@@ -81,7 +82,7 @@ class AST:
         self.print_body(self, c.body)
 
     def print_method(self, m):
-        print("METHOD", m.id, ',', m.name, ',', m.containingClass, ',', m.visibility)
+        print("METHOD:", m.id, ',', m.name, ',', m.containingClass, ',', m.visibility)
         params = ''
         for p in m.paramaters:
             if(params == ''):
@@ -105,41 +106,79 @@ class AST:
                 ty = 'user(' + t.type+ ')'
             print("VARIABLE", t.id, ',', t.name, ',', t.kind, ',', ty)
 
-    def print_body(self, b):
-        # TODO
-        # print expression
-        for i in b:
-            if(type(i) == decaf_ast.Statement):
-                if(i.kind == 'Block'):
-                    print(self.print_block(self, i.attributes['stmnts']))
-                else:
-                    print(self.gen_print_stmnt(self, i))
-            elif (type(i) == decaf_ast.Expression):
-                print(i.kind, '(', ')')
+    # prints the body object
+    # input: stmnt is a Statement Object
+    def print_body(self, stmnt):
+        content = ''
+        if(stmnt.kind == 'Block'):
+            content = self.block_str(self, stmnt.attributes['stmnts'])
+        else:
+            content = self.stmnt_str(self, stmnt)
+        print(content)
     
     # returns the string of a block to be printed
-    def print_block(self, stmnts):
+    # always a sequence of statements
+    # input: stmnts is a list of Statement Objects
+    def block_str(self, stmnts):
         content = ''
         for stmnt in stmnts:
-            if content == '':
-                content = self.gen_print_stmnt(self, stmnt)
-            elif stmnt.kind == 'Block':
-                content += ', ' + self.print_block(self, stmnt.attributes['stmnts'])
+            if stmnt.kind == 'Block':
+                content += self.block_str(self, stmnt.attributes['stmnts']) + ', '
             else:
-                content += ', ' + self.gen_print_stmnt(self, stmnt)
-        s = "Block ([" + content + "])"
+                content += self.stmnt_str(self, stmnt) + ', '
+        content = content[0:-2] # delete extra comma and space
+        s = "Block ([\n" + content + "\n])"
         return s
 
-    # returns the string of a statement to be printed
-    def gen_print_stmnt(self, stmnt):
+    # returns the string of a single statement to be printed
+    # can contain expressions or statements as attributes
+    # the input statement can't be/isn't a block
+    # input: stmnt is a Statement Object
+    def stmnt_str(self, stmnt):
         content = ''
         for val in stmnt.attributes.values():
-            if content == '':
-                content = val
+            if type(val) is decaf_ast.Statement:
+                if val.kind == 'Block':
+                    content += self.block_str(self, val.attributes['stmnts'])
+                else:
+                    content += self.stmnt_str(self, val)
+            elif type(val) is decaf_ast.Expression:
+                content += self.expr_str(self, val)
             else:
-                content += val + ', '
-        s = stmnt.kind +'(' + content + ')'
+                content += val
+            content += ', '
+        # remove () for statements without attributes
+        if content == '':
+            s = stmnt.kind
+        else:
+            s = stmnt.kind +'(' + content[0:-2] + ')' # delete extra comma and space
         return s
+
+    # returns the string of an expression to be printed
+    # attribute values can only be other expressions/list of expressions, not a statement
+    def expr_str(self, expr):
+        content = ''
+        for val in expr.attributes.values():
+            if type(val) is decaf_ast.Expression:
+                content += self.expr_str(self, val)
+            elif type(val) is list:
+                content += self.expr_list_str(self, val)
+            else:
+                content += val
+            content += ', '
+        # remove () for expressions without attribute values
+        if content == '':
+            s = expr.kind
+        else:
+            s = expr.kind + '(' + content[0:-2] + ')'
+        return s
+
+    # returns the string of a list of expressions to be printed
+    def expr_list_str(self, list):
+        content = ''
+        for expr in list:
+            content += self.expr_str(expr)
+        return content
 
 
 def main():
