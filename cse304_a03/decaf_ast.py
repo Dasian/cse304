@@ -56,8 +56,6 @@ class TypeRecord:
     def __init__(self, name=""):
         self.name = name
 
-# inherited classes (each represent one type of record)
-# TODO: figure out better scheme for Statements and Expressions
 class Statement:
     # kinds: If, While, For, Return, Expr, Block, Break, Continue, Skip
     # attributes: key is the attribute name and the value is mapped
@@ -67,11 +65,25 @@ class Statement:
         self.kind = kind
         self.attributes = attributes
 
+# If you want to nest expressions have a key that is 'Expression'
+#   that maps to a *list* of Expression object
+# Have 'Constant' kinds with an 'Expression' attribute that maps to
+#   another expression with the kind set to the proper form
+#   ex: Integer-constant, Float-Constant, String-constant, True, etc.
+# This, Super, and Class-reference(maybe?) as well as Null, True, and False
+#   just need to have the kind set and no other attributes
+# You can change this design if you want, this is just how I have it currently
+#   implemented for printing; just change the prints or lmk
 class Expression:
-    def __init__(self, lineRange=[]):
+    # kinds: Constant, Var, Unary, Binary, Assign, Auto, Field-access, 
+    #   Method-call, New-object, This, Super, Class-reference
+    def __init__(self, lineRange=[], kind='', attributes={}):
         self.lineRange = lineRange
+        self.kind = kind
+        self.attributes = attributes
 
 """
+This could be helpful for reference but also just delete it idk
 # All classes in this block statement (deprecated)
 class IfStatement(Statement):
     def __init__(self, condition=None, then=None, elseStatement=None, lineRange=[]):
@@ -120,7 +132,7 @@ class ContinueStatement(Statement):
 class SkipStatement(Statement):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
-"""
+
 
 # All classes in this block are expressions
 class ConstExpression(Expression):
@@ -170,3 +182,4 @@ class SuperExpression(Expression):
 class ClassReferenceExpression(Expression):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
+"""
