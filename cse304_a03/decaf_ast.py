@@ -2,24 +2,9 @@
 # Sean Yang sjyang 110766661
 
 # table and class definitions for Decaf's AST
+# Each class represents some sort of node in the table/tree
 
-# Driver to initialize tables and print contents 
-# in decaf_checker
-from asyncio.windows_events import NULL
-from pdb import line_prefix
-from statistics import linear_regression
-
-
-class ASTDriver:
-    def __init__(self):
-        # something
-        print("INIT")
-
-    # prints the contents of the AST
-    def print_table(self):
-        print("table lmao get it?")
-
-# All other class definitions after this point are nodes for the table
+# All classes in this block are records
 class ClassRecord:
     
     def __init__(self, name="", superName="", constructors=[], methods=[], fields=[]):
@@ -40,12 +25,14 @@ class ConstructorRecord:
 
 class MethodRecord:
 
-    def __init__(self, name="", id=-1, containingClass="", visibility="", applicability=""):
+    def __init__(self, name="", id=-1, containingClass="", visibility="", applicability="", body=None, variableTable=[]):
         self.name = name
         self.id = id
         self.containingClass = containingClass
         self.visibility = visibility
         self.applicability = applicability
+        self.body = body
+        self.variableTable = variableTable
 
 class FieldRecord:
 
@@ -69,25 +56,37 @@ class TypeRecord:
     def __init__(self, name=""):
         self.name = name
 
-class Record:
+# inherited classes (each represent one type of record)
+# TODO: figure out better scheme for Statements and Expressions
+class Statement:
+    # kinds: If, While, For, Return, Expr, Block, Break, Continue, Skip
+    # attributes: key is the attribute name and the value is mapped
+    # @Sean for Block statements have the key in attributes named 'stmnts'
+    def __init__(self, lineRange=[], kind='', attributes={}):
+        self.lineRange = lineRange
+        self.kind = kind
+        self.attributes = attributes
+
+class Expression:
     def __init__(self, lineRange=[]):
         self.lineRange = lineRange
 
-# All Statements in this block
-class IfStatement(Record):
+"""
+# All classes in this block statement (deprecated)
+class IfStatement(Statement):
     def __init__(self, condition=None, then=None, elseStatement=None, lineRange=[]):
         super().__init__(lineRange=lineRange)
         self.condition = condition
         self.then = then
         self.elseStatement = elseStatement
 
-class WhileStatement(Record):
+class WhileStatement(Statement):
     def __init__(self, condition=None, body=None, lineRange=[]):
         super().__init__(lineRange=lineRange)
         self.condition = condition
         self.body = body
 
-class ForStatement(Record):
+class ForStatement(Statement):
     def __init__(self, init=None, condition=None, body=None, update=None, lineRange=[]):
         super().__init__(lineRange=lineRange)
         self.condition = condition
@@ -95,55 +94,56 @@ class ForStatement(Record):
         self.body = body
         self.update = update
 
-class ReturnStatement(Record):
+class ReturnStatement(Statement):
     def __init__(self, value=None, lineRange=[]):
         super().__init__(lineRange=lineRange)
         self.value = value
 
-class ExprStatement(Record):
+class ExprStatement(Statement):
     def __init__(self, expr=None, lineRange=[]):
         super().__init__(lineRange=lineRange)
         self.expr = expr
 
-class BlockStatement(Record):
+class BlockStatement(Statement):
     def __init__(self, stmnts=None, lineRange=[]):
         super().__init__(lineRange=lineRange)
         self.stmnts = stmnts
 
-class BreakStatement(Record):
+class BreakStatement(Statement):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
 
-class ContinueStatement(Record):
+class ContinueStatement(Statement):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
 
-class SkipStatement(Record):
+class SkipStatement(Statement):
+    def __init__(self, lineRange=[]):
+        super().__init__(lineRange)
+"""
+
+# All classes in this block are expressions
+class ConstExpression(Expression):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
 
-# All Expressions in this block
-class ConstExpression(Record):
+class VarExpression(Expression):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
 
-class VarExpression(Record):
+class UnaryExpression(Expression):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
 
-class UnaryExpression(Record):
+class BinaryExpression(Expression):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
 
-class BinaryExpression(Record):
+class AssignExpression(Expression):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
 
-class AssignExpression(Record):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-
-class AutoExpression(Record):
+class AutoExpression(Expression):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
 
@@ -151,7 +151,7 @@ class FieldAccessExpression(Record):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
 
-class MethodCallExpression(Record):
+class MethodCallExpression(Expression):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
 
@@ -159,14 +159,14 @@ class NewObjectExpression(Record):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
 
-class ThisExpression(Record):
+class ThisExpression(Expression):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
 
-class SuperExpression(Record):
+class SuperExpression(Expression):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
 
-class ClassReferenceExpression(Record):
+class ClassReferenceExpression(Expression):
     def __init__(self, lineRange=[]):
         super().__init__(lineRange)
