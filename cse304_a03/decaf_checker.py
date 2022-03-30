@@ -195,10 +195,6 @@ class AST:
 
 
 def main():
-
-    ast = AST()
-    ast.print_table()
-
     if len(sys.argv) != 2:  # Takes input from cmdline
         print("USAGE: python3 decaf_checker.py [filename]")
         exit()
