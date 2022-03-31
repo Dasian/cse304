@@ -9,6 +9,9 @@ import decaf_lexer as lexer
 import decaf_ast as ast
 from decaf_checker import AST
 
+# DELETE THIS
+import debug
+
 currentClass = ""
 currentVisibility = ""
 currentType = None
@@ -43,27 +46,26 @@ def p_class_decl(p):
                   | CLASS ID '{' class_body_decl '}'
                   '''
 
-    for i in range(len(p)):
-        print(i, p[i], type(p[i]))
-
     p[0] = ast.ClassRecord()        # Initializes an empty class record
     p[0].name = p[2]            # Set class record's name to p[2]
     currentClass = p[0].name
 
     body_index = 4          # Represents the index where class_body_decl starts
-    if p[2] == 'extends':         # Checks if class record is a child class
+    if p[3] == 'extends':         # Checks if class record is a child class
         body_index = 6
-        p[0].super = p[4]
+        p[0].superName = p[4]
 
-# Loop through all the class body declarations to add appropriate records to
-# class record's constructors, methods, and fields
+    # Loop through all the class body declarations to add appropriate records to
+    # class record's constructors, methods, and fields
     for i in range(body_index, len(p)):
         if(type(p[i]) is ast.ConstructorRecord):
-            p[0].constructor += p[i]
+            p[0].constructor.append(p[i])
         elif(type(p[i]) is ast.MethodRecord):
-            p[0].methods += p[i]
+            p[0].methods.append(p[i])
         elif(type(p[i]) is ast.FieldRecord):
-            p[0].fields += p[i]
+            p[0].fields.append(p[i])
+
+    debug.print_p(p, msg="Printing p from class_decl")
 
     tree.add_class(p[0])
 
@@ -95,6 +97,8 @@ def p_field_decl(p):
                   | variable ',' variables
     variable      : ID '''
 
+    # print all values of p; debug
+
     if p[0] == 'type':
         p[0] = ast.TypeRecord(p[1])
     if p[0] == 'modifier':
@@ -109,7 +113,7 @@ def p_field_decl(p):
             p[0].visibility = currentVisibility
             p[0].containingClass = currentClass
             p[0].applicability = isCurrentStatic
-            P[0].type = currentType
+            p[0].type = currentType
 
 # A method declaration with modifiers, return type, method name, and optional parameters
 # A constructor declaration with modifiers, class name, and optional parameters
