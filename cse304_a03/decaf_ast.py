@@ -7,66 +7,62 @@
 # All classes in this block are records
 # Part of Class Table
 class ClassRecord:
-    
     def __init__(self, name="", superName="", constructors=[], methods=[], fields=[]):
-        self.name = name
-        self.superName = superName
-        self.methods = methods
-        self.constructors = constructors
-        self.fields = fields
+        self.name = name # string
+        self.superName = superName # string
+        self.methods = methods # list of MethodRecord objects
+        self.constructors = constructors # list of ConstructorRecord objects
+        self.fields = fields # list of FieldRecord objects
 
 class ConstructorRecord:
-
     def __init__(self, id=-1, visibility="", parameters=[], variableTable=[], body=None):
-        self.id = id
-        self.visibility = visibility
-        self.parameters = parameters
-        self.variableTable = variableTable
-        self.body = body
+        self.id = id # unique int
+        self.visibility = visibility # string; public/private
+        self.parameters = parameters # list of VariableRecord objects passed to the constructor
+        self.variableTable = variableTable # list of all VariableRecord objects (local vars + params)
+        self.body = body # a single Statement object
 
 class MethodRecord:
-
-    def __init__(self, name="", id=-1, containingClass="", visibility="", applicability="", body=None, variableTable=[], returnType="", paramaters=[]):
-        self.name = name
-        self.id = id
-        self.containingClass = containingClass
-        self.visibility = visibility
-        self.applicability = applicability
-        self.body = body
-        self.variableTable = variableTable
-        self.returnType = returnType
-        self.paramaters = paramaters
+    def __init__(self, name="", id=-1, containingClass="", visibility="", applicability="", body=None, variableTable=[], returnType=None, paramaters=[]):
+        self.name = name # string
+        self.id = id # unique int
+        self.containingClass = containingClass # string
+        self.visibility = visibility # string; public/private
+        self.applicability = applicability # string; static/non-static
+        self.body = body # a single Statement object
+        self.variableTable = variableTable # list of VariableRecord objects
+        self.returnType = returnType # a single TypeRecord object
+        self.paramaters = paramaters # list of VariableRecord objects passed to the method
 
 class FieldRecord:
-
     def __init__(self, name="", id=-1, containingClass="", visibility="", applicability="", type=None):
-        self.name = name
-        self.id = id
-        self.containingClass = containingClass
-        self.visibility = visibility
-        self.applicability = applicability
-        self.type = type
+        self.name = name # string
+        self.id = id # unique int
+        self.containingClass = containingClass # string
+        self.visibility = visibility # string; public/private
+        self.applicability = applicability # string; static/non-static
+        self.type = type # a single TypeRecord object
 
 class VariableRecord:
     # Part of Variable Table
     def __init__(self, name="", id=-1, kind="", type=None):
-        self.name = name
-        self.id = id
-        self.kind = kind
-        self.type = type
+        self.name = name # string
+        self.id = id # unique int
+        self.kind = kind # ??
+        self.type = type # a single TypeRecord object
 
 class TypeRecord:
     def __init__(self, name=""):
-        self.name = name
+        self.name = name # string; int, float, boolean, or custom user defined type
 
 class Statement:
     # kinds: If, While, For, Return, Expr, Block, Break, Continue, Skip
     # attributes: key is the attribute name and the value is mapped
     # @Sean for Block statements have the key in attributes named 'stmnts'
     def __init__(self, lineRange=[], kind='', attributes={}):
-        self.lineRange = lineRange
-        self.kind = kind
-        self.attributes = attributes
+        self.lineRange = lineRange # 2 int list; [startLine, endLine]
+        self.kind = kind # string; see above for valid kinds
+        self.attributes = attributes # dict; key is attribute, value is mapped
 
 # If you want to nest expressions have a key that is 'Expression'
 #   that maps to a *list* of Expression object
@@ -81,6 +77,6 @@ class Expression:
     # kinds: Constant, Var, Unary, Binary, Assign, Auto, Field-access, 
     #   Method-call, New-object, This, Super, Class-reference
     def __init__(self, lineRange=[], kind='', attributes={}):
-        self.lineRange = lineRange
-        self.kind = kind
-        self.attributes = attributes
+        self.lineRange = lineRange # 2 int list; [startLine, endLIne]
+        self.kind = kind # string; see above
+        self.attributes = attributes # dict; key is attribute, value is mapped
