@@ -87,7 +87,7 @@ class AST:
                 params = p.id
             else:
                 params += ', ' + p.id
-        print("Constructor parameters:", params)
+        print("Constructor Parameters:", params)
         self.print_var_table(c.variableTable)
         print("Constructor Body:")
         self.print_body( c.body)
@@ -100,7 +100,7 @@ class AST:
                 params = p.id
             else:
                 params += ', ' + p.id
-        print("Method parameters:", params)
+        print("Method Parameters:", params)
         self.print_var_table(m.variableTable)
         print("Method Body:")
         self.print_body(m.body)
@@ -213,7 +213,6 @@ def main():
     file.close()
 
     parser.parse(file_string, lexer=lexer)
-    print("YES")
 
 
 if __name__ == "__main__":

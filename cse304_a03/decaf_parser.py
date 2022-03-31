@@ -7,12 +7,14 @@ import ply.yacc as yacc
 from decaf_lexer import tokens
 import decaf_lexer as lexer
 import decaf_ast as ast
+from decaf_checker import AST
 
 currentClass = ""
 currentVisibility = ""
 currentType = None
 isCurrentStatic = False
 id = 0
+tree = AST()
 
 # Assignment is right-associative, relational operators are non-associative, and all others are left-associative
 precedence = (
@@ -32,19 +34,24 @@ def p_program(p):
     '''program : class_decl
                | empty
     class_decl : class_decl class_decl'''
-
+    if len(p) == 2:
+        tree.print_table()
 
 # The class declaration with or without inheritance and one or more class body declarations
 def p_class_decl(p):
     '''class_decl : CLASS ID EXTENDS ID '{' class_body_decl '}'
                   | CLASS ID '{' class_body_decl '}'
                   '''
+
+    for i in range(len(p)):
+        print(i, p[i], type(p[i]))
+
     p[0] = ast.ClassRecord()        # Initializes an empty class record
     p[0].name = p[2]            # Set class record's name to p[2]
     currentClass = p[0].name
 
     body_index = 4          # Represents the index where class_body_decl starts
-    if p[2] == 'EXTENDS':         # Checks if class record is a child class
+    if p[2] == 'extends':         # Checks if class record is a child class
         body_index = 6
         p[0].super = p[4]
 
@@ -57,6 +64,8 @@ def p_class_decl(p):
             p[0].methods += p[i]
         elif(type(p[i]) is ast.FieldRecord):
             p[0].fields += p[i]
+
+    tree.add_class(p[0])
 
 # One or more class body declarations that contains either fields, methods, and/or constructors
 def p_class_body_decl(p):
@@ -89,10 +98,10 @@ def p_field_decl(p):
     if p[0] == 'type':
         p[0] = ast.TypeRecord(p[1])
     if p[0] == 'modifier':
-        if p[1] == 'PRIVATE' or p[1] == 'PUBLIC':
+        if p[1] == 'private' or p[1] == 'public':
             currentVisibility = p[1]
-        if p[1] == 'STATIC' or p[2] == 'STATIC':
-            isCurrentStatic = 'TRUE'
+        if p[1] == 'static' or p[2] == 'static':
+            isCurrentStatic = True
     if p[0] == 'variables':
         for i in range(1, len(p)):
             p[0] = ast.FieldRecord()
@@ -126,7 +135,7 @@ def p_method_constructor_decl(p):
 
     elif p[0] == 'method_decl':
         p[0] = ast.MethodRecord()
-        if p[2] == 'VOID':
+        if p[2] == 'void':
             p[0].method_name = p[3]
             p[0].method_visibility = p[1]
             p[0].method_parameters = p[5]
@@ -160,13 +169,14 @@ def p_statements(p):
     optional_stmt_expr : stmt_expr
                     | empty'''
 
-    if p[1] == 'FOR':
+    p[0] = ast.Statement()
+    if p[1] == 'for':
         p[0] = ast.ForStatement(p[3], p[5], p[9], p[7])   # number line range
-    elif p[1] == 'WHILE':
+    elif p[1] == 'while':
         p[0] = ast.WhileStatement(p[3], p[5])
-    elif p[1] == 'BREAK':
+    elif p[1] == 'break':
         p[0] = ast.BreakStatement()
-    elif p[1] == 'CONTINUE':
+    elif p[1] == 'continue':
         p[0] = ast.ContinueStatement()
 
 
