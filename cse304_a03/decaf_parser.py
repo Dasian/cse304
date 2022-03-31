@@ -17,6 +17,7 @@ currentVisibility = ""
 currentType = None
 isCurrentStatic = False
 id = 0
+block_stmnts = []
 tree = AST()
 
 # Assignment is right-associative, relational operators are non-associative, and all others are left-associative
@@ -127,17 +128,12 @@ def p_method_constructor_decl(p):
                         | formal_param
        formal_param     : type variable'''
 
-    if p[0] == 'constructor_decl':
-        p[0] = ast.ConstructorRecord(superName="thing", )
-        p[0].id = p[2]
-        p[0].visibility = p[1]
-        p[0].parameters = p[4]
-        p[0].body = p[6]
-        for i in range(4, len(p)):
-            if(type(p[i]) is ast.VariableRecord):
-                p[0].variableTable += p[i].name
+    # when this function is first called/ends 
+    # the block_statements list should be reset
+    global block_stmnts
+    block_stmnts = []
 
-    elif p[0] == 'method_decl':
+    if len(p) == 8:  # method_decl
         p[0] = ast.MethodRecord()
         if p[2] == 'void':
             p[0].method_name = p[3]
@@ -151,8 +147,17 @@ def p_method_constructor_decl(p):
             p[0].method_parameters = p[5]
             p[0].return_type = "void"
             p[0].method_body = p[7]
+    elif len(p) == 7: # constructor_decl
+        p[0] = ast.ConstructorRecord()
+        p[0].id = p[2]
+        p[0].visibility = p[1]
+        p[0].parameters = p[4]
+        p[0].body = p[6]
+        for i in range(4, len(p)):
+            if(type(p[i]) is ast.VariableRecord):
+                p[0].variableTable.push(p[i])
 
-
+# TODO include line range
 def p_statements(p):
     '''block        : '{' stmt '}'
                     | '{' '}'
@@ -174,14 +179,39 @@ def p_statements(p):
                     | empty'''
 
     p[0] = ast.Statement()
-    if p[1] == 'for':
-        p[0] = ast.ForStatement(p[3], p[5], p[9], p[7])   # number line range
+    if p[1] == 'if':
+        p[0].kind = 'If'
+        p[0].attributes.update({'condition': p[3]})
+        p[0].attributes.update({'then': p[5]})
+        if len(p) > 6:
+            p[0].attributes.update({'else': p[7]})
+    elif p[1] == 'for':
+        p[0].kind = 'For'
+        p[0].attributes.update({'initialize-expression': p[3]})
+        p[0].attributes.update({'loop-condition': p[5]})
+        p[0].attributes.update({'update-expression': p[7]})
+        p[0].attributes.update({'loop-body': p[9]})
     elif p[1] == 'while':
-        p[0] = ast.WhileStatement(p[3], p[5])
+        p[0].kind = 'While'
+        p[0].attributes.update({'loop-condition': p[3]})
+        p[0].attributes.update({'loop-body': p[5]})
+    elif p[1] == 'return':
+        p[0].kind = 'return'
+        p[0].attributes.update({'return-expression', p[2]})
+    elif type(p[1]) is ast.Expression and p[2] == ';': # expr-stmnt
+        p[0].kind = 'Expr' 
+        p[0].attributes.update({'expression': p[1]})
+    elif p[1] == '{': # block
+        p[0].kind = 'Block'
+        p[1].attributes.update({'stmnts': block_stmnts}) # might need to be copied? not sure 
     elif p[1] == 'break':
-        p[0] = ast.BreakStatement()
+        p[0].kind = 'Break'
     elif p[1] == 'continue':
-        p[0] = ast.ContinueStatement()
+        p[0].kind = 'Continue'
+    # skip statement?
+
+    # add to block statement
+    block_stmnts.append(p[0])
 
 
 def p_expressions(p):
