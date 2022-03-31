@@ -6,11 +6,12 @@
 import ply.yacc as yacc
 from decaf_lexer import tokens
 import decaf_lexer as lexer
+import decaf_ast as ast
 
 currentClass = ""
-currentVisibility
-currentType
-isCurrentStatic
+currentVisibility = ""
+currentType = None
+isCurrentStatic = False
 id = 0
 
 # Assignment is right-associative, relational operators are non-associative, and all others are left-associative
@@ -38,23 +39,23 @@ def p_class_decl(p):
     '''class_decl : CLASS ID EXTENDS ID '{' class_body_decl '}'
                   | CLASS ID '{' class_body_decl '}'
                   '''
-    p[0] = new ClassRecord()        # Initializes an empty class record
+    p[0] = ast.ClassRecord()        # Initializes an empty class record
     p[0].name = p[2]            # Set class record's name to p[2]
     currentClass = p[0].name
 
     body_index = 4          # Represents the index where class_body_decl starts
-    if p[2] == EXTENDS:         # Checks if class record is a child class
+    if p[2] == 'EXTENDS':         # Checks if class record is a child class
         body_index = 6
         p[0].super = p[4]
 
 # Loop through all the class body declarations to add appropriate records to
 # class record's constructors, methods, and fields
     for i in range(body_index, len(p)):
-        if(p[i] is ConstructorRecord)
+        if(type(p[i]) is ast.ConstructorRecord):
             p[0].constructor += p[i]
-        elif(p[i] is MethodRecord)
+        elif(type(p[i]) is ast.MethodRecord):
             p[0].methods += p[i]
-        elif(p[i] is FieldRecord)
+        elif(type(p[i]) is ast.FieldRecord):
             p[0].fields += p[i]
 
 # One or more class body declarations that contains either fields, methods, and/or constructors
@@ -86,15 +87,15 @@ def p_field_decl(p):
     variable      : ID '''
 
     if p[0] == 'type':
-        p[0] = new TypeRecord(p[1])
+        p[0] = ast.TypeRecord(p[1])
     if p[0] == 'modifier':
-        if p[1] == PRIVATE or p[1] == PUBLIC:
+        if p[1] == 'PRIVATE' or p[1] == 'PUBLIC':
             currentVisibility = p[1]
-        if p[1] == STATIC or p[2] == STATIC:
-            isCurrentStatic = TRUE
-    if p[0] == 'variables'
-        for i at range(1, len(p)):
-            p[0] = new FieldRecord()
+        if p[1] == 'STATIC' or p[2] == 'STATIC':
+            isCurrentStatic = 'TRUE'
+    if p[0] == 'variables':
+        for i in range(1, len(p)):
+            p[0] = ast.FieldRecord()
             p[0].name = p[1]
             p[0].visibility = currentVisibility
             p[0].containingClass = currentClass
@@ -113,30 +114,30 @@ def p_method_constructor_decl(p):
                         | formal_param
        formal_param     : type variable'''
 
-       if p[0] == 'constructor_decl':
-            p[0] = new ConstructorRecord()
-            p[0].id = p[2]
-            p[0].visibility = p[1]
-            p[0].parameters = p[4]
-            p[0].body = p[6]
-            for i in range(4, len(p)):
-                if(p[i] is VariableRecord)
-                    p[0].variableTable += p[i].name
+    if p[0] == 'constructor_decl':
+        p[0] = ast.ConstructorRecord()
+        p[0].id = p[2]
+        p[0].visibility = p[1]
+        p[0].parameters = p[4]
+        p[0].body = p[6]
+        for i in range(4, len(p)):
+            if(type(p[i]) is ast.VariableRecord):
+                p[0].variableTable += p[i].name
 
-        elif p[0] == 'method_decl':
-            p[0] = new MethodRecord()
-            if p[2] == VOID:
-                p[0].method_name = p[3]
-                p[0].method_visibility = p[1]
-                p[0].method_parameters = p[5]
-                p[0].return_type = p[2]
-                p[0].method_body = p[7]
-            else:
-                p[0].method_name = p[3]
-                p[0].method_visibility = p[1]
-                p[0].method_parameters = p[5]
-                p[0].return_type = "void"
-                p[0].method_body = p[7]
+    elif p[0] == 'method_decl':
+        p[0] = ast.MethodRecord()
+        if p[2] == 'VOID':
+            p[0].method_name = p[3]
+            p[0].method_visibility = p[1]
+            p[0].method_parameters = p[5]
+            p[0].return_type = p[2]
+            p[0].method_body = p[7]
+        else:
+            p[0].method_name = p[3]
+            p[0].method_visibility = p[1]
+            p[0].method_parameters = p[5]
+            p[0].return_type = "void"
+            p[0].method_body = p[7]
 
 
 def p_statements(p):
@@ -159,14 +160,14 @@ def p_statements(p):
     optional_stmt_expr : stmt_expr
                     | empty'''
 
-    if p[1] == FOR:
-        p[0] = new ForStatement(p[3], p[5], p[9], p[7])   # number line range
-    elif p[1] == WHILE:
-        p[0] = new WhileStatement(p[3], p[5])
-    elif p[1] == BREAK:
-        p[0] = new BreakStatement()
-    elif p[1] == CONTINUE:
-        p[0] = new ContinueStatement()
+    if p[1] == 'FOR':
+        p[0] = ast.ForStatement(p[3], p[5], p[9], p[7])   # number line range
+    elif p[1] == 'WHILE':
+        p[0] = ast.WhileStatement(p[3], p[5])
+    elif p[1] == 'BREAK':
+        p[0] = ast.BreakStatement()
+    elif p[1] == 'CONTINUE':
+        p[0] = ast.ContinueStatement()
 
 
 def p_expressions(p):
