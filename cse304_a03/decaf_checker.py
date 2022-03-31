@@ -39,10 +39,10 @@ class AST:
         f = decaf_ast.VariableRecord(name="f", id=2, kind="formal", type=decaf_ast.TypeRecord(name="float"))
         b = decaf_ast.VariableRecord(name="b", id=3, kind="formal", type=decaf_ast.TypeRecord(name="boolean"))
         s = decaf_ast.VariableRecord(name="s", id=4, kind="formal", type=decaf_ast.TypeRecord(name="string"))
-        print1 = decaf_ast.MethodRecord(name="print", id=1, containingClass="Out", visibility="public", applicability="static", paramaters=[i], variableTable=[i])
-        print2 = decaf_ast.MethodRecord(name="print", id=2, containingClass="Out", visibility="public", applicability="static", paramaters=[f], variableTable=[f])
-        print3 = decaf_ast.MethodRecord(name="print", id=3, containingClass="Out", visibility="public", applicability="static", paramaters=[b], variableTable=[b])
-        print4 = decaf_ast.MethodRecord(name="print", id=4, containingClass="Out", visibility="public", applicability="static", paramaters=[s], variableTable=[s])
+        print1 = decaf_ast.MethodRecord(name="print", id=1, containingClass="Out", visibility="public", applicability="static", parameters=[i], variableTable=[i])
+        print2 = decaf_ast.MethodRecord(name="print", id=2, containingClass="Out", visibility="public", applicability="static", parameters=[f], variableTable=[f])
+        print3 = decaf_ast.MethodRecord(name="print", id=3, containingClass="Out", visibility="public", applicability="static", parameters=[b], variableTable=[b])
+        print4 = decaf_ast.MethodRecord(name="print", id=4, containingClass="Out", visibility="public", applicability="static", parameters=[s], variableTable=[s])
         outMethods = [print1, print2, print3, print4]
         outClass = decaf_ast.ClassRecord(name="Out", methods=outMethods)
 
@@ -82,12 +82,12 @@ class AST:
     def print_constructor(self, c):
         print("CONSTRUCTOR: "+ c.id+ ', '+ c.visibility)
         params = ''
-        for p in c.paramaters:
+        for p in c.parameters:
             if(params == ''):
                 params = p.id
             else:
                 params += ', ' + p.id
-        print("Constructor Paramaters:", params)
+        print("Constructor Parameters:", params)
         self.print_var_table(c.variableTable)
         print("Constructor Body:")
         self.print_body( c.body)
@@ -95,12 +95,12 @@ class AST:
     def print_method(self, m):
         print("METHOD: "+ str(m.id)+ ', '+ m.name+ ', '+ m.containingClass+ ', '+ m.visibility)
         params = ''
-        for p in m.paramaters:
+        for p in m.parameters:
             if(params == ''):
                 params = p.id
             else:
                 params += ', ' + p.id
-        print("Method Paramaters:", params)
+        print("Method Parameters:", params)
         self.print_var_table(m.variableTable)
         print("Method Body:")
         self.print_body(m.body)
@@ -213,7 +213,6 @@ def main():
     file.close()
 
     parser.parse(file_string, lexer=lexer)
-    print("YES")
 
 
 if __name__ == "__main__":
