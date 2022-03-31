@@ -115,7 +115,7 @@ def p_method_constructor_decl(p):
        formal_param     : type variable'''
 
     if p[0] == 'constructor_decl':
-        p[0] = ast.ConstructorRecord()
+        p[0] = ast.ConstructorRecord(superName="thing", )
         p[0].id = p[2]
         p[0].visibility = p[1]
         p[0].parameters = p[4]
