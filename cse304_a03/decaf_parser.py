@@ -216,7 +216,7 @@ def p_statements(p):
         # increment the index in method/constructor 
         # decrement here
         # I actually think different inc/decs are needed
-        p[1].attributes.update({'stmnts': block_stmnts}) # might need to be copied? not sure 
+        p[0].attributes.update({'stmnts': block_stmnts}) # might need to be copied? not sure 
     elif p[1] == 'break':
         p[0].kind = 'Break'
     elif p[1] == 'continue':
@@ -268,6 +268,11 @@ def p_expressions(p):
     # change the indices as needed for each
     # I also tried to get the typing consistent
     p[0] = ast.Expression()
+
+    # added to prevent the expression template code from running
+    value = True
+    if value:
+        return
     
     # Constant
     # ***Remember to change the indices!***
