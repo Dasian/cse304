@@ -47,8 +47,12 @@ def p_class_decl(p):
                   | CLASS ID '{' class_body_decl '}'
                   '''
 
+    # Reset Global vars
+    global block_stmnts
+    block_stmnts = []
+
     p[0] = ast.ClassRecord()        # Initializes an empty class record
-    p[0].name = p[2]            # Set class record's name to p[2]
+    p[0].name = p[2]            
     currentClass = p[0].name
 
     body_index = 4          # Represents the index where class_body_decl starts
@@ -90,18 +94,12 @@ def p_field_decl(p):
                   | STATIC
                   | empty
     var_decl      : type variables ';'
-    type          : INT
-                  | FLOAT
-                  | BOOLEAN
-                  | ID
     variables     : variable
                   | variable ',' variables
     variable      : ID '''
 
     # print all values of p; debug
 
-    if p[0] == 'type':
-        p[0] = ast.TypeRecord(p[1])
     if p[0] == 'modifier':
         if p[1] == 'private' or p[1] == 'public':
             currentVisibility = p[1]
@@ -115,6 +113,16 @@ def p_field_decl(p):
             p[0].containingClass = currentClass
             p[0].applicability = isCurrentStatic
             p[0].type = currentType
+
+def p_type(p):
+    '''type : INT
+            | FLOAT
+            | BOOLEAN
+            | ID '''
+    p[0] = ast.TypeRecord()
+    # check if ?
+    # originally in field; check the commits/past hws for specific place
+
 
 # A method declaration with modifiers, return type, method name, and optional parameters
 # A constructor declaration with modifiers, class name, and optional parameters
@@ -130,6 +138,7 @@ def p_method_constructor_decl(p):
 
     # when this function is first called/ends 
     # the block_statements list should be reset
+    # I think this concept needs revision (nested block stmnts)
     global block_stmnts
     block_stmnts = []
 
@@ -203,12 +212,18 @@ def p_statements(p):
         p[0].attributes.update({'expression': p[1]})
     elif p[1] == '{': # block
         p[0].kind = 'Block'
+        # possible make block_stmnts a double list
+        # increment the index in method/constructor 
+        # decrement here
+        # I actually think different inc/decs are needed
         p[1].attributes.update({'stmnts': block_stmnts}) # might need to be copied? not sure 
     elif p[1] == 'break':
         p[0].kind = 'Break'
     elif p[1] == 'continue':
         p[0].kind = 'Continue'
     # skip statement?
+
+    # adding line range?
 
     # add to block statement
     block_stmnts.append(p[0])
@@ -247,6 +262,120 @@ def p_expressions(p):
      | DECREMENT field_access
     stmt_expr : assign
               | method_invocation'''
+    # This is all just general information
+    # they need to be broken up in a better way
+    # copying/pasting/editing for all of these parts is welcome
+    # change the indices as needed for each
+    # I also tried to get the typing consistent
+    p[0] = ast.Expression()
+    
+    # Constant
+    # ***Remember to change the indices!***
+    # need to find a way to assign the values to the table
+    p[0].kind = "Constant"
+    value_constants = ["Float-constant", "Integer-constant", "String-constant"]
+    if type(p[1]) is ast.Expression:
+        # adding Integer/Float/String-constant
+        if p[1].kind in value_constants:
+            # not sure how p[1] would be generated though
+            p[0].attributes.update({p[1].kind: p[1]})
+        # adding Null, True, or False
+        else:
+            # this might not be necessary/could screw things up
+            # depending on how the inner attributes are generated
+            p[0].attributes.update({p[1].kind: ""})
+
+    # Var
+    # ***Remember to change the indices!***
+    # scoping rules for variables with the same name 
+    # needs to be handled somewhere
+    p[0].kind = "Var"
+    if type(p[1]) is ast.VariableRecord:
+        p[0].attributes.update({"ID": p[1].id})
+
+    # Unary
+    # ***Remember to change the indices!***
+    p[0].kind = "Unary"
+    if type(p[1]) is ast.Expression:
+        p[0].attributes.update({"operand": p[1]})
+    # uminus or negative (-); 
+    if type(p[2]) is str:
+        p[0].attributes.update({"unary-operator": p[2]})
+
+    # Binary
+    # ***Remember to change the indices!***
+    p[0].kind = "Binary"
+    if type(p[1]) is ast.Expression:
+        p[0].attributes.update({"operand1": p[1]})
+    if type(p[2]) is ast.Expression:
+        p[0].attributes.update({"operand2": p[2]})
+    # one of add, sub, mul, div, and, or, eq, neq, lt, leq, gt, and geq
+    # or the symbols rather? not sure
+    if type(p[3]) is str:
+        p[0].attributes.update({"operator": p[3]})
+
+    # Assign
+    # ***Remember to change the indices!***
+    p[0].kind = "Assign"
+    if type(p[1]) is ast.Expression:
+        p[0].attributes.update({"left": p[1]})
+    if type(p[2]) is ast.Expression:
+        p[0].attributes.update({"right": p[2]})
+
+    # Auto
+    # ***Remember to change the indices!***
+    p[0].kind = "Auto"
+    # variable being manipulated: ex: x
+    if type(p[1]) is ast.Expression:
+        p[0].attributes.update({"operand": p[1]})
+    # 'inc' or 'dec'; ex: ++ or --
+    if type(p[2]) is str:
+        p[0].attributes.update({"operation": p[2]})
+    # 'post' or 'pre'; ex: x++ or ++x
+    if type(p[3]) is str:
+        p[0].attributes.update({"order": p[3]})
+
+    # Field-access
+    # ***Remember to change the indices!***
+    p[0].kind = "Field-access"
+    if type(p[1]) is ast.Expression:
+        p[0].attributes.update({"base": p[1]})
+    if type(p[2]) is str:
+        p[0].attributes.update({"field-name": p[2]})
+
+    # Method-call
+    # ***Remember to change the indices!***
+    p[0].kind = "Method-call"
+    if type(p[1]) is ast.Expression:
+        p[0].attributes.update({"base": p[1]})
+    if type(p[2]) is str:
+        p[0].attributes.update({"method-name": p[2]})
+    # list of Expression objects
+    if type(p[3]) is list:
+        p[0].attributes.update({"arguments": p[3]})
+
+    # New-object
+    # ***Remember to change the indices!***
+    p[0].kind = "New-object"
+    if type(p[1]) is str:
+        p[0].attributes.update({"class-name": p[1]})
+    # list of expressions to pass to the constructor
+    # the list could be empty (no args)
+    if type(p[2]) is list:
+        p[0].attributes.update({"arguments": p[2]})
+
+    # This
+    p[0].kind = "This"
+
+    # Super
+    p[0].kind = "Super"
+
+    # Class-reference
+    # ***Remember to change the indices!***
+    p[0].kind = "Class-reference"
+    # denotes the value of literal class names
+    if type(p[1]) is str:
+        p[0].attributes.update({"class-name": p[1]})
 
 
 def p_operators(p):
