@@ -1,1 +1,1 @@
-int x, y, z;
+public int x, y, z;

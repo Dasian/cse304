@@ -15,13 +15,20 @@ class ClassRecord:
         self.fields = fields
 
 class ConstructorRecord:
-
-    def __init__(self, id=-1, visibility="", parameters=[], variableTable=[], body=None):
-        self.id = id
-        self.visibility = visibility
-        self.parameters = parameters
-        self.variableTable = variableTable
-        self.body = body
+    def __init__(self, id='', visibility="", parameters=None, variableTable=None, body=None):
+        self.id = id # name of the class
+        self.visibility = visibility # string; public/private
+        self.body = body # a single Statement object
+        # list of VariableRecord objects passed to the constructor
+        if parameters is None:
+            self.parameters = []
+        else:
+            self.parameters = parameters 
+        # list of all VariableRecord objects (local vars + params)
+        if variableTable is None:
+            self.variableTable = []
+        else:
+            self.variableTable = variableTable 
 
 class MethodRecord:
 
