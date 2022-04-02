@@ -27,8 +27,8 @@ class ClassRecord:
             self.fields = fields 
 
 class ConstructorRecord:
-    def __init__(self, id=-1, visibility="", parameters=None, variableTable=None, body=None):
-        self.id = id # unique int
+    def __init__(self, id='', visibility="", parameters=None, variableTable=None, body=None):
+        self.id = id # name of the class
         self.visibility = visibility # string; public/private
         self.body = body # a single Statement object
         # list of VariableRecord objects passed to the constructor
