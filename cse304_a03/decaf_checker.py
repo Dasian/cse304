@@ -77,7 +77,11 @@ class AST:
             self.print_method(m)
 
     def print_field(self, f):
-        print("FIELD: "+ f.id+ ', '+ f.name+ ', '+ f.containingClass+ ', '+ f.visibility+ ', '+ f.applicability+ ', '+ f.type)
+        base_types = ['int', 'float', 'boolean']
+        type_name = f.type.name
+        if type_name not in base_types:
+                type_name = 'user(' + str(f.type.name) + ')'
+        print("FIELD: "+ f.id+ ', '+ f.name+ ', '+ f.containingClass+ ', '+ f.visibility+ ', '+ f.applicability+ ', '+ type_name)
 
     def print_constructor(self, c):
         print("CONSTRUCTOR: "+ c.id+ ', '+ c.visibility)
