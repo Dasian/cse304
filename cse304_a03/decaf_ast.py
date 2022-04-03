@@ -6,7 +6,6 @@
 
 # All classes in this block are records
 class ClassRecord:
-    
     def __init__(self, name="", superName="", constructors=[], methods=[], fields=[]):
         self.name = name
         self.superName = superName
@@ -15,31 +14,40 @@ class ClassRecord:
         self.fields = fields
 
 class ConstructorRecord:
-    def __init__(self, id='', visibility="", parameters=None, variableTable=None, body=None):
-        self.id = id # name of the class
+    def __init__(self, id=-1, visibility="", parameters=None, variableTable=None, body=None):
+        self.id = id # unique id
         self.visibility = visibility # string; public/private
         self.body = body # a single Statement object
         # list of VariableRecord objects passed to the constructor
         if parameters is None:
             self.parameters = []
         else:
-            self.parameters = parameters 
+            self.parameters = parameters
         # list of all VariableRecord objects (local vars + params)
         if variableTable is None:
             self.variableTable = []
         else:
-            self.variableTable = variableTable 
+            self.variableTable = variableTable
 
 class MethodRecord:
-
-    def __init__(self, name="", id=-1, containingClass="", visibility="", applicability="", body=None, variableTable=[]):
-        self.name = name
-        self.id = id
-        self.containingClass = containingClass
-        self.visibility = visibility
-        self.applicability = applicability
-        self.body = body
-        self.variableTable = variableTable
+    def __init__(self, name="", id=-1, containingClass="", visibility="", applicability="", body=None, variableTable=None, returnType=None, parameters=None):
+        self.name = name # string
+        self.id = id # unique int
+        self.containingClass = containingClass # string
+        self.visibility = visibility # string; public/private
+        self.applicability = applicability # string; static/non-static
+        self.body = body # a single Statement object
+        self.returnType = returnType # a single TypeRecord object
+        # list of VariableRecord objects
+        if variableTable is None:
+            self.variableTable = []
+        else:
+            self.variableTable = variableTable
+        # list of VariableRecord objects passed to the constructor
+        if parameters is None:
+            self.parameters = []
+        else:
+            self.parameters = parameters
 
 class FieldRecord:
 
@@ -75,105 +83,17 @@ class Statement:
         self.attributes = attributes
 
 class Expression:
-    def __init__(self, lineRange=[]):
-        self.lineRange = lineRange
-
-"""
-# All classes in this block statement (deprecated)
-class IfStatement(Statement):
-    def __init__(self, condition=None, then=None, elseStatement=None, lineRange=[]):
-        super().__init__(lineRange=lineRange)
-        self.condition = condition
-        self.then = then
-        self.elseStatement = elseStatement
-
-class WhileStatement(Statement):
-    def __init__(self, condition=None, body=None, lineRange=[]):
-        super().__init__(lineRange=lineRange)
-        self.condition = condition
-        self.body = body
-
-class ForStatement(Statement):
-    def __init__(self, init=None, condition=None, body=None, update=None, lineRange=[]):
-        super().__init__(lineRange=lineRange)
-        self.condition = condition
-        self.init = init
-        self.body = body
-        self.update = update
-
-class ReturnStatement(Statement):
-    def __init__(self, value=None, lineRange=[]):
-        super().__init__(lineRange=lineRange)
-        self.value = value
-
-class ExprStatement(Statement):
-    def __init__(self, expr=None, lineRange=[]):
-        super().__init__(lineRange=lineRange)
-        self.expr = expr
-
-class BlockStatement(Statement):
-    def __init__(self, stmnts=None, lineRange=[]):
-        super().__init__(lineRange=lineRange)
-        self.stmnts = stmnts
-
-class BreakStatement(Statement):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-
-class ContinueStatement(Statement):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-
-class SkipStatement(Statement):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-"""
-
-# All classes in this block are expressions
-class ConstExpression(Expression):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-
-class VarExpression(Expression):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-
-class UnaryExpression(Expression):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-
-class BinaryExpression(Expression):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-
-class AssignExpression(Expression):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-
-class AutoExpression(Expression):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-
-class FieldAccessExpression(Record):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-
-class MethodCallExpression(Expression):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-
-class NewObjectExpression(Record):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-
-class ThisExpression(Expression):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-
-class SuperExpression(Expression):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
-
-class ClassReferenceExpression(Expression):
-    def __init__(self, lineRange=[]):
-        super().__init__(lineRange)
+    # kinds: Constant, Var, Unary, Binary, Assign, Auto, Field-access,
+    #   Method-call, New-object, This, Super, Class-reference
+    def __init__(self, lineRange=None, kind='', attributes=None):
+        self.kind = kind # string; see above
+        # dict; key is attribute, value is mapped
+        if attributes is None:
+            self.attributes = {}
+        else:
+            self.attributes = attributes
+        # 2 int list; [startLine, endLine]
+        if lineRange is None:
+            self.lineRange = []
+        else:
+            self.lineRange = lineRange
