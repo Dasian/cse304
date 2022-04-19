@@ -3,6 +3,7 @@
 
 #  PLY/yacc parser specification file
 
+from numpy import block
 import ply.yacc as yacc
 from decaf_lexer import tokens
 import decaf_lexer as lexer
@@ -10,8 +11,9 @@ import decaf_ast as ast
 from decaf_checker import AST
 import debug
 
+#block_depth = 0
+#block_stmnts = {block_depth: []}
 currentClass = ""
-block_stmnts = []
 conID = 0
 fieldID = 0
 methodID = 0
@@ -31,7 +33,7 @@ precedence = (
     ('left', 'NOT')
 )
 
-
+# done
 # The program with zero or more class declarations
 def p_program(p):
     '''program : class_decl
@@ -39,20 +41,23 @@ def p_program(p):
     class_decl : class_decl class_decl'''
     tree.print_table()
 
+# done
 # The class declaration with or without inheritance and one or more class body declarations
 def p_class_decl(p):
     '''class_decl : CLASS ID EXTENDS ID '{' class_body_decl '}'
                   | CLASS ID '{' class_body_decl '}'
                   '''
     # Reset Global vars
-    global block_stmnts
+    #global block_stmnts
+    #global block_depth
     global fieldID
     global methodID
     global varID
     global conID
     global currentClass
 
-    block_stmnts = []
+    #block_depth = 0
+    #block_stmnts = {block_depth: []}
     fieldID = 0
     methodID = 0
     varID = 0
@@ -86,6 +91,7 @@ def p_class_decl(p):
     debug.print_p(p, msg="Printing p from class_decl")
     tree.add_class(p[0])
 
+# TODO: fields, statements, decl
 # One or more class body declarations that contains either fields, methods, and/or constructors
 def p_class_body_decl(p):
     '''class_body_decl : class_body_decl class_body_decl
@@ -97,6 +103,7 @@ def p_class_body_decl(p):
     if len(p) == 2:
         p[0] = [p[1]]
 
+# done
 def p_type(p):
     '''type : INT
             | FLOAT
@@ -104,6 +111,7 @@ def p_type(p):
             | ID'''
     p[0] = ast.TypeRecord(p[1])
 
+# done
 def p_modifier(p):
     '''modifier : PRIVATE STATIC
                 | PRIVATE
@@ -113,10 +121,12 @@ def p_modifier(p):
                 | empty'''
     p[0] = p[1:]
 
+# done
 def p_var_decl(p):
     '''var_decl : type variables ';' '''
     p[0] = {"type" : p[1], "variables" : p[2]}
 
+# done
 def p_variables(p):
     '''variables : variable
                  | variable ',' variables'''
@@ -125,10 +135,12 @@ def p_variables(p):
     if len(p) == 2:
         p[0] = [p[1]]
 
+# done
 def p_variable(p):
     '''variable  : ID '''
     p[0] = p[1]
 
+# TODO: field id?
 # Field declaration with a type, variable name, and optional modifiers
 def p_field_decl(p):
     '''field_decl : modifier var_decl'''
@@ -156,10 +168,21 @@ def p_field_decl(p):
             field = ast.FieldRecord(name = var, id = x, containingClass= currentClass, visibility= visibility, applicability= applicability, type= type)
             p[0] += [field]
 
+# TODO: replace empty list with variable table
 def p_method_decl(p):
     '''method_decl      : modifier type ID '(' optional_formals ')' block
                         | modifier VOID ID '(' optional_formals ')' block'''
+    
+    # reset blocks dict
+    # reset when creating method and constructor
+    #global block_stmnts
+    #global block_depth
+    #block_depth = 0
+    #block_stmnts = {block_depth: []}
+
+    # never set but needs t0 be
     methodType = ''
+
     if p[2] == 'void':
         methodType = ast.TypeRecord('void')
     else:
@@ -187,6 +210,7 @@ def p_method_decl(p):
     p[0] = ast.MethodRecord(name= p[3], id=x, containingClass=currentClass
     , visibility=visibility, applicability=applicability, body=method_body, returnType=methodType, parameters=parameters)
 
+# TODO: variable table
 def p_optional_formals(p):
     '''optional_formals : formals
                         | empty'''
@@ -195,6 +219,7 @@ def p_optional_formals(p):
     else:
         p[0] = p[1]
 
+# done
 def p_formals(p):
     '''formals  : formal_param
                 | formal_param ',' formals'''
@@ -203,6 +228,7 @@ def p_formals(p):
     if len(p) == 2:
         p[0] = [p[1]]
 
+# TODO: field_id, variable table, field_id again
 def p_formal_param(p):
     '''formal_param : type variable'''
 
@@ -212,6 +238,13 @@ def p_formal_param(p):
 # A constructor declaration with modifiers, class name, and optional parameters
 def p_constructor_decl(p):
     '''constructor_decl : modifier ID '(' optional_formals ')' block'''
+
+    # reset blocks dict
+    # reset when creating method and constructor
+    #global block_stmnts
+    ##global block_depth
+    #block_stmnts = {}
+    #block_depth = 0
 
     name = p[2]
     visibility = ''
@@ -233,11 +266,32 @@ def p_block(p):
     '''block : '{' optional_stmts '}'
              | '{' '}'
     '''
+    # create block object
+    p[0] = ast.Statement()
+    p[0].kind = 'Block'
+    # { }
+    if len(p) == 2:
+        p[0].attributes['stmnts'] = []
+    else:
+        p[0].attributes['stmnts'] = p[2]
 
+# if there are ordering problems check this recursion magic
+# returns a list of statements
 def p_optional_stmts(p):
     '''optional_stmts : stmt optional_stmts
                        | empty'''
+    if len(p) == 3:
+        if p[3] == None: # stmnt + empty
+            p[0] = [p[1]]
+        else: # stmnt + optional_stmts
+            p[0] = [p[1]]
+            for s in p[2]:
+                p[0].append(s)
+    else: # empty
+        p[0] = []
 
+
+# TODO line range, nested block statements
 def p_statements(p):
     '''stmt         : IF '(' expr ')' stmt ELSE stmt
                     | IF '(' expr ')' stmt
@@ -256,7 +310,11 @@ def p_statements(p):
                     | empty'''
 
     p[0] = ast.Statement()
-    if p[1] == 'if':
+
+    # splitting stmnt for calculating block size
+    if len(p) == 3 and ';' not in p and '{' not in p:
+        block_size += 1
+    elif p[1] == 'if':
         p[0].kind = 'If'
         p[0].attributes.update({'condition': p[3]})
         p[0].attributes.update({'then': p[5]})
@@ -278,14 +336,6 @@ def p_statements(p):
     elif type(p[1]) is ast.Expression and p[2] == ';': # expr-stmnt
         p[0].kind = 'Expr'
         p[0].attributes.update({'expression': p[1]})
-    elif p[1] == '{': # block
-        p[0].kind = 'Block'
-        # possible make block_stmnts a double list
-        # increment the index in method/constructor
-        # decrement here
-        # I actually think different inc/decs are needed
-        p[0].attributes.update({'stmnts': block_stmnts}) # might need to be copied? not sure
-
     elif p[1] == 'break':
         p[0].kind = 'Break'
     elif p[1] == 'continue':
@@ -295,9 +345,9 @@ def p_statements(p):
     # adding line range?
 
     # add to block statement
-    block_stmnts.append(p[0])
+    # block_stmnts[block_depth].append(p[0])
 
-
+# TODO: all
 def p_expressions(p):
     '''literal : INT_CONST
                | FLOAT_CONST
@@ -451,7 +501,7 @@ def p_expressions(p):
     if type(p[1]) is str:
         p[0].attributes.update({"class-name": p[1]})
 
-
+# TODO: all
 def p_operators(p):
     """arith_op : PLUS
             | MINUS
