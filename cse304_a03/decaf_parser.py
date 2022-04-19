@@ -8,7 +8,7 @@ from decaf_lexer import tokens
 import decaf_lexer as lexer
 import decaf_ast as ast
 from decaf_checker import AST
-
+import debug
 
 currentClass = ""
 currentVisibility = ""
@@ -66,13 +66,13 @@ def p_class_decl(p):
 
     # Loop through all the class body declarations to add appropriate records to
     # class record's constructors, methods, and fields
-    for i in range(body_index, len(p)):
-        if(type(p[i]) is ast.ConstructorRecord):
-            p[0].constructor.append(p[i])
-        elif(type(p[i]) is ast.MethodRecord):
-            p[0].methods.append(p[i])
-        elif(type(p[i]) is ast.FieldRecord):
-            p[0].fields.append(p[i])
+    for record in p[body_index]:
+        if(type(record) is ast.ConstructorRecord):
+            p[0].constructor.append(record)
+        elif(type(record) is ast.MethodRecord):
+            p[0].methods.append(record)
+        elif(type(record) is ast.FieldRecord):
+            p[0].fields.append(record)
 
     debug.print_p(p, msg="Printing p from class_decl")
 
@@ -130,12 +130,12 @@ def p_field_decl(p):
     applicability = ''
 
     modifiers = p[1]
-    if modifiers in 'public':
+    if 'public' in modifiers:
         visibility = 'public'
     else:
         visibility = 'private'
 
-    if modifiers in 'static':
+    if 'static' in modifiers:
         applicability = 'static'
     else:
         applicability = 'non-static'
@@ -145,9 +145,9 @@ def p_field_decl(p):
 
     p[0] = []
     x = fieldID
-    for var in var_dcl["variables"]:
+    for var in var_decl["variables"]:
         x += 1
-        field = ast.FieldRecord(var, x, containingClass, visibility, applicability, type)
+        field = ast.FieldRecord(name = var, id = x, containingClass= containingClass, visibility= visibility, applicability= applicability, type= type)
         p[0] += [field]
 
 def p_method_decl(p):
@@ -179,8 +179,8 @@ def p_method_decl(p):
     x = methodID
     x += 1
     # TODO replace empty list with variable table
-    p[0] = ast.MethodRecord(p[3], x, currentClass
-    , visibility, applicability, method_body, [], methodType, parameters)
+    p[0] = ast.MethodRecord(name= p[3], id=x, containingClass=currentClass
+    , visibility=visibility, applicability=applicability, body=method_body, returnType=methodType, parameters=parameters)
 
 def p_optional_formals(p):
     '''optional_formals : formals
@@ -223,7 +223,7 @@ def p_constructor_decl(p):
     body = p[6]
     variableTable = parameters + body
 
-    p[0] = ast.ConstructorRecord(name, visibility, parameters,variableTable, body)
+    p[0] = ast.ConstructorRecord(id=name, visibility=visibility, parameters=parameters,variableTable=variableTable, body=body)
 
     if len(p) == 8:  # method_decl
         p[0] = ast.MethodRecord()

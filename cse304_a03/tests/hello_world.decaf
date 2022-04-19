@@ -1,4 +1,5 @@
-class hello_world{
+class hello_world extends a1{
+    int x;
     public static void main() {
         Out.print("Hello World!\n");
     }
