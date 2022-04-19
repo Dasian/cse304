@@ -271,7 +271,7 @@ def p_block(p):
     p[0] = ast.Statement()
     p[0].kind = 'Block'
     # { }
-    if len(p) == 2:
+    if len(p) == 3:
         p[0].attributes['stmnts'] = []
     else:
         p[0].attributes['stmnts'] = p[2]
@@ -282,7 +282,7 @@ def p_optional_stmts(p):
     '''optional_stmts : stmt optional_stmts
                        | empty'''
     if len(p) == 3:
-        if p[3] == None: # stmnt + empty
+        if p[2] == None: # stmnt + empty
             p[0] = [p[1]]
         else: # stmnt + optional_stmts
             p[0] = [p[1]]
@@ -312,10 +312,7 @@ def p_statements(p):
 
     p[0] = ast.Statement()
 
-    # splitting stmnt for calculating block size
-    if len(p) == 3 and ';' not in p and '{' not in p:
-        block_size += 1
-    elif p[1] == 'if':
+    if p[1] == 'if':
         p[0].kind = 'If'
         p[0].attributes.update({'condition': p[3]})
         p[0].attributes.update({'then': p[5]})
@@ -334,7 +331,7 @@ def p_statements(p):
     elif p[1] == 'return':
         p[0].kind = 'return'
         p[0].attributes.update({'return-expression', p[2]})
-    elif type(p[1]) is ast.Expression and p[2] == ';': # expr-stmnt
+    elif len(p) == 3 and type(p[1]) is ast.Expression and p[2] == ';': # expr-stmnt
         p[0].kind = 'Expr'
         p[0].attributes.update({'expression': p[1]})
     elif p[1] == 'break':
