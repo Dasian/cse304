@@ -1,4 +1,5 @@
 class hello_world{
+    private int method1(int x){}
     public static void main() {
         Out.print("Hello World!\n");
     }

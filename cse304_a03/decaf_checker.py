@@ -18,7 +18,8 @@ import decaf_ast
 # Abstract Syntax Tree Table
 """
     TODO
-    Error Checking
+    Error Checking Section
+    Implement Expressions
 """
 class AST:
 
@@ -27,10 +28,10 @@ class AST:
         # list of ClassRecord objects, each of these are the root
         # this is essentially the class table
         self.classes = []
-        
+
         # In class
-        scanInt = decaf_ast.MethodRecord(name="scan_int", id=1, containingClass="In", visibility="public", applicability="static", returnType="int")
-        scanFloat = decaf_ast.MethodRecord(name="scan_float", id=2, containingClass="In", visibility="public", applicability="static", returnType="float")
+        scanInt = decaf_ast.MethodRecord(name="scan_int", id=1, containingClass="In", visibility="public", applicability="static", returnType=decaf_ast.TypeRecord(name="int"))
+        scanFloat = decaf_ast.MethodRecord(name="scan_float", id=2, containingClass="In", visibility="public", applicability="static", returnType=decaf_ast.TypeRecord(name="float"))
         inMethods = [scanInt, scanFloat]
         inClass = decaf_ast.ClassRecord(name="In", methods=inMethods)
 
@@ -39,10 +40,10 @@ class AST:
         f = decaf_ast.VariableRecord(name="f", id=2, kind="formal", type=decaf_ast.TypeRecord(name="float"))
         b = decaf_ast.VariableRecord(name="b", id=3, kind="formal", type=decaf_ast.TypeRecord(name="boolean"))
         s = decaf_ast.VariableRecord(name="s", id=4, kind="formal", type=decaf_ast.TypeRecord(name="string"))
-        print1 = decaf_ast.MethodRecord(name="print", id=1, containingClass="Out", visibility="public", applicability="static", parameters=[i], variableTable=[i])
-        print2 = decaf_ast.MethodRecord(name="print", id=2, containingClass="Out", visibility="public", applicability="static", parameters=[f], variableTable=[f])
-        print3 = decaf_ast.MethodRecord(name="print", id=3, containingClass="Out", visibility="public", applicability="static", parameters=[b], variableTable=[b])
-        print4 = decaf_ast.MethodRecord(name="print", id=4, containingClass="Out", visibility="public", applicability="static", parameters=[s], variableTable=[s])
+        print1 = decaf_ast.MethodRecord(name="print", id=1, containingClass="Out", visibility="public", applicability="static", parameters=[i], variableTable=[i], returnType = decaf_ast.TypeRecord('void'))
+        print2 = decaf_ast.MethodRecord(name="print", id=2, containingClass="Out", visibility="public", applicability="static", parameters=[f], variableTable=[f], returnType = decaf_ast.TypeRecord('void'))
+        print3 = decaf_ast.MethodRecord(name="print", id=3, containingClass="Out", visibility="public", applicability="static", parameters=[b], variableTable=[b], returnType = decaf_ast.TypeRecord('void'))
+        print4 = decaf_ast.MethodRecord(name="print", id=4, containingClass="Out", visibility="public", applicability="static", parameters=[s], variableTable=[s], returnType = decaf_ast.TypeRecord('void'))
         outMethods = [print1, print2, print3, print4]
         outClass = decaf_ast.ClassRecord(name="Out", methods=outMethods)
 
@@ -84,20 +85,23 @@ class AST:
         print("FIELD: "+ f.id+ ', '+ f.name+ ', '+ f.containingClass+ ', '+ f.visibility+ ', '+ f.applicability+ ', '+ type_name)
 
     def print_constructor(self, c):
-        print("CONSTRUCTOR: "+ c.id+ ', '+ c.visibility)
+        print("CONSTRUCTOR: "+ str(c.id)+ ', '+ c.visibility)
+
         params = ''
         for p in c.parameters:
             if(params == ''):
                 params = p.id
             else:
                 params += ', ' + p.id
+
         print("Constructor Parameters:", params)
-        self.print_var_table(c.variableTable)
+        self.print_var_table( c.variableTable)
         print("Constructor Body:")
-        self.print_body( c.body)
+        #self.print_body( c.body)       # TODO
 
     def print_method(self, m):
-        print("METHOD: "+ str(m.id)+ ', '+ m.name+ ', '+ m.containingClass+ ', '+ m.visibility)
+        print("METHOD: "+ str(m.id)+ ', '+ m.name+ ', '+ m.containingClass+ ', '+ m.visibility +', '+ m.applicability+', ' + m.returnType.name)
+
         params = ''
         for p in m.parameters:
             if(params == ''):
