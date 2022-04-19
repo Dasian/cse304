@@ -82,7 +82,7 @@ class AST:
         type_name = f.type.name
         if type_name not in base_types:
                 type_name = 'user(' + str(f.type.name) + ')'
-        print("FIELD: "+ f.id+ ', '+ f.name+ ', '+ f.containingClass+ ', '+ f.visibility+ ', '+ f.applicability+ ', '+ type_name)
+        print("FIELD: "+ str(f.id)+ ', '+ f.name+ ', '+ f.containingClass+ ', '+ f.visibility+ ', '+ f.applicability+ ', '+ type_name)
 
     def print_constructor(self, c):
         print("CONSTRUCTOR: "+ str(c.id)+ ', '+ c.visibility)

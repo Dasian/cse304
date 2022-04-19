@@ -13,6 +13,7 @@ import debug
 
 block_depth = 0
 block_stmnts = {block_depth: []}
+currentClass = ""
 conID = 0
 fieldID = 0
 methodID = 0
@@ -53,6 +54,7 @@ def p_class_decl(p):
     global methodID
     global varID
     global conID
+    global currentClass
 
     block_depth = 0
     block_stmnts = {block_depth: []}
@@ -60,27 +62,31 @@ def p_class_decl(p):
     methodID = 0
     varID = 0
     conID = 0
+    currentClass = ""
 
     p[0] = ast.ClassRecord()        # Initializes an empty class record
     p[0].name = p[2]            # Set class record's name to p[2]
     currentClass = p[2]
 
     body_index = 4          # Represents the index where class_body_decl starts
-    if p[2] == 'extends':         # Checks if class record is a child class
+    if p[3] == 'extends':         # Checks if class record is a child class
         body_index = 6
         p[0].superName = p[4]
-
-
 
     # Loop through all the class body declarations to add appropriate records to
     # class record's constructors, methods, and fields
     for record in p[body_index]:
         if(type(record) is ast.ConstructorRecord):
-            p[0].constructor.append(record)
+            record.containingClass = currentClass
+            p[0].constructors.append(record)
         elif(type(record) is ast.MethodRecord):
+            record.containingClass = currentClass
             p[0].methods.append(record)
-        elif(type(record) is ast.FieldRecord):
-            p[0].fields.append(record)
+        else:   # record must be a list of fields
+            for field in record:
+                field.containingClass = currentClass
+                p[0].fields.append(field)
+
 
     debug.print_p(p, msg="Printing p from class_decl")
     tree.add_class(p[0])
@@ -138,7 +144,8 @@ def p_variable(p):
 # Field declaration with a type, variable name, and optional modifiers
 def p_field_decl(p):
     '''field_decl : modifier var_decl'''
-
+    global currentClass
+    print(currentClass)
     visibility = ''
     applicability = ''
 
@@ -160,7 +167,7 @@ def p_field_decl(p):
     x = fieldID
     for var in var_decl["variables"]:
         x += 1
-        field = ast.FieldRecord(name = var, id = x, containingClass= containingClass, visibility= visibility, applicability= applicability, type= type)
+        field = ast.FieldRecord(name = var, id = x, containingClass= currentClass, visibility= visibility, applicability= applicability, type= type)
         p[0] += [field]
 
 # TODO: replace empty list with variable table
@@ -200,6 +207,7 @@ def p_method_decl(p):
     parameters = p[5]
     method_body = p[7]
 
+    x = methodID
     # TODO replace empty list with variable table
     p[0] = ast.MethodRecord(name= p[3], id=x, containingClass=currentClass
     , visibility=visibility, applicability=applicability, body=method_body, returnType=methodType, parameters=parameters)
@@ -212,15 +220,14 @@ def p_optional_formals(p):
 
     # TODO fix variableTable
     if p[1] is not None:
-        for variable in p[1]:
-            var_list.append(variable)
+        var_list = p[1]
     p[0] = var_list
 
 # done
 def p_formals(p):
     '''formals  : formal_param ',' formals
                 | formal_param'''
-    if len(p) == 3:
+    if len(p) == 4:
         p[0] = p[1] + p[3]
     if len(p) == 2:
         p[0] = [p[1]]
@@ -230,7 +237,7 @@ def p_formal_param(p):
     '''formal_param : type variable'''
 
     # TODO FIND OUT HOW TO PROPERLY UPDATE FIELD_ID
-    p[0] = ast.VariableRecord(p[2], 1, "formal", p[1])
+    p[0] = ast.VariableRecord(name = p[2], id = 1, kind = "formal", type= p[1])
 
 # A method declaration with modifiers, return type, method name, and optional parameters
 # A constructor declaration with modifiers, class name, and optional parameters
@@ -258,37 +265,20 @@ def p_constructor_decl(p):
 
     p[0] = ast.ConstructorRecord(id=name, visibility=visibility, parameters=parameters,variableTable=[], body=body)
 
+# TODO include line range
 
-    if len(p) == 8:  # method_decl
-        p[0] = ast.MethodRecord()
-        if p[2] == 'void':
-            p[0].method_name = p[3]
-            p[0].method_visibility = p[1]
-            p[0].method_parameters = p[5]
-            p[0].return_type = p[2]
-            p[0].method_body = p[7]
-        else:
-            p[0].method_name = p[3]
-            p[0].method_visibility = p[1]
-            p[0].method_parameters = p[5]
-            p[0].return_type = "void"
-            p[0].method_body = p[7]
-    elif len(p) == 7: # constructor_decl
-        p[0] = ast.ConstructorRecord()
-        p[0].id = p[2]
-        p[0].visibility = p[1]
-        p[0].parameters = p[4]
-        p[0].body = p[6]
-        for i in range(4, len(p)):
-            if(type(p[i]) is ast.VariableRecord):
-                p[0].variableTable.push(p[i])
+def p_block(p):
+    '''block : '{' optional_stmts '}'
+             | '{' '}'
+    '''
+
+def p_optional_stmts(p):
+    '''optional_stmts : stmt stmt
+                       | empty'''
 
 # TODO line range, nested block statements
 def p_statements(p):
-    '''block        : '{' stmt '}'
-                    | '{' '}'
-    stmt            : stmt stmt
-                    | IF '(' expr ')' stmt ELSE stmt
+    '''stmt         : IF '(' expr ')' stmt ELSE stmt
                     | IF '(' expr ')' stmt
                     | WHILE '(' expr ')' stmt
                     | FOR '(' optional_stmt_expr ';' optional_expr ';' optional_stmt_expr ')' stmt
