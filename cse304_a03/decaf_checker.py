@@ -111,7 +111,7 @@ class AST:
         print("Method Parameters:", params)
         self.print_var_table(m.variableTable)
         print("Method Body:")
-        # self.print_body(m.body) # commented out for blocks
+        #self.print_body(m.body) # commented out for blocks
 
 
     def print_var_table(self, vt):

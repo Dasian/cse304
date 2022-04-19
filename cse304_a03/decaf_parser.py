@@ -14,10 +14,10 @@ import debug
 #block_depth = 0
 #block_stmnts = {block_depth: []}
 currentClass = ""
-conID = 0
-fieldID = 0
-methodID = 0
-varID = 0
+conID = 1
+fieldID = 1
+methodID = 1
+varID = 1
 
 tree = AST()
 
@@ -58,10 +58,10 @@ def p_class_decl(p):
 
     #block_depth = 0
     #block_stmnts = {block_depth: []}
-    fieldID = 0
-    methodID = 0
-    varID = 0
-    conID = 0
+    fieldID = 1
+    methodID = 1
+    varID = 1
+    conID = 1
     currentClass = ""
 
     p[0] = ast.ClassRecord()        # Initializes an empty class record
@@ -78,13 +78,19 @@ def p_class_decl(p):
     for record in p[body_index]:
         if(type(record) is ast.ConstructorRecord):
             record.containingClass = currentClass
+            record.id = conID
+            conID = conID + 1
             p[0].constructors.append(record)
         elif(type(record) is ast.MethodRecord):
             record.containingClass = currentClass
+            record.id = methodID
+            methodID = methodID + 1
             p[0].methods.append(record)
         else:   # record must be a list of fields
             for field in record:
                 field.containingClass = currentClass
+                field.id = fieldID
+                fieldID = fieldID + 1
                 p[0].fields.append(field)
 
 
@@ -161,11 +167,9 @@ def p_field_decl(p):
     var_decl = p[2]
     type = var_decl["type"]
     p[0] = []
-    x = fieldID
     if var_decl["variables"] is not None:
         for var in var_decl["variables"]:
-            x += 1
-            field = ast.FieldRecord(name = var, id = x, containingClass= currentClass, visibility= visibility, applicability= applicability, type= type)
+            field = ast.FieldRecord(name = var, id = 1, containingClass= currentClass, visibility= visibility, applicability= applicability, type= type)
             p[0] += [field]
 
 # TODO: replace empty list with variable table
@@ -205,9 +209,8 @@ def p_method_decl(p):
     parameters = p[5]
     method_body = p[7]
 
-    x = methodID
     # TODO replace empty list with variable table
-    p[0] = ast.MethodRecord(name= p[3], id=x, containingClass=currentClass
+    p[0] = ast.MethodRecord(name= p[3], id=1, containingClass=currentClass
     , visibility=visibility, applicability=applicability, body=method_body, returnType=methodType, parameters=parameters)
 
 # TODO: variable table
@@ -231,7 +234,6 @@ def p_formals(p):
 # TODO: field_id, variable table, field_id again
 def p_formal_param(p):
     '''formal_param : type variable'''
-
     p[0] = ast.VariableRecord(name = p[2], id = 1, kind = "formal", type= p[1])
 
 # A method declaration with modifiers, return type, method name, and optional parameters
@@ -246,7 +248,6 @@ def p_constructor_decl(p):
     #block_stmnts = {}
     #block_depth = 0
 
-    name = p[2]
     visibility = ''
     modifiers = p[1]
 
@@ -258,7 +259,7 @@ def p_constructor_decl(p):
     parameters = p[4]
     body = p[6]
 
-    p[0] = ast.ConstructorRecord(id=name, visibility=visibility, parameters=parameters,variableTable=[], body=body)
+    p[0] = ast.ConstructorRecord(id=1, visibility=visibility, parameters=parameters,variableTable=[], body=body)
 
 # TODO include line range
 
