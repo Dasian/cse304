@@ -1,0 +1,7 @@
+class Car extends Vehicle{
+    private String name;
+    private int year;
+    private int price;
+
+    public Car(String name, int year, int price){}
+}

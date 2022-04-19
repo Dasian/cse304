@@ -3,18 +3,16 @@
 
 #  PLY/yacc parser specification file
 
+from numpy import block
 import ply.yacc as yacc
 from decaf_lexer import tokens
 import decaf_lexer as lexer
 import decaf_ast as ast
 from decaf_checker import AST
+import debug
 
-
-
-import decaf_ast as ast
-from decaf_checker import AST
-
-block_stmnts = []
+block_depth = 0
+block_stmnts = {block_depth: []}
 conID = 0
 fieldID = 0
 methodID = 0
@@ -50,25 +48,18 @@ def p_class_decl(p):
                   '''
     # Reset Global vars
     global block_stmnts
+    global block_depth
     global fieldID
     global methodID
     global varID
     global conID
 
-    if block_stmnts is None:
-        block_stmnts = []
-    if fieldID is None:
-        fieldID = 0
-    if methodID is None:
-        methodID = 0
-    if varID is None:
-        varID = 0
-    if conID is None:
-        conID = 0
-
-    # Reset Global vars
-    global block_stmnts
-    block_stmnts = []
+    block_depth = 0
+    block_stmnts = {block_depth: []}
+    fieldID = 0
+    methodID = 0
+    varID = 0
+    conID = 0
 
     p[0] = ast.ClassRecord()        # Initializes an empty class record
     p[0].name = p[2]            # Set class record's name to p[2]
@@ -83,21 +74,15 @@ def p_class_decl(p):
 
     # Loop through all the class body declarations to add appropriate records to
     # class record's constructors, methods, and fields
-    for declaration in p[body_index]:
-        if(type(declaration) is ast.ConstructorRecord):
-            conID += 1
-            declaration.id = conID
-            p[0].constructors.append(declaration)
-        elif(type(declaration) is ast.MethodRecord):
-            methodID += 1
-            declaration.id = methodID
-            declaration.containingClass = currentClass
-            p[0].methods.append(declaration)
-        elif(type(declaration) is ast.FieldRecord):
-            fieldID += 1
-            declaration.id = fieldID
-            declaration.containingClass = currentClass
-            p[0].fields.append(declaration)
+    for record in p[body_index]:
+        if(type(record) is ast.ConstructorRecord):
+            p[0].constructor.append(record)
+        elif(type(record) is ast.MethodRecord):
+            p[0].methods.append(record)
+        elif(type(record) is ast.FieldRecord):
+            p[0].fields.append(record)
+
+    debug.print_p(p, msg="Printing p from class_decl")
     tree.add_class(p[0])
 
 # TODO: fields, statements, decl
@@ -164,7 +149,7 @@ def p_field_decl(p):
         visibility = 'private'
 
     if 'static' in modifiers:
-        applicability = 'class field'
+        applicability = 'static'
     else:
         applicability = 'instance'
 
@@ -172,9 +157,10 @@ def p_field_decl(p):
     type = var_decl["type"]
 
     p[0] = []
-    # TODO FIND OUT HOW TO PROPERLY UPDATE FIELD_ID
+    x = fieldID
     for var in var_decl["variables"]:
-        field = ast.FieldRecord(var, 0, '', visibility, applicability, type)
+        x += 1
+        field = ast.FieldRecord(name = var, id = x, containingClass= containingClass, visibility= visibility, applicability= applicability, type= type)
         p[0] += [field]
 
 # TODO: replace empty list with variable table
@@ -182,6 +168,13 @@ def p_method_decl(p):
     '''method_decl      : modifier type ID '(' optional_formals ')' block
                         | modifier VOID ID '(' optional_formals ')' block'''
     
+    # reset blocks dict
+    # reset when creating method and constructor
+    global block_stmnts
+    global block_depth
+    block_depth = 0
+    block_stmnts = {block_depth: []}
+
     # never set but needs t0 be
     methodType = ''
 
@@ -208,10 +201,8 @@ def p_method_decl(p):
     method_body = p[7]
 
     # TODO replace empty list with variable table
-
-    p[0] = ast.MethodRecord(name=p[3], id=x, containingClass=currentClass,
-    visibility=visibility, applicability=applicability, body=method_body, 
-    variableTable=[], returnType=methodType, parameters=parameters)
+    p[0] = ast.MethodRecord(name= p[3], id=x, containingClass=currentClass
+    , visibility=visibility, applicability=applicability, body=method_body, returnType=methodType, parameters=parameters)
 
 # TODO: variable table
 def p_optional_formals(p):
@@ -246,6 +237,13 @@ def p_formal_param(p):
 def p_constructor_decl(p):
     '''constructor_decl : modifier ID '(' optional_formals ')' block'''
 
+    # reset blocks dict
+    # reset when creating method and constructor
+    global block_stmnts
+    global block_depth
+    block_stmnts = {}
+    block_depth = 0
+
     name = p[2]
     visibility = ''
     modifiers = p[1]
@@ -258,11 +256,7 @@ def p_constructor_decl(p):
     parameters = p[4]
     body = p[6]
 
-    variableTable = []  # TODO FIX variableTable
-    # TODO FIND OUT HOW TO PROPERLY UPDATE FIELD_ID
-    p[0] = ast.ConstructorRecord(id=0, visibilty=visibility, paramaters=parameters, 
-    variableTable=variableTable, body=body)
-
+    p[0] = ast.ConstructorRecord(id=name, visibility=visibility, parameters=parameters,variableTable=[], body=body)
 
 
     if len(p) == 8:  # method_decl
@@ -311,7 +305,11 @@ def p_statements(p):
                     | empty'''
 
     p[0] = ast.Statement()
-    if p[1] == 'if':
+
+    # splitting stmnt for calculating block size
+    if len(p) == 3 and ';' not in p and '{' not in p:
+        block_size += 1
+    elif p[1] == 'if':
         p[0].kind = 'If'
         p[0].attributes.update({'condition': p[3]})
         p[0].attributes.update({'then': p[5]})
@@ -335,12 +333,8 @@ def p_statements(p):
         p[0].attributes.update({'expression': p[1]})
     elif p[1] == '{': # block
         p[0].kind = 'Block'
-        # possible make block_stmnts a double list
-        # increment the index in method/constructor
-        # decrement here
-        # I actually think different inc/decs are needed
-        p[0].attributes.update({'stmnts': block_stmnts}) # might need to be copied? not sure
-
+        p[0].attributes.update({'stmnts': block_stmnts[block_depth]}) # might need to be copied? not sure
+        block_depth += 1
     elif p[1] == 'break':
         p[0].kind = 'Break'
     elif p[1] == 'continue':
@@ -350,7 +344,7 @@ def p_statements(p):
     # adding line range?
 
     # add to block statement
-    block_stmnts.append(p[0])
+    block_stmnts[block_depth].append(p[0])
 
 # TODO: all
 def p_expressions(p):
