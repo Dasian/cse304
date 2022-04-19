@@ -9,15 +9,17 @@ import decaf_lexer as lexer
 import decaf_ast as ast
 from decaf_checker import AST
 
-# DELETE THIS
-import debug
 
 currentClass = ""
 currentVisibility = ""
 currentType = None
 isCurrentStatic = False
-id = 0
+
 block_stmnts = []
+fieldID = 0
+methodID = 0
+varID = 0
+
 tree = AST()
 
 # Assignment is right-associative, relational operators are non-associative, and all others are left-associative
@@ -52,13 +54,15 @@ def p_class_decl(p):
     block_stmnts = []
 
     p[0] = ast.ClassRecord()        # Initializes an empty class record
-    p[0].name = p[2]            
+    p[0].name = p[2]            # Set class record's name to p[2]
+
     currentClass = p[0].name
 
     body_index = 4          # Represents the index where class_body_decl starts
     if p[3] == 'extends':         # Checks if class record is a child class
         body_index = 6
         p[0].superName = p[4]
+
 
     # Loop through all the class body declarations to add appropriate records to
     # class record's constructors, methods, and fields
@@ -80,67 +84,146 @@ def p_class_body_decl(p):
                        | field_decl
                        | method_decl
                        | constructor_decl'''
+    if len(p) == 3:
+        p[0] = p[1] + p[2]
     if len(p) == 2:
-        p[0] = p[1]
-
-
-# Field declaration with a type, variable name, and optional modifiers
-def p_field_decl(p):
-    '''field_decl : modifier var_decl
-    modifier      : PRIVATE STATIC
-                  | PRIVATE
-                  | PUBLIC STATIC
-                  | PUBLIC
-                  | STATIC
-                  | empty
-    var_decl      : type variables ';'
-    variables     : variable
-                  | variable ',' variables
-    variable      : ID '''
-
-    # print all values of p; debug
-
-    if p[0] == 'modifier':
-        if p[1] == 'private' or p[1] == 'public':
-            currentVisibility = p[1]
-        if p[1] == 'static' or p[2] == 'static':
-            isCurrentStatic = True
-    if p[0] == 'variables':
-        for i in range(1, len(p)):
-            p[0] = ast.FieldRecord()
-            p[0].name = p[1]
-            p[0].visibility = currentVisibility
-            p[0].containingClass = currentClass
-            p[0].applicability = isCurrentStatic
-            p[0].type = currentType
+        p[0] = [p[1]]
 
 def p_type(p):
     '''type : INT
             | FLOAT
             | BOOLEAN
-            | ID '''
-    p[0] = ast.TypeRecord()
-    # check if ?
-    # originally in field; check the commits/past hws for specific place
+            | ID'''
+    p[0] = ast.TypeRecord(p[1])
 
+def p_modifier(p):
+    '''modifier : PRIVATE STATIC
+                | PRIVATE
+                | PUBLIC STATIC
+                | PUBLIC
+                | STATIC
+                | empty'''
+    p[0] = p[1:]
+
+def p_var_decl(p):
+    '''var_decl : type variables ';' '''
+    p[0] = {"type" : p[1], "variables" : p[2]}
+
+def p_variables(p):
+    '''variables : variable
+                 | variable ',' variables'''
+    if len(p) == 3:
+        p[0] = p[1] + p[3]
+    if len(p) == 2:
+        p[0] = [p[1]]
+
+def p_variable(p):
+    '''variable  : ID '''
+    p[0] = p[1]
+
+# Field declaration with a type, variable name, and optional modifiers
+def p_field_decl(p):
+    '''field_decl : modifier var_decl'''
+
+    containingClass = currentClass
+    visibility = ''
+    applicability = ''
+
+    modifiers = p[1]
+    if modifiers in 'public':
+        visibility = 'public'
+    else:
+        visibility = 'private'
+
+    if modifiers in 'static':
+        applicability = 'static'
+    else:
+        applicability = 'non-static'
+
+    var_decl = p[2]
+    type = var_decl["type"]
+
+    p[0] = []
+    x = fieldID
+    for var in var_dcl["variables"]:
+        x += 1
+        field = ast.FieldRecord(var, x, containingClass, visibility, applicability, type)
+        p[0] += [field]
+
+def p_method_decl(p):
+    '''method_decl      : modifier type ID '(' optional_formals ')' block
+                        | modifier VOID ID '(' optional_formals ')' block'''
+    methodType = ''
+    if p[2] == 'void':
+        methodType = 'void'
+    else:
+        methodType = p[2]
+
+    visibility = ''
+    applicability = ''
+
+    modifiers = p[1]
+    if 'public' in modifiers:
+        visibility = 'public'
+    else:
+        visibility = 'private'
+
+    if 'static' in modifiers:
+        applicability = 'static'
+    else:
+        applicability = 'non-static'
+
+    parameters = p[5]
+    method_body = p[7]
+
+    x = methodID
+    x += 1
+    # TODO replace empty list with variable table
+    p[0] = ast.MethodRecord(p[3], x, currentClass
+    , visibility, applicability, method_body, [], methodType, parameters)
+
+def p_optional_formals(p):
+    '''optional_formals : formals
+                        | empty'''
+    p[0] = p[1]
+
+def p_formals(p):
+    '''formals  : formal_param ',' formals
+                | formal_param'''
+    if len(p) == 3:
+        p[0] = p[1] + p[3]
+    if len(p) == 2:
+        p[0] = [p[1]]
+
+def p_formal_param(p):
+    '''formal_param : type variable'''
+    p[0] = {"type" : p[1], "variable": p[2]}
 
 # A method declaration with modifiers, return type, method name, and optional parameters
 # A constructor declaration with modifiers, class name, and optional parameters
-def p_method_constructor_decl(p):
-    '''method_decl      : modifier type ID '(' optional_formals ')' block
-                        | modifier VOID ID '(' optional_formals ')' block
-       constructor_decl : modifier ID '(' optional_formals ')' block
-       optional_formals : formals
-                        | empty
-       formals          : formal_param ',' formals
-                        | formal_param
-       formal_param     : type variable'''
+def p_constructor_decl(p):
+    '''constructor_decl : modifier ID '(' optional_formals ')' block'''
 
-    # when this function is first called/ends 
-    # the block_statements list should be reset
-    # I think this concept needs revision (nested block stmnts)
-    global block_stmnts
-    block_stmnts = []
+    name = p[2]
+    visibility = ''
+    applicability = ''
+    modifiers = p[1]
+
+    if 'public' in modifiers:
+        visibility = 'public'
+    else:
+        visibility = 'private'
+
+    if 'static' in modifiers:
+        applicability = 'static'
+    else:
+        applicability = 'non-static'
+
+    parameters = p[4]
+    body = p[6]
+    variableTable = parameters + body
+
+    p[0] = ast.ConstructorRecord(name, visibility, parameters,variableTable, body)
 
     if len(p) == 8:  # method_decl
         p[0] = ast.MethodRecord()
