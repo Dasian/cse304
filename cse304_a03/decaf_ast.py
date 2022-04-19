@@ -27,20 +27,20 @@ class ClassRecord:
             self.fields = fields 
 
 class ConstructorRecord:
-    def __init__(self, id='', visibility="", parameters=None, variableTable=None, body=None):
-        self.id = id # name of the class
+    def __init__(self, id=-1, visibility="", parameters=None, variableTable=None, body=None):
+        self.id = id # unique id
         self.visibility = visibility # string; public/private
         self.body = body # a single Statement object
         # list of VariableRecord objects passed to the constructor
         if parameters is None:
             self.parameters = []
         else:
-            self.parameters = parameters 
+            self.parameters = parameters
         # list of all VariableRecord objects (local vars + params)
         if variableTable is None:
             self.variableTable = []
         else:
-            self.variableTable = variableTable 
+            self.variableTable = variableTable
 
 class MethodRecord:
     def __init__(self, name="", id=-1, containingClass="", visibility="", applicability="", body=None, variableTable=None, returnType=None, parameters=None):
@@ -61,6 +61,7 @@ class MethodRecord:
             self.parameters = []
         else:
             self.parameters = parameters
+
 class FieldRecord:
     def __init__(self, name="", id=-1, containingClass="", visibility="", applicability="", type=None):
         self.name = name # string
