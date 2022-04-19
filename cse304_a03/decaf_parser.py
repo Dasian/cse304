@@ -11,8 +11,8 @@ import decaf_ast as ast
 from decaf_checker import AST
 import debug
 
-block_depth = 0
-block_stmnts = {block_depth: []}
+#block_depth = 0
+#block_stmnts = {block_depth: []}
 currentClass = ""
 conID = 0
 fieldID = 0
@@ -48,16 +48,16 @@ def p_class_decl(p):
                   | CLASS ID '{' class_body_decl '}'
                   '''
     # Reset Global vars
-    global block_stmnts
-    global block_depth
+    #global block_stmnts
+    #global block_depth
     global fieldID
     global methodID
     global varID
     global conID
     global currentClass
 
-    block_depth = 0
-    block_stmnts = {block_depth: []}
+    #block_depth = 0
+    #block_stmnts = {block_depth: []}
     fieldID = 0
     methodID = 0
     varID = 0
@@ -177,10 +177,10 @@ def p_method_decl(p):
     
     # reset blocks dict
     # reset when creating method and constructor
-    global block_stmnts
-    global block_depth
-    block_depth = 0
-    block_stmnts = {block_depth: []}
+    #global block_stmnts
+    #global block_depth
+    #block_depth = 0
+    #block_stmnts = {block_depth: []}
 
     # never set but needs t0 be
     methodType = ''
@@ -246,10 +246,10 @@ def p_constructor_decl(p):
 
     # reset blocks dict
     # reset when creating method and constructor
-    global block_stmnts
-    global block_depth
-    block_stmnts = {}
-    block_depth = 0
+    #global block_stmnts
+    ##global block_depth
+    #block_stmnts = {}
+    #block_depth = 0
 
     name = p[2]
     visibility = ''
@@ -271,10 +271,30 @@ def p_block(p):
     '''block : '{' optional_stmts '}'
              | '{' '}'
     '''
+    # create block object
+    p[0] = ast.Statement()
+    p[0].kind = 'Block'
+    # { }
+    if len(p) == 2:
+        p[0].attributes['stmnts'] = []
+    else:
+        p[0].attributes['stmnts'] = p[2]
 
+# if there are ordering problems check this recursion magic
+# returns a list of statements
 def p_optional_stmts(p):
-    '''optional_stmts : stmt stmt
+    '''optional_stmts : stmt optional_stmts
                        | empty'''
+    if len(p) == 3:
+        if p[3] == None: # stmnt + empty
+            p[0] = [p[1]]
+        else: # stmnt + optional_stmts
+            p[0] = [p[1]]
+            for s in p[2]:
+                p[0].append(s)
+    else: # empty
+        p[0] = []
+
 
 # TODO line range, nested block statements
 def p_statements(p):
@@ -321,10 +341,6 @@ def p_statements(p):
     elif type(p[1]) is ast.Expression and p[2] == ';': # expr-stmnt
         p[0].kind = 'Expr'
         p[0].attributes.update({'expression': p[1]})
-    elif p[1] == '{': # block
-        p[0].kind = 'Block'
-        p[0].attributes.update({'stmnts': block_stmnts[block_depth]}) # might need to be copied? not sure
-        block_depth += 1
     elif p[1] == 'break':
         p[0].kind = 'Break'
     elif p[1] == 'continue':
@@ -334,7 +350,7 @@ def p_statements(p):
     # adding line range?
 
     # add to block statement
-    block_stmnts[block_depth].append(p[0])
+    # block_stmnts[block_depth].append(p[0])
 
 # TODO: all
 def p_expressions(p):
