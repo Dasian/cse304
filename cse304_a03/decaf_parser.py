@@ -34,7 +34,7 @@ precedence = (
     ('left', 'NOT')
 )
 
-
+# done
 # The program with zero or more class declarations
 def p_program(p):
     '''program : class_decl
@@ -42,6 +42,7 @@ def p_program(p):
     class_decl : class_decl class_decl'''
     tree.print_table()
 
+# done
 # The class declaration with or without inheritance and one or more class body declarations
 def p_class_decl(p):
     '''class_decl : CLASS ID EXTENDS ID '{' class_body_decl '}'
@@ -99,6 +100,7 @@ def p_class_decl(p):
             p[0].fields.append(declaration)
     tree.add_class(p[0])
 
+# TODO: fields, statements, decl
 # One or more class body declarations that contains either fields, methods, and/or constructors
 def p_class_body_decl(p):
     '''class_body_decl : class_body_decl class_body_decl
@@ -110,6 +112,7 @@ def p_class_body_decl(p):
     if len(p) == 2:
         p[0] = [p[1]]
 
+# done
 def p_type(p):
     '''type : INT
             | FLOAT
@@ -117,6 +120,7 @@ def p_type(p):
             | ID'''
     p[0] = ast.TypeRecord(p[1])
 
+# done
 def p_modifier(p):
     '''modifier : PRIVATE STATIC
                 | PRIVATE
@@ -126,10 +130,12 @@ def p_modifier(p):
                 | empty'''
     p[0] = p[1:]
 
+# done
 def p_var_decl(p):
     '''var_decl : type variables ';' '''
     p[0] = {"type" : p[1], "variables" : p[2]}
 
+# done
 def p_variables(p):
     '''variables : variable
                  | variable ',' variables'''
@@ -138,10 +144,12 @@ def p_variables(p):
     if len(p) == 2:
         p[0] = [p[1]]
 
+# done
 def p_variable(p):
     '''variable  : ID '''
     p[0] = p[1]
 
+# TODO: field id?
 # Field declaration with a type, variable name, and optional modifiers
 def p_field_decl(p):
     '''field_decl : modifier var_decl'''
@@ -169,10 +177,14 @@ def p_field_decl(p):
         field = ast.FieldRecord(var, 0, '', visibility, applicability, type)
         p[0] += [field]
 
+# TODO: replace empty list with variable table
 def p_method_decl(p):
     '''method_decl      : modifier type ID '(' optional_formals ')' block
                         | modifier VOID ID '(' optional_formals ')' block'''
+    
+    # never set but needs t0 be
     methodType = ''
+
     if p[2] == 'void':
         methodType = ast.TypeRecord('void')
     else:
@@ -197,9 +209,11 @@ def p_method_decl(p):
 
     # TODO replace empty list with variable table
 
-    p[0] = ast.MethodRecord(p[3], 0, ''
-    , visibility, applicability, method_body, [], methodType, parameters)
+    p[0] = ast.MethodRecord(name=p[3], id=x, containingClass=currentClass,
+    visibility=visibility, applicability=applicability, body=method_body, 
+    variableTable=[], returnType=methodType, parameters=parameters)
 
+# TODO: variable table
 def p_optional_formals(p):
     '''optional_formals : formals
                         | empty'''
@@ -211,6 +225,7 @@ def p_optional_formals(p):
             var_list.append(variable)
     p[0] = var_list
 
+# done
 def p_formals(p):
     '''formals  : formal_param ',' formals
                 | formal_param'''
@@ -219,6 +234,7 @@ def p_formals(p):
     if len(p) == 2:
         p[0] = [p[1]]
 
+# TODO: field_id, variable table, field_id again
 def p_formal_param(p):
     '''formal_param : type variable'''
 
@@ -244,7 +260,8 @@ def p_constructor_decl(p):
 
     variableTable = []  # TODO FIX variableTable
     # TODO FIND OUT HOW TO PROPERLY UPDATE FIELD_ID
-    p[0] = ast.ConstructorRecord(0, visibility, parameters, variableTable, body)
+    p[0] = ast.ConstructorRecord(id=0, visibilty=visibility, paramaters=parameters, 
+    variableTable=variableTable, body=body)
 
 
 
@@ -272,7 +289,7 @@ def p_constructor_decl(p):
             if(type(p[i]) is ast.VariableRecord):
                 p[0].variableTable.push(p[i])
 
-# TODO include line range
+# TODO line range, nested block statements
 def p_statements(p):
     '''block        : '{' stmt '}'
                     | '{' '}'
@@ -335,7 +352,7 @@ def p_statements(p):
     # add to block statement
     block_stmnts.append(p[0])
 
-
+# TODO: all
 def p_expressions(p):
     '''literal : INT_CONST
                | FLOAT_CONST
@@ -489,7 +506,7 @@ def p_expressions(p):
     if type(p[1]) is str:
         p[0].attributes.update({"class-name": p[1]})
 
-
+# TODO: all
 def p_operators(p):
     """arith_op : PLUS
             | MINUS

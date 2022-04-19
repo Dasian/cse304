@@ -119,6 +119,8 @@ class AST:
         base_types = ['int', 'float', 'boolean']
         # type needs to be represented as (int, float, boolean)
         # or user(name)
+        # t is a VariableRecord
+        # vt is a list of VariableRecords
         for t in vt:
             ty = t.type.name
             if ty not in base_types:
