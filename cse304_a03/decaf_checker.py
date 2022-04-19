@@ -90,9 +90,9 @@ class AST:
         params = ''
         for p in c.parameters:
             if(params == ''):
-                params = p.id
+                params = str(p.id)
             else:
-                params += ', ' + p.id
+                params += ', ' + str(p.id)
 
         print("Constructor Parameters:", params)
         self.print_var_table( c.variableTable)

@@ -120,8 +120,8 @@ def p_var_decl(p):
 def p_variables(p):
     '''variables : variable
                  | variable ',' variables'''
-    if len(p) == 3:
-        p[0] = p[1] + p[3]
+    if len(p) == 4:
+        p[0] = [p[1]] + p[3]
     if len(p) == 2:
         p[0] = [p[1]]
 
@@ -132,8 +132,6 @@ def p_variable(p):
 # Field declaration with a type, variable name, and optional modifiers
 def p_field_decl(p):
     '''field_decl : modifier var_decl'''
-    global currentClass
-    print(currentClass)
     visibility = ''
     applicability = ''
 
@@ -150,13 +148,13 @@ def p_field_decl(p):
 
     var_decl = p[2]
     type = var_decl["type"]
-
     p[0] = []
     x = fieldID
-    for var in var_decl["variables"]:
-        x += 1
-        field = ast.FieldRecord(name = var, id = x, containingClass= currentClass, visibility= visibility, applicability= applicability, type= type)
-        p[0] += [field]
+    if var_decl["variables"] is not None:
+        for var in var_decl["variables"]:
+            x += 1
+            field = ast.FieldRecord(name = var, id = x, containingClass= currentClass, visibility= visibility, applicability= applicability, type= type)
+            p[0] += [field]
 
 def p_method_decl(p):
     '''method_decl      : modifier type ID '(' optional_formals ')' block
@@ -192,25 +190,22 @@ def p_method_decl(p):
 def p_optional_formals(p):
     '''optional_formals : formals
                         | empty'''
-    var_list = []
-
-    # TODO fix variableTable
-    if p[1] is not None:
-        var_list = p[1]
-    p[0] = var_list
+    if p[1] is None:
+        p[0] = []
+    else:
+        p[0] = p[1]
 
 def p_formals(p):
-    '''formals  : formal_param ',' formals
-                | formal_param'''
+    '''formals  : formal_param
+                | formal_param ',' formals'''
     if len(p) == 4:
-        p[0] = p[1] + p[3]
+        p[0] = [p[1]] + p[3]
     if len(p) == 2:
         p[0] = [p[1]]
 
 def p_formal_param(p):
     '''formal_param : type variable'''
 
-    # TODO FIND OUT HOW TO PROPERLY UPDATE FIELD_ID
     p[0] = ast.VariableRecord(name = p[2], id = 1, kind = "formal", type= p[1])
 
 # A method declaration with modifiers, return type, method name, and optional parameters
@@ -240,7 +235,7 @@ def p_block(p):
     '''
 
 def p_optional_stmts(p):
-    '''optional_stmts : stmt stmt
+    '''optional_stmts : stmt optional_stmts
                        | empty'''
 
 def p_statements(p):
