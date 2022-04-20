@@ -338,12 +338,12 @@ def p_statements(p):
         p[0].kind = 'Break'
     elif p[1] == 'continue':
         p[0].kind = 'Continue'
+    elif type(p[1]) is ast.Statement and p[1].kind == 'Block':
+        p[0] = p[1]
     # skip statement?
 
     # adding line range?
 
-    # add to block statement
-    # block_stmnts[block_depth].append(p[0])
 
 # TODO: all
 def p_expressions(p):
