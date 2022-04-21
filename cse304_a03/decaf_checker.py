@@ -105,9 +105,9 @@ class AST:
         params = ''
         for p in m.parameters:
             if(params == ''):
-                params = p.id
+                params = str(p.id)
             else:
-                params += ', ' + p.id
+                params += ', ' + str(p.id)
         print("Method Parameters:", params)
         self.print_var_table(m.variableTable)
         print("Method Body:")

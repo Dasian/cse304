@@ -76,12 +76,12 @@ def p_class_decl(p):
     # Loop through all the class body declarations to add appropriate records to
     # class record's constructors, methods, and fields
     for record in p[body_index]:
-        if(type(record) is ast.ConstructorRecord):
+        if type(record) is ast.ConstructorRecord:
             record.containingClass = currentClass
             record.id = conID
             conID = conID + 1
             p[0].constructors.append(record)
-        elif(type(record) is ast.MethodRecord):
+        elif type(record) is ast.MethodRecord:
             record.containingClass = currentClass
             record.id = methodID
             methodID = methodID + 1
@@ -97,7 +97,7 @@ def p_class_decl(p):
     debug.print_p(p, msg="Printing p from class_decl")
     tree.add_class(p[0])
 
-# TODO: fields, statements, decl
+# done
 # One or more class body declarations that contains either fields, methods, and/or constructors
 def p_class_body_decl(p):
     '''class_body_decl : class_body_decl class_body_decl
@@ -146,7 +146,7 @@ def p_variable(p):
     '''variable  : ID '''
     p[0] = p[1]
 
-# TODO: field id?
+# done
 # Field declaration with a type, variable name, and optional modifiers
 def p_field_decl(p):
     '''field_decl : modifier var_decl'''
@@ -172,11 +172,11 @@ def p_field_decl(p):
             field = ast.FieldRecord(name = var, id = 1, containingClass= currentClass, visibility= visibility, applicability= applicability, type= type)
             p[0] += [field]
 
-# TODO: replace empty list with variable table
+# TODO: method_body variable table
 def p_method_decl(p):
     '''method_decl      : modifier type ID '(' optional_formals ')' block
                         | modifier VOID ID '(' optional_formals ')' block'''
-    
+
     # reset blocks dict
     # reset when creating method and constructor
     #global block_stmnts
@@ -184,7 +184,7 @@ def p_method_decl(p):
     #block_depth = 0
     #block_stmnts = {block_depth: []}
 
-    # never set but needs t0 be
+    # never set but needs to be
     methodType = ''
 
     if p[2] == 'void':
@@ -209,11 +209,19 @@ def p_method_decl(p):
     parameters = p[5]
     method_body = p[7]
 
+    varID = 1
+    variableTable = []
+    for param in parameters:
+        param.id = varID
+        varID = varID + 1
+        variableTable.append(param)
+
     # TODO replace empty list with variable table
     p[0] = ast.MethodRecord(name= p[3], id=1, containingClass=currentClass
-    , visibility=visibility, applicability=applicability, body=method_body, returnType=methodType, parameters=parameters)
+    , visibility=visibility, applicability=applicability, body=method_body
+    , variableTable = variableTable, returnType=methodType, parameters=parameters)
 
-# TODO: variable table
+# done
 def p_optional_formals(p):
     '''optional_formals : formals
                         | empty'''
@@ -238,6 +246,7 @@ def p_formal_param(p):
 
 # A method declaration with modifiers, return type, method name, and optional parameters
 # A constructor declaration with modifiers, class name, and optional parameters
+# TODO: method_body variable table
 def p_constructor_decl(p):
     '''constructor_decl : modifier ID '(' optional_formals ')' block'''
 
@@ -258,8 +267,14 @@ def p_constructor_decl(p):
 
     parameters = p[4]
     body = p[6]
+    varID = 1
+    variableTable = []
+    for param in parameters:
+        param.id = varID
+        varID = varID + 1
+        variableTable.append(param)
 
-    p[0] = ast.ConstructorRecord(id=1, visibility=visibility, parameters=parameters,variableTable=[], body=body)
+    p[0] = ast.ConstructorRecord(id=1, visibility=visibility, parameters=parameters,variableTable=variableTable, body=body)
 
 # TODO include line range
 
@@ -282,12 +297,10 @@ def p_optional_stmts(p):
     '''optional_stmts : stmt optional_stmts
                        | empty'''
     if len(p) == 3:
-        if p[2] == None: # stmnt + empty
+        if p[2] is None: # stmnt + empty
             p[0] = [p[1]]
         else: # stmnt + optional_stmts
-            p[0] = [p[1]]
-            for s in p[2]:
-                p[0].append(s)
+            p[0] = [p[1]] + p[2]
     else: # empty
         p[0] = []
 
@@ -390,7 +403,7 @@ def p_expressions(p):
     value = True
     if value:
         return
-    
+
     # Constant
     # ***Remember to change the indices!***
     # need to find a way to assign the values to the table
@@ -409,7 +422,7 @@ def p_expressions(p):
 
     # Var
     # ***Remember to change the indices!***
-    # scoping rules for variables with the same name 
+    # scoping rules for variables with the same name
     # needs to be handled somewhere
     p[0].kind = "Var"
     if type(p[1]) is ast.VariableRecord:
@@ -420,7 +433,7 @@ def p_expressions(p):
     p[0].kind = "Unary"
     if type(p[1]) is ast.Expression:
         p[0].attributes.update({"operand": p[1]})
-    # uminus or negative (-); 
+    # uminus or negative (-);
     if type(p[2]) is str:
         p[0].attributes.update({"unary-operator": p[2]})
 
@@ -499,7 +512,7 @@ def p_expressions(p):
     if type(p[1]) is str:
         p[0].attributes.update({"class-name": p[1]})
 
-# TODO: all
+# returns the string value of whatever operator is read in p[1]
 def p_operators(p):
     """arith_op : PLUS
             | MINUS
@@ -516,6 +529,7 @@ def p_operators(p):
     unary_op : PLUS
             | MINUS
             | NOT"""
+    p[0] = p[1]
 
 
 # Error rule for syntax errors
