@@ -82,7 +82,7 @@ class AST:
         type_name = f.type.name
         if type_name not in base_types:
                 type_name = 'user(' + str(f.type.name) + ')'
-        print("FIELD: "+ f.id+ ', '+ f.name+ ', '+ f.containingClass+ ', '+ f.visibility+ ', '+ f.applicability+ ', '+ type_name)
+        print("FIELD: "+ str(f.id)+ ', '+ f.name+ ', '+ f.containingClass+ ', '+ f.visibility+ ', '+ f.applicability+ ', '+ type_name)
 
     def print_constructor(self, c):
         print("CONSTRUCTOR: "+ str(c.id)+ ', '+ c.visibility)
@@ -90,14 +90,14 @@ class AST:
         params = ''
         for p in c.parameters:
             if(params == ''):
-                params = p.id
+                params = str(p.id)
             else:
-                params += ', ' + p.id
+                params += ', ' + str(p.id)
 
         print("Constructor Parameters:", params)
         self.print_var_table( c.variableTable)
         print("Constructor Body:")
-        #self.print_body( c.body)       # TODO
+        self.print_body( c.body)       # commented out for blocks
 
     def print_method(self, m):
         print("METHOD: "+ str(m.id)+ ', '+ m.name+ ', '+ m.containingClass+ ', '+ m.visibility +', '+ m.applicability+', ' + m.returnType.name)
@@ -111,7 +111,7 @@ class AST:
         print("Method Parameters:", params)
         self.print_var_table(m.variableTable)
         print("Method Body:")
-        self.print_body(m.body)
+        self.print_body(m.body) # commented out for blocks
 
 
     def print_var_table(self, vt):
@@ -119,6 +119,8 @@ class AST:
         base_types = ['int', 'float', 'boolean']
         # type needs to be represented as (int, float, boolean)
         # or user(name)
+        # t is a VariableRecord
+        # vt is a list of VariableRecords
         for t in vt:
             ty = t.type.name
             if ty not in base_types:

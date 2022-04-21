@@ -3,22 +3,21 @@
 
 #  PLY/yacc parser specification file
 
+from numpy import block
 import ply.yacc as yacc
 from decaf_lexer import tokens
 import decaf_lexer as lexer
 import decaf_ast as ast
 from decaf_checker import AST
+import debug
 
-
-
-import decaf_ast as ast
-from decaf_checker import AST
-
-block_stmnts = []
-conID = 0
-fieldID = 0
-methodID = 0
-varID = 0
+#block_depth = 0
+#block_stmnts = {block_depth: []}
+currentClass = ""
+conID = 1
+fieldID = 1
+methodID = 1
+varID = 1
 
 tree = AST()
 
@@ -34,7 +33,7 @@ precedence = (
     ('left', 'NOT')
 )
 
-
+# done
 # The program with zero or more class declarations
 def p_program(p):
     '''program : class_decl
@@ -42,63 +41,63 @@ def p_program(p):
     class_decl : class_decl class_decl'''
     tree.print_table()
 
+# done
 # The class declaration with or without inheritance and one or more class body declarations
 def p_class_decl(p):
     '''class_decl : CLASS ID EXTENDS ID '{' class_body_decl '}'
                   | CLASS ID '{' class_body_decl '}'
                   '''
     # Reset Global vars
-    global block_stmnts
+    #global block_stmnts
+    #global block_depth
     global fieldID
     global methodID
     global varID
     global conID
+    global currentClass
 
-    if block_stmnts is None:
-        block_stmnts = []
-    if fieldID is None:
-        fieldID = 0
-    if methodID is None:
-        methodID = 0
-    if varID is None:
-        varID = 0
-    if conID is None:
-        conID = 0
-
-    # Reset Global vars
-    global block_stmnts
-    block_stmnts = []
+    #block_depth = 0
+    #block_stmnts = {block_depth: []}
+    fieldID = 1
+    methodID = 1
+    varID = 1
+    conID = 1
+    currentClass = ""
 
     p[0] = ast.ClassRecord()        # Initializes an empty class record
     p[0].name = p[2]            # Set class record's name to p[2]
     currentClass = p[2]
 
     body_index = 4          # Represents the index where class_body_decl starts
-    if p[2] == 'extends':         # Checks if class record is a child class
+    if p[3] == 'extends':         # Checks if class record is a child class
         body_index = 6
         p[0].superName = p[4]
 
-
-
     # Loop through all the class body declarations to add appropriate records to
     # class record's constructors, methods, and fields
-    for declaration in p[body_index]:
-        if(type(declaration) is ast.ConstructorRecord):
-            conID += 1
-            declaration.id = conID
-            p[0].constructors.append(declaration)
-        elif(type(declaration) is ast.MethodRecord):
-            methodID += 1
-            declaration.id = methodID
-            declaration.containingClass = currentClass
-            p[0].methods.append(declaration)
-        elif(type(declaration) is ast.FieldRecord):
-            fieldID += 1
-            declaration.id = fieldID
-            declaration.containingClass = currentClass
-            p[0].fields.append(declaration)
+    for record in p[body_index]:
+        if(type(record) is ast.ConstructorRecord):
+            record.containingClass = currentClass
+            record.id = conID
+            conID = conID + 1
+            p[0].constructors.append(record)
+        elif(type(record) is ast.MethodRecord):
+            record.containingClass = currentClass
+            record.id = methodID
+            methodID = methodID + 1
+            p[0].methods.append(record)
+        else:   # record must be a list of fields
+            for field in record:
+                field.containingClass = currentClass
+                field.id = fieldID
+                fieldID = fieldID + 1
+                p[0].fields.append(field)
+
+
+    debug.print_p(p, msg="Printing p from class_decl")
     tree.add_class(p[0])
 
+# TODO: fields, statements, decl
 # One or more class body declarations that contains either fields, methods, and/or constructors
 def p_class_body_decl(p):
     '''class_body_decl : class_body_decl class_body_decl
@@ -110,6 +109,7 @@ def p_class_body_decl(p):
     if len(p) == 2:
         p[0] = [p[1]]
 
+# done
 def p_type(p):
     '''type : INT
             | FLOAT
@@ -117,6 +117,7 @@ def p_type(p):
             | ID'''
     p[0] = ast.TypeRecord(p[1])
 
+# done
 def p_modifier(p):
     '''modifier : PRIVATE STATIC
                 | PRIVATE
@@ -126,26 +127,29 @@ def p_modifier(p):
                 | empty'''
     p[0] = p[1:]
 
+# done
 def p_var_decl(p):
     '''var_decl : type variables ';' '''
     p[0] = {"type" : p[1], "variables" : p[2]}
 
+# done
 def p_variables(p):
     '''variables : variable
                  | variable ',' variables'''
-    if len(p) == 3:
-        p[0] = p[1] + p[3]
+    if len(p) == 4:
+        p[0] = [p[1]] + p[3]
     if len(p) == 2:
         p[0] = [p[1]]
 
+# done
 def p_variable(p):
     '''variable  : ID '''
     p[0] = p[1]
 
+# TODO: field id?
 # Field declaration with a type, variable name, and optional modifiers
 def p_field_decl(p):
     '''field_decl : modifier var_decl'''
-
     visibility = ''
     applicability = ''
 
@@ -156,23 +160,33 @@ def p_field_decl(p):
         visibility = 'private'
 
     if 'static' in modifiers:
-        applicability = 'class field'
+        applicability = 'static'
     else:
         applicability = 'instance'
 
     var_decl = p[2]
     type = var_decl["type"]
-
     p[0] = []
-    # TODO FIND OUT HOW TO PROPERLY UPDATE FIELD_ID
-    for var in var_decl["variables"]:
-        field = ast.FieldRecord(var, 0, '', visibility, applicability, type)
-        p[0] += [field]
+    if var_decl["variables"] is not None:
+        for var in var_decl["variables"]:
+            field = ast.FieldRecord(name = var, id = 1, containingClass= currentClass, visibility= visibility, applicability= applicability, type= type)
+            p[0] += [field]
 
+# TODO: replace empty list with variable table
 def p_method_decl(p):
     '''method_decl      : modifier type ID '(' optional_formals ')' block
                         | modifier VOID ID '(' optional_formals ')' block'''
+    
+    # reset blocks dict
+    # reset when creating method and constructor
+    #global block_stmnts
+    #global block_depth
+    #block_depth = 0
+    #block_stmnts = {block_depth: []}
+
+    # never set but needs t0 be
     methodType = ''
+
     if p[2] == 'void':
         methodType = ast.TypeRecord('void')
     else:
@@ -196,41 +210,44 @@ def p_method_decl(p):
     method_body = p[7]
 
     # TODO replace empty list with variable table
+    p[0] = ast.MethodRecord(name= p[3], id=1, containingClass=currentClass
+    , visibility=visibility, applicability=applicability, body=method_body, returnType=methodType, parameters=parameters)
 
-    p[0] = ast.MethodRecord(p[3], 0, ''
-    , visibility, applicability, method_body, [], methodType, parameters)
-
+# TODO: variable table
 def p_optional_formals(p):
     '''optional_formals : formals
                         | empty'''
-    var_list = []
+    if p[1] is None:
+        p[0] = []
+    else:
+        p[0] = p[1]
 
-    # TODO fix variableTable
-    if p[1] is not None:
-        for variable in p[1]:
-            var_list.append(variable)
-    p[0] = var_list
-
+# done
 def p_formals(p):
-    '''formals  : formal_param ',' formals
-                | formal_param'''
-    if len(p) == 3:
-        p[0] = p[1] + p[3]
+    '''formals  : formal_param
+                | formal_param ',' formals'''
+    if len(p) == 4:
+        p[0] = [p[1]] + p[3]
     if len(p) == 2:
         p[0] = [p[1]]
 
+# TODO: field_id, variable table, field_id again
 def p_formal_param(p):
     '''formal_param : type variable'''
-
-    # TODO FIND OUT HOW TO PROPERLY UPDATE FIELD_ID
-    p[0] = ast.VariableRecord(p[2], 1, "formal", p[1])
+    p[0] = ast.VariableRecord(name = p[2], id = 1, kind = "formal", type= p[1])
 
 # A method declaration with modifiers, return type, method name, and optional parameters
 # A constructor declaration with modifiers, class name, and optional parameters
 def p_constructor_decl(p):
     '''constructor_decl : modifier ID '(' optional_formals ')' block'''
 
-    name = p[2]
+    # reset blocks dict
+    # reset when creating method and constructor
+    #global block_stmnts
+    ##global block_depth
+    #block_stmnts = {}
+    #block_depth = 0
+
     visibility = ''
     modifiers = p[1]
 
@@ -242,42 +259,42 @@ def p_constructor_decl(p):
     parameters = p[4]
     body = p[6]
 
-    variableTable = []  # TODO FIX variableTable
-    # TODO FIND OUT HOW TO PROPERLY UPDATE FIELD_ID
-    p[0] = ast.ConstructorRecord(0, visibility, parameters, variableTable, body)
-
-
-
-    if len(p) == 8:  # method_decl
-        p[0] = ast.MethodRecord()
-        if p[2] == 'void':
-            p[0].method_name = p[3]
-            p[0].method_visibility = p[1]
-            p[0].method_parameters = p[5]
-            p[0].return_type = p[2]
-            p[0].method_body = p[7]
-        else:
-            p[0].method_name = p[3]
-            p[0].method_visibility = p[1]
-            p[0].method_parameters = p[5]
-            p[0].return_type = "void"
-            p[0].method_body = p[7]
-    elif len(p) == 7: # constructor_decl
-        p[0] = ast.ConstructorRecord()
-        p[0].id = p[2]
-        p[0].visibility = p[1]
-        p[0].parameters = p[4]
-        p[0].body = p[6]
-        for i in range(4, len(p)):
-            if(type(p[i]) is ast.VariableRecord):
-                p[0].variableTable.push(p[i])
+    p[0] = ast.ConstructorRecord(id=1, visibility=visibility, parameters=parameters,variableTable=[], body=body)
 
 # TODO include line range
+
+def p_block(p):
+    '''block : '{' optional_stmts '}'
+             | '{' '}'
+    '''
+    # create block object
+    p[0] = ast.Statement()
+    p[0].kind = 'Block'
+    # { }
+    if len(p) == 3:
+        p[0].attributes['stmnts'] = []
+    else:
+        p[0].attributes['stmnts'] = p[2]
+
+# if there are ordering problems check this recursion magic
+# returns a list of statements
+def p_optional_stmts(p):
+    '''optional_stmts : stmt optional_stmts
+                       | empty'''
+    if len(p) == 3:
+        if p[2] == None: # stmnt + empty
+            p[0] = [p[1]]
+        else: # stmnt + optional_stmts
+            p[0] = [p[1]]
+            for s in p[2]:
+                p[0].append(s)
+    else: # empty
+        p[0] = []
+
+
+# TODO line range, nested block statements
 def p_statements(p):
-    '''block        : '{' stmt '}'
-                    | '{' '}'
-    stmt            : stmt stmt
-                    | IF '(' expr ')' stmt ELSE stmt
+    '''stmt         : IF '(' expr ')' stmt ELSE stmt
                     | IF '(' expr ')' stmt
                     | WHILE '(' expr ')' stmt
                     | FOR '(' optional_stmt_expr ';' optional_expr ';' optional_stmt_expr ')' stmt
@@ -294,6 +311,7 @@ def p_statements(p):
                     | empty'''
 
     p[0] = ast.Statement()
+
     if p[1] == 'if':
         p[0].kind = 'If'
         p[0].attributes.update({'condition': p[3]})
@@ -313,29 +331,21 @@ def p_statements(p):
     elif p[1] == 'return':
         p[0].kind = 'return'
         p[0].attributes.update({'return-expression', p[2]})
-    elif type(p[1]) is ast.Expression and p[2] == ';': # expr-stmnt
+    elif len(p) == 3 and type(p[1]) is ast.Expression and p[2] == ';': # expr-stmnt
         p[0].kind = 'Expr'
         p[0].attributes.update({'expression': p[1]})
-    elif p[1] == '{': # block
-        p[0].kind = 'Block'
-        # possible make block_stmnts a double list
-        # increment the index in method/constructor
-        # decrement here
-        # I actually think different inc/decs are needed
-        p[0].attributes.update({'stmnts': block_stmnts}) # might need to be copied? not sure
-
     elif p[1] == 'break':
         p[0].kind = 'Break'
     elif p[1] == 'continue':
         p[0].kind = 'Continue'
+    elif type(p[1]) is ast.Statement and p[1].kind == 'Block':
+        p[0] = p[1]
     # skip statement?
 
     # adding line range?
 
-    # add to block statement
-    block_stmnts.append(p[0])
 
-
+# TODO: all
 def p_expressions(p):
     '''literal : INT_CONST
                | FLOAT_CONST
@@ -489,7 +499,7 @@ def p_expressions(p):
     if type(p[1]) is str:
         p[0].attributes.update({"class-name": p[1]})
 
-
+# TODO: all
 def p_operators(p):
     """arith_op : PLUS
             | MINUS

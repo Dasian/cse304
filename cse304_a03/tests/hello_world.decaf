@@ -1,6 +1,4 @@
-class hello_world{
-    private int method1(int x){}
-    public static void main() {
-        Out.print("Hello World!\n");
-    }
+class hello_world extends a1{
+    int x, y;
+    public static void main() {}
 }
