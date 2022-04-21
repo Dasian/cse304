@@ -147,6 +147,7 @@ def p_variable(p):
     p[0] = p[1]
 
 # done
+# Field declaration with a type, variable name, and optional modifiers
 def p_field_decl(p):
     '''field_decl : modifier var_decl'''
     visibility = ''
@@ -238,6 +239,7 @@ def p_formals(p):
     if len(p) == 2:
         p[0] = [p[1]]
 
+# TODO: field_id, variable table, field_id again
 def p_formal_param(p):
     '''formal_param : type variable'''
     p[0] = ast.VariableRecord(name = p[2], id = 1, kind = "formal", type= p[1])
@@ -510,7 +512,7 @@ def p_expressions(p):
     if type(p[1]) is str:
         p[0].attributes.update({"class-name": p[1]})
 
-# just returns the string value of whatever operator is read in p[1]
+# returns the string value of whatever operator is read in p[1]
 def p_operators(p):
     """arith_op : PLUS
             | MINUS
