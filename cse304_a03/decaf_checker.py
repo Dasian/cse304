@@ -82,7 +82,7 @@ class AST:
         type_name = f.type.name
         if type_name not in base_types:
                 type_name = 'user(' + str(f.type.name) + ')'
-        print("FIELD: "+ f.id+ ', '+ f.name+ ', '+ f.containingClass+ ', '+ f.visibility+ ', '+ f.applicability+ ', '+ type_name)
+        print("FIELD: "+ str(f.id)+ ', '+ f.name+ ', '+ f.containingClass+ ', '+ f.visibility+ ', '+ f.applicability+ ', '+ type_name)
 
     def print_constructor(self, c):
         print("CONSTRUCTOR: "+ str(c.id)+ ', '+ c.visibility)
@@ -105,9 +105,9 @@ class AST:
         params = ''
         for p in m.parameters:
             if(params == ''):
-                params = p.id
+                params = str(p.id)
             else:
-                params += ', ' + p.id
+                params += ', ' + str(p.id)
         print("Method Parameters:", params)
         self.print_var_table(m.variableTable)
         print("Method Body:")

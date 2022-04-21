@@ -1,6 +1,10 @@
 class hello_world{
-    private int method1(int x){}
-    public static void main() {
+    private int method1(int x, String y, double z){
+        if(10>x){
+            main();
+        }
+    }
+    public static void main(String args) {
         Out.print("Hello World!\n");
     }
 }
