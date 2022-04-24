@@ -352,15 +352,42 @@ def p_statements(p):
 
     # adding line range?
 
-
-# TODO: all
-def p_expressions(p):
-    '''literal : INT_CONST
+# works and prints correctly when tested on its own
+def p_literal(p):
+    '''
+    literal : INT_CONST
                | FLOAT_CONST
                | STRING_CONST
                | NULL
                | TRUE
                | FALSE
+    '''
+
+    p[0] = ast.Expression()
+    p[0].kind = "Constant"
+    const_expr = ast.Expression() # inner expression for printing
+    values = ['true', 'false', 'null']
+
+    # setting the inner expression type
+    if type(p[1]) is int:
+        const_expr.kind = "Integer-constant"
+    elif type(p[1]) is float:
+        const_expr.kind = "Float-constant"
+    elif type(p[1]) is str and p[1] not in values:
+        const_expr.kind = "String-constant"
+    else:
+        # null, true, false
+        const_expr.kind = p[1] 
+
+    # adding value for ints, floats, and strings    
+    if p[1] not in values: 
+        const_expr.attributes.update({"value": p[1]})
+
+    p[0].attributes.update({"Expression": const_expr})
+
+# TODO: all
+def p_expressions(p):
+    '''
     primary : literal
             | THIS
             | SUPER

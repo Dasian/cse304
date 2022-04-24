@@ -1,0 +1,11 @@
+class expression_test{
+    public static void main(String args) {
+        // just a class for testing out expressions
+        a = 10;
+        b = 1.5;
+        s = "Gaming";
+        bool = true;
+        bool2 = false;
+        n = null;
+    }
+}
