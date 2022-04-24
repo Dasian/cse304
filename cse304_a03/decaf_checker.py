@@ -60,7 +60,12 @@ class AST:
     def print_table(self):
         delimiter = '--------------------------------------------------------------------------'
         print(delimiter)
+        i = 0 
         for c in self.classes:
+            # disables printing in and out class
+            if i < 2:
+                i += 1
+                continue
             self.print_class(c)
             print(delimiter)
 
