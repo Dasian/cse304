@@ -192,7 +192,7 @@ class AST:
             elif type(val) is list:
                 content += self.expr_list_str(val)
             else:
-                content += val
+                content += str(val)
             content += ', '
         # remove () for expressions without attribute values
         if content == '':
