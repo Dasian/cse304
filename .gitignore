@@ -151,6 +151,5 @@ crashlytics-build.properties
 fabric.properties
 
 # parser debug files
-*/parser.out
-*/parsetab.py
-cse304_a03/parsetab.py
+**/parser.out
+*parsetab.py
