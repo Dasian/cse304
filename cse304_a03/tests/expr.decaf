@@ -1,13 +1,19 @@
 class expression_test{
     public static void main(String args) {
         // just a class for testing out expressions
-        a = 10;
+        // constants
+	a = 10;
         b = 1.5;
         s = "Gaming";
         bool = true;
         bool2 = false;
         n = null;
+  
+        // assign + binary expression
 	x = a + b;
-        return +25;
+        y = -5; // unary expression
+	
+        // field access
+	k = this.field;
     }
 }

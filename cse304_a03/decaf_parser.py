@@ -426,6 +426,24 @@ def p_expr(p):
         p[0].attributes.update({"operand1": p[1]})
         p[0].attributes.update({"operand2": p[3]})
 
+# works when tested individually
+# TODO resolve what the single ID is supposed to do
+#   what is supposed to be returned with just ID?
+def p_field_access(p):
+    '''
+    field_access : primary '.' ID
+                 | ID
+    '''
+    p[0] = ast.Expression()
+    if len(p) == 4:
+        p[0].kind = "Field-access"
+        p[0].attributes.update({"base": p[1]})
+        p[0].attributes.update({"field-name": p[3]})
+    else:
+        p[0] = p[1] # just ID but idk how that works??
+        # @SEAN is field access supposed to resolve to 1 id?
+    
+
 # TODO: all
 def p_expressions(p):
     '''
@@ -439,8 +457,6 @@ def p_expressions(p):
             | method_invocation
     arguments : expr
               | expr ',' arguments
-    field_access : primary '.' ID
-                 | ID
     method_invocation : field_access '(' arguments ')'
                       | field_access '(' ')'
     assign : field_access ASSIGN expr
@@ -490,14 +506,6 @@ def p_expressions(p):
     # 'post' or 'pre'; ex: x++ or ++x
     if type(p[3]) is str:
         p[0].attributes.update({"order": p[3]})
-
-    # Field-access
-    # ***Remember to change the indices!***
-    p[0].kind = "Field-access"
-    if type(p[1]) is ast.Expression:
-        p[0].attributes.update({"base": p[1]})
-    if type(p[2]) is str:
-        p[0].attributes.update({"field-name": p[2]})
 
     # Method-call
     # ***Remember to change the indices!***
