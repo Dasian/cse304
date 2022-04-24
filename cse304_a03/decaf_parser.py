@@ -442,7 +442,45 @@ def p_field_access(p):
     else:
         p[0] = p[1] # just ID but idk how that works??
         # @SEAN is field access supposed to resolve to 1 id?
-    
+
+# parses assign and auto expressions   
+# works when testing individually
+# TODO work on dealing with field_access
+def p_assign_auto(p):
+    '''
+    assign : field_access ASSIGN expr
+            | field_access INCREMENT
+            | INCREMENT field_access
+            | field_access DECREMENT
+            | DECREMENT field_access
+    '''
+    p[0] = ast.Expression()
+    ops = {
+        '++': 'inc',
+        '--': 'dec'
+    }
+    if len(p) == 3:
+        order = "invalid" # field_access ambiguity
+        # Auto
+        p[0].kind = "Auto"
+        if type(p[1]) is ast.Expression:
+            order = 'post'
+            p[0].attributes.update({"operand": p[1]})
+            p[0].attributes.update({"operation": ops[p[2]]})
+        elif type(p[2]) is ast.Expression:
+            order = 'pre'
+            p[0].attributes.update({"operand": p[2]})
+            p[0].attributes.update({"operation": ops[p[1]]})
+
+        p[0].attributes.update({"order": order})
+    else:
+        # Assign
+        p[0].kind = "Assign"
+        # this check is needed bc it can be just ID
+        # so uh field_access rule needs to be checkout out
+        if type(p[1]) is ast.Expression:
+            p[0].attributes.update({"left": p[1]})
+        p[0].attributes.update({"right": p[3]})
 
 # TODO: all
 def p_expressions(p):
@@ -459,11 +497,6 @@ def p_expressions(p):
               | expr ',' arguments
     method_invocation : field_access '(' arguments ')'
                       | field_access '(' ')'
-    assign : field_access ASSIGN expr
-     | field_access INCREMENT
-     | INCREMENT field_access
-     | field_access DECREMENT
-     | DECREMENT field_access
     stmt_expr : assign
               | method_invocation'''
     # This is all just general information
@@ -485,27 +518,6 @@ def p_expressions(p):
     p[0].kind = "Var"
     if type(p[1]) is ast.VariableRecord:
         p[0].attributes.update({"ID": p[1].id})
-
-    # Assign
-    # ***Remember to change the indices!***
-    p[0].kind = "Assign"
-    if type(p[1]) is ast.Expression:
-        p[0].attributes.update({"left": p[1]})
-    if type(p[2]) is ast.Expression:
-        p[0].attributes.update({"right": p[2]})
-
-    # Auto
-    # ***Remember to change the indices!***
-    p[0].kind = "Auto"
-    # variable being manipulated: ex: x
-    if type(p[1]) is ast.Expression:
-        p[0].attributes.update({"operand": p[1]})
-    # 'inc' or 'dec'; ex: ++ or --
-    if type(p[2]) is str:
-        p[0].attributes.update({"operation": p[2]})
-    # 'post' or 'pre'; ex: x++ or ++x
-    if type(p[3]) is str:
-        p[0].attributes.update({"order": p[3]})
 
     # Method-call
     # ***Remember to change the indices!***

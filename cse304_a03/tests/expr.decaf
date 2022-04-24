@@ -15,5 +15,12 @@ class expression_test{
 	
         // field access
 	k = this.field;
+
+	// auto 
+	++i;
+	i--;
+
+	// assign
+	a = b;
     }
 }
