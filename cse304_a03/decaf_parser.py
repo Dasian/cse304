@@ -39,7 +39,9 @@ def p_program(p):
     '''program : class_decl
                | empty
     class_decl : class_decl class_decl'''
-    tree.print_table()
+
+    if len(p) != 3:
+        tree.print_table()
 
 # done
 # The class declaration with or without inheritance and one or more class body declarations
@@ -94,7 +96,7 @@ def p_class_decl(p):
                 p[0].fields.append(field)
 
 
-    debug.print_p(p, msg="Printing p from class_decl")
+    # debug.print_p(p, msg="Printing p from class_decl")
     tree.add_class(p[0])
 
 # TODO: fields, statements, decl
@@ -241,13 +243,6 @@ def p_formal_param(p):
 def p_constructor_decl(p):
     '''constructor_decl : modifier ID '(' optional_formals ')' block'''
 
-    # reset blocks dict
-    # reset when creating method and constructor
-    #global block_stmnts
-    ##global block_depth
-    #block_stmnts = {}
-    #block_depth = 0
-
     visibility = ''
     modifiers = p[1]
 
@@ -330,7 +325,7 @@ def p_statements(p):
         p[0].attributes.update({'loop-body': p[5]})
     elif p[1] == 'return':
         p[0].kind = 'return'
-        p[0].attributes.update({'return-expression', p[2]})
+        p[0].attributes.update({'return-expression': p[2]})
     elif len(p) == 3 and type(p[1]) is ast.Expression and p[2] == ';': # expr-stmnt
         p[0].kind = 'Expr'
         p[0].attributes.update({'expression': p[1]})
