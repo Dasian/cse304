@@ -272,7 +272,6 @@ def p_constructor_decl(p):
     p[0] = ast.ConstructorRecord(id=1, visibility=visibility, parameters=parameters,variableTable=variableTable, body=body)
 
 # TODO include line range
-
 def p_block(p):
     '''block : '{' optional_stmts '}'
              | '{' '}'
@@ -300,7 +299,7 @@ def p_optional_stmts(p):
         p[0] = []
 
 
-# TODO line range, nested block statements
+# TODO line range
 def p_statements(p):
     '''stmt         : IF '(' expr ')' stmt ELSE stmt
                     | IF '(' expr ')' stmt
@@ -337,7 +336,7 @@ def p_statements(p):
         p[0].attributes.update({'loop-condition': p[3]})
         p[0].attributes.update({'loop-body': p[5]})
     elif p[1] == 'return':
-        p[0].kind = 'return'
+        p[0].kind = 'Return'
         p[0].attributes.update({'return-expression': p[2]})
     elif len(p) == 3 and type(p[1]) is ast.Expression and p[2] == ';': # expr-stmnt
         p[0].kind = 'Expr'
@@ -385,6 +384,48 @@ def p_literal(p):
 
     p[0].attributes.update({"Expression": const_expr})
 
+# works when tested on its own
+# check to make sure unary expr and ops are done correctly
+def p_expr(p):
+    '''
+    expr : primary
+         | assign
+         | expr arith_op expr
+         | expr bool_op expr
+         | unary_op expr
+    '''
+    p[0] = ast.Expression()
+    bin_operands = {
+        "+": "add",
+        "-": "sub", 
+        "*": "mul", 
+        "/": "div", 
+        "&&": "and", 
+        "||": "or", 
+        "==": "eq", 
+        "!=": "neq", 
+        "<": "lt", 
+        "<=": "leq", 
+        ">": "gt", 
+        ">=": "geq"
+    }
+    un_ops = {
+        "-": "neg"
+    }
+
+    if len(p) == 2: # primary or assign
+        p[0] = p[1]
+    elif len(p) == 3: # unary
+        p[0].kind = "Unary"
+        if p[1] in un_ops.keys():
+            p[0].attributes.update({"operator": un_ops[p[1]]})
+        p[0].attributes.update({"operand": p[2]})
+    elif len(p) == 4: # arith or bool op (Binary)
+        p[0].kind = "Binary"
+        p[0].attributes.update({"operator": bin_operands[p[2]]})
+        p[0].attributes.update({"operand1": p[1]})
+        p[0].attributes.update({"operand2": p[3]})
+
 # TODO: all
 def p_expressions(p):
     '''
@@ -402,11 +443,6 @@ def p_expressions(p):
                  | ID
     method_invocation : field_access '(' arguments ')'
                       | field_access '(' ')'
-    expr : primary
-         | assign
-         | expr arith_op expr
-         | expr bool_op expr
-         | unary_op expr
     assign : field_access ASSIGN expr
      | field_access INCREMENT
      | INCREMENT field_access
@@ -426,22 +462,6 @@ def p_expressions(p):
     if value:
         return
 
-    # Constant
-    # ***Remember to change the indices!***
-    # need to find a way to assign the values to the table
-    p[0].kind = "Constant"
-    value_constants = ["Float-constant", "Integer-constant", "String-constant"]
-    if type(p[1]) is ast.Expression:
-        # adding Integer/Float/String-constant
-        if p[1].kind in value_constants:
-            # not sure how p[1] would be generated though
-            p[0].attributes.update({p[1].kind: p[1]})
-        # adding Null, True, or False
-        else:
-            # this might not be necessary/could screw things up
-            # depending on how the inner attributes are generated
-            p[0].attributes.update({p[1].kind: ""})
-
     # Var
     # ***Remember to change the indices!***
     # scoping rules for variables with the same name
@@ -449,27 +469,6 @@ def p_expressions(p):
     p[0].kind = "Var"
     if type(p[1]) is ast.VariableRecord:
         p[0].attributes.update({"ID": p[1].id})
-
-    # Unary
-    # ***Remember to change the indices!***
-    p[0].kind = "Unary"
-    if type(p[1]) is ast.Expression:
-        p[0].attributes.update({"operand": p[1]})
-    # uminus or negative (-);
-    if type(p[2]) is str:
-        p[0].attributes.update({"unary-operator": p[2]})
-
-    # Binary
-    # ***Remember to change the indices!***
-    p[0].kind = "Binary"
-    if type(p[1]) is ast.Expression:
-        p[0].attributes.update({"operand1": p[1]})
-    if type(p[2]) is ast.Expression:
-        p[0].attributes.update({"operand2": p[2]})
-    # one of add, sub, mul, div, and, or, eq, neq, lt, leq, gt, and geq
-    # or the symbols rather? not sure
-    if type(p[3]) is str:
-        p[0].attributes.update({"operator": p[3]})
 
     # Assign
     # ***Remember to change the indices!***

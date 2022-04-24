@@ -7,5 +7,7 @@ class expression_test{
         bool = true;
         bool2 = false;
         n = null;
+	x = a + b;
+        return +25;
     }
 }
