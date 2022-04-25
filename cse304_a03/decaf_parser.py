@@ -312,10 +312,7 @@ def p_statements(p):
                     | block
                     | var_decl
                     | ';'
-    optional_expr   : expr
-                    | empty
-    optional_stmt_expr : stmt_expr
-                    | empty'''
+    '''
 
     p[0] = ast.Statement()
 
@@ -350,6 +347,16 @@ def p_statements(p):
     # skip statement?
 
     # adding line range?
+
+# needed to keep consistent typing
+def p_optional_expr(p):
+    '''
+    optional_expr   : expr
+                    | empty
+    optional_stmt_expr : stmt_expr
+                    | empty
+    '''
+    p[0] = p[1]
 
 # works and prints correctly when tested on its own
 def p_literal(p):
@@ -435,12 +442,19 @@ def p_field_access(p):
                  | ID
     '''
     p[0] = ast.Expression()
+    p[0].kind = "Field-access"
     if len(p) == 4:
-        p[0].kind = "Field-access"
         p[0].attributes.update({"base": p[1]})
         p[0].attributes.update({"field-name": p[3]})
-    else:
-        p[0] = p[1] # just ID but idk how that works??
+    else: 
+        # this is in response to resolving to just ID
+        # it sometimes works, sometimes doesn't
+        # I think this gets overloaded and creates uninitended behavior
+        # e.g. variables being used now have a 'This' prepended
+        # Using the Out class for methods will result in This.Out
+        # as opposed to just Out
+        p[0].attributes.update({"base": ast.Expression(kind='This')})
+        p[0].attributes.update({"field-name": p[1]})
         # @SEAN is field access supposed to resolve to 1 id?
 
 # parses assign and auto expressions   
@@ -534,9 +548,9 @@ def p_expressions(p):
     p[0] = ast.Expression()
 
     if len(p) == 2:
-        if p[1] is "this":
+        if p[1] == "this":
             p[0].kind = "This"
-        elif p[1] is "super":
+        elif p[1] == "super":
             p[0].kind = "Super"
         else:
             # literal, field_access, assign, method_invocation
