@@ -3,7 +3,6 @@
 
 #  PLY/yacc parser specification file
 
-from numpy import block
 import ply.yacc as yacc
 from decaf_lexer import tokens
 import decaf_lexer as lexer
@@ -117,6 +116,8 @@ def p_modifier(p):
 # this is a little sus
 # I feel like something needs to be done here
 # scope things and variable table things
+# causes printing errors when returned to stmt
+# will need to add to variable table (i think)
 def p_var_decl(p):
     '''var_decl : type variables ';' '''
     p[0] = {"type" : p[1], "variables" : p[2]}
@@ -324,7 +325,9 @@ def p_statements(p):
         p[0].kind = 'Continue'
     elif type(p[1]) is ast.Statement and p[1].kind == 'Block':
         p[0] = p[1]
-    # skip statement?
+    else:
+        # var_decl and ;
+        p[0].kind = 'Skip'
 
     # adding line range?
 

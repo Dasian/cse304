@@ -129,7 +129,6 @@ class Expression:
 """
     TODO
     Error Checking Section
-    Implement Expressions
 """
 class AST:
 
@@ -263,7 +262,9 @@ class AST:
             if stmnt.kind == 'Block':
                 content += self.block_str(stmnt.attributes['stmnts']) + ', '
             else:
-                content += self.stmnt_str(stmnt) + ', '
+                tmp = self.stmnt_str(stmnt)
+                if tmp != '':
+                    content += self.stmnt_str(stmnt) + ', '
         content = content[0:-2] # delete extra comma and space
         s = "Block ([\n" + content + "\n])"
         return s
@@ -274,10 +275,14 @@ class AST:
     # input: stmnt is a Statement Object
     def stmnt_str(self, stmnt):
         content = ''
+        if stmnt.kind == 'Skip':
+            return content
         for val in stmnt.attributes.values():
             if type(val) is Statement:
                 if val.kind == 'Block':
                     content += self.block_str(val.attributes['stmnts'])
+                elif val.kind == 'Skip':
+                    continue
                 else:
                     content += self.stmnt_str(val)
             elif type(val) is Expression:
