@@ -299,7 +299,7 @@ def p_optional_stmts(p):
         p[0] = []
 
 
-# TODO line range
+# TODO line range, var_decl?
 def p_statements(p):
     '''stmt         : IF '(' expr ')' stmt ELSE stmt
                     | IF '(' expr ')' stmt
@@ -482,7 +482,39 @@ def p_assign_auto(p):
             p[0].attributes.update({"left": p[1]})
         p[0].attributes.update({"right": p[3]})
 
-# TODO: all
+# I think field access and method prefix needs to be reworked
+# since the base and method name are needed
+# this.method() => {base: ast.Expression(kind='This'), method-name: "method"}
+# TODO fix the grammar then implement
+def p_method_invocation(p):
+    '''
+    method_invocation : field_access '(' arguments ')'
+                    | field_access '(' ')'
+    '''
+    p[0] = ast.Expression()
+    p[0].kind = "Method-call"
+
+    if len(p) == 4: # no args
+        if type(p[1]) is ast.Expression:
+            p[0].attributes.update({"base": p[1]})
+        if type(p[2]) is str:
+            p[0].attributes.update({"method-name": p[2]})
+        p[0].attributes.update({"arguments": p[3]})
+
+# let arguments be a [list] of expressions
+def p_arguments(p):
+    '''
+    arguments : expr
+              | expr ',' arguments
+    '''
+    p[0] = []
+    p[0].append(p[1])
+    # add list of prev expr to current list
+    if len(p) == 4:
+        for e in p[3]:
+            p[0].append(e)
+
+# TODO: new obj, class ref, var
 def p_expressions(p):
     '''
     primary : literal
@@ -493,10 +525,6 @@ def p_expressions(p):
             | NEW ID '(' ')'
             | field_access
             | method_invocation
-    arguments : expr
-              | expr ',' arguments
-    method_invocation : field_access '(' arguments ')'
-                      | field_access '(' ')'
     stmt_expr : assign
               | method_invocation'''
     # This is all just general information
@@ -505,6 +533,15 @@ def p_expressions(p):
     # change the indices as needed for each
     # I also tried to get the typing consistent
     p[0] = ast.Expression()
+
+    if len(p) == 2:
+        if p[1] is "this":
+            p[0].kind = "This"
+        elif p[1] is "super":
+            p[0].kind = "Super"
+        else:
+            # literal, field_access, assign, method_invocation
+            p[0] = p[1]
 
     # added to prevent the expression template code from running
     value = True
@@ -519,17 +556,6 @@ def p_expressions(p):
     if type(p[1]) is ast.VariableRecord:
         p[0].attributes.update({"ID": p[1].id})
 
-    # Method-call
-    # ***Remember to change the indices!***
-    p[0].kind = "Method-call"
-    if type(p[1]) is ast.Expression:
-        p[0].attributes.update({"base": p[1]})
-    if type(p[2]) is str:
-        p[0].attributes.update({"method-name": p[2]})
-    # list of Expression objects
-    if type(p[3]) is list:
-        p[0].attributes.update({"arguments": p[3]})
-
     # New-object
     # ***Remember to change the indices!***
     p[0].kind = "New-object"
@@ -540,11 +566,6 @@ def p_expressions(p):
     if type(p[2]) is list:
         p[0].attributes.update({"arguments": p[2]})
 
-    # This
-    p[0].kind = "This"
-
-    # Super
-    p[0].kind = "Super"
 
     # Class-reference
     # ***Remember to change the indices!***
