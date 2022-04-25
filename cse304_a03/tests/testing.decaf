@@ -1,6 +1,8 @@
 class testing{
     public static void main(String args) {
         // class for testing things that don't work
-	return 10;
+	int a;
+	int b;
+	a = 10;
     }
 }
