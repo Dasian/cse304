@@ -527,7 +527,7 @@ def p_arguments(p):
     if len(p) == 4:
         p[0] += p[3]
 
-# TODO: new obj, class ref, var
+# TODO: class ref, var
 def p_expressions(p):
     '''
     primary : literal
@@ -540,11 +540,7 @@ def p_expressions(p):
             | method_invocation
     stmt_expr : assign
               | method_invocation'''
-    # This is all just general information
-    # they need to be broken up in a better way
-    # copying/pasting/editing for all of these parts is welcome
-    # change the indices as needed for each
-    # I also tried to get the typing consistent
+
     p[0] = ast.Expression()
 
     if len(p) == 2:
@@ -555,6 +551,15 @@ def p_expressions(p):
         else:
             # literal, field_access, assign, method_invocation
             p[0] = p[1]
+    elif p[1] == 'new':
+        # New-object
+        p[0].kind = "New-object"
+        p[0].attributes.update({"class-name": p[2]})
+        if type(p[4]) is list:
+            p[0].attributes.update({"arguments": p[4]})
+    elif len(p) == 4:
+        # ( expr )
+        p[0] = p[2]
 
     # added to prevent the expression template code from running
     value = True
@@ -562,6 +567,7 @@ def p_expressions(p):
         return
 
     # Var
+    # might have something to do with field_access id
     # ***Remember to change the indices!***
     # scoping rules for variables with the same name
     # needs to be handled somewhere
@@ -569,18 +575,8 @@ def p_expressions(p):
     if type(p[1]) is ast.VariableRecord:
         p[0].attributes.update({"ID": p[1].id})
 
-    # New-object
-    # ***Remember to change the indices!***
-    p[0].kind = "New-object"
-    if type(p[1]) is str:
-        p[0].attributes.update({"class-name": p[1]})
-    # list of expressions to pass to the constructor
-    # the list could be empty (no args)
-    if type(p[2]) is list:
-        p[0].attributes.update({"arguments": p[2]})
-
-
     # Class-reference
+    # might be used when using method prefix instead of field_access
     # ***Remember to change the indices!***
     p[0].kind = "Class-reference"
     # denotes the value of literal class names
