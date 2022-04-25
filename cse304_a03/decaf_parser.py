@@ -426,9 +426,29 @@ def p_field_access(p):
         # e.g. variables being used now have a 'This' prepended
         # Using the Out class for methods will result in This.Out
         # as opposed to just Out
-        p[0].attributes.update({"base": ast.Expression(kind='This')})
-        p[0].attributes.update({"field-name": p[1]})
-        # @SEAN is field access supposed to resolve to 1 id?
+        #p[0].attributes.update({"base": ast.Expression(kind='This')})
+        #p[0].attributes.update({"field-name": p[1]})
+        
+        # I think return a Variable here
+        # might have something to do with field_access id
+        # scoping rules for variables with the same name
+        # needs to be handled somewhere
+        p[0].kind = "Variable"
+        id = -1
+        # TODO find the connection between id and variable table id
+        # @SEAN
+        p[0].attributes.update({"ID": id})
+
+        # ********** REMOVE THIS (testing) ************
+        p[0].attributes.update({"tmp": p[1]})
+
+        # this can also be resolved to as a class instance i think? not sure..
+        # Out.print('...') 
+        # resolves to
+        # Expr(Method-call(Variable(-1), print, Constant(String-constant(Hello World!\n))))
+        # when it should be
+        # Expr(Method-call(Class-reference(Out), print, Constant(String-constant(Hello World!\n))))
+        # TODO determine if class (p[1]) exists and replace Variable with Class-reference
 
 # parses assign and auto expressions   
 # works when testing individually
@@ -486,12 +506,14 @@ def p_method_invocation(p):
     p[0] = ast.Expression()
     p[0].kind = "Method-call"
 
-    if type(p[1]) is ast.Expression:
+    if p[1].kind == 'Field-access':
         p[0].attributes.update({"base": p[1].attributes['base']})
         p[0].attributes.update({"method-name": p[1].attributes['field-name']})
 
     if len(p) == 5: # including args
         p[0].attributes.update({"arguments": p[3]})
+    else:
+        p[0].attributes.update({"arguments": []})
 
 # let arguments be a [list] of expressions
 def p_arguments(p):
@@ -535,6 +557,8 @@ def p_expressions(p):
         p[0].attributes.update({"class-name": p[2]})
         if type(p[4]) is list:
             p[0].attributes.update({"arguments": p[4]})
+        else:
+            p[0].attributes.update({"arguments": []})
     elif len(p) == 4:
         # ( expr )
         p[0] = p[2]
