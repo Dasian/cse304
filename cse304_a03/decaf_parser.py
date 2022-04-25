@@ -56,14 +56,6 @@ def p_class_decl(p):
     global conID
     global currentClass
 
-    #block_depth = 0
-    #block_stmnts = {block_depth: []}
-    fieldID = 1
-    methodID = 1
-    varID = 1
-    conID = 1
-    currentClass = ""
-
     p[0] = ast.ClassRecord()        # Initializes an empty class record
     p[0].name = p[2]            # Set class record's name to p[2]
     currentClass = p[2]
