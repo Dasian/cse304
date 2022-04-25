@@ -9,8 +9,6 @@ from decaf_lexer import tokens
 import decaf_lexer as lexer
 import decaf_ast as ast
 
-#block_depth = 0
-#block_stmnts = {block_depth: []}
 currentClass = ""
 conID = 1
 fieldID = 1
@@ -48,8 +46,6 @@ def p_class_decl(p):
                   | CLASS ID '{' class_body_decl '}'
                   '''
     # Reset Global vars
-    #global block_stmnts
-    #global block_depth
     global fieldID
     global methodID
     global varID
@@ -85,8 +81,6 @@ def p_class_decl(p):
                 fieldID = fieldID + 1
                 p[0].fields.append(field)
 
-
-    # debug.print_p(p, msg="Printing p from class_decl")
     tree.add_class(p[0])
 
 # done
