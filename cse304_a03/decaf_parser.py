@@ -494,11 +494,11 @@ def p_method_invocation(p):
     p[0] = ast.Expression()
     p[0].kind = "Method-call"
 
-    if len(p) == 4: # no args
-        if type(p[1]) is ast.Expression:
-            p[0].attributes.update({"base": p[1]})
-        if type(p[2]) is str:
-            p[0].attributes.update({"method-name": p[2]})
+    if type(p[1]) is ast.Expression:
+            p[0].attributes.update({"base": p[1].attributes['base']})
+            p[0].attributes.update({"method-name": p[1].attributes['field-name']})
+
+    if len(p) == 5: # including args
         p[0].attributes.update({"arguments": p[3]})
 
 # let arguments be a [list] of expressions
@@ -511,8 +511,7 @@ def p_arguments(p):
     p[0].append(p[1])
     # add list of prev expr to current list
     if len(p) == 4:
-        for e in p[3]:
-            p[0].append(e)
+        p[0] += p[3]
 
 # TODO: new obj, class ref, var
 def p_expressions(p):
