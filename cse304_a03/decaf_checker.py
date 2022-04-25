@@ -189,7 +189,7 @@ class AST:
         for val in expr.attributes.values():
             if type(val) is decaf_ast.Expression:
                 content += self.expr_str(val)
-            elif type(val) is list:
+            elif type(val) is list and len(val) > 0 and type(val[0]) is decaf_ast.Expression:
                 content += self.expr_list_str(val)
             else:
                 content += str(val)
