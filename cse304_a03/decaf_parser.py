@@ -3,23 +3,18 @@
 
 #  PLY/yacc parser specification file
 
-from numpy import block
 import ply.yacc as yacc
 from decaf_lexer import tokens
 import decaf_lexer as lexer
 import decaf_ast as ast
-from decaf_checker import AST
-import debug
 
-#block_depth = 0
-#block_stmnts = {block_depth: []}
 currentClass = ""
 conID = 1
 fieldID = 1
 methodID = 1
 varID = 1
 
-tree = AST()
+tree = ast.AST()
 
 # Assignment is right-associative, relational operators are non-associative, and all others are left-associative
 precedence = (
@@ -50,8 +45,6 @@ def p_class_decl(p):
                   | CLASS ID '{' class_body_decl '}'
                   '''
     # Reset Global vars
-    #global block_stmnts
-    #global block_depth
     global fieldID
     global methodID
     global varID
@@ -87,8 +80,6 @@ def p_class_decl(p):
                 fieldID = fieldID + 1
                 p[0].fields.append(field)
 
-
-    # debug.print_p(p, msg="Printing p from class_decl")
     tree.add_class(p[0])
 
 # done
@@ -122,6 +113,11 @@ def p_modifier(p):
     p[0] = p[1:]
 
 # done
+# this is a little sus
+# I feel like something needs to be done here
+# scope things and variable table things
+# causes printing errors when returned to stmt
+# will need to add to variable table (i think)
 def p_var_decl(p):
     '''var_decl : type variables ';' '''
     p[0] = {"type" : p[1], "variables" : p[2]}
@@ -170,13 +166,6 @@ def p_field_decl(p):
 def p_method_decl(p):
     '''method_decl      : modifier type ID '(' optional_formals ')' block
                         | modifier VOID ID '(' optional_formals ')' block'''
-
-    # reset blocks dict
-    # reset when creating method and constructor
-    #global block_stmnts
-    #global block_depth
-    #block_depth = 0
-    #block_stmnts = {block_depth: []}
 
     # never set but needs to be
     methodType = ''
@@ -336,7 +325,9 @@ def p_statements(p):
         p[0].kind = 'Continue'
     elif type(p[1]) is ast.Statement and p[1].kind == 'Block':
         p[0] = p[1]
-    # skip statement?
+    else:
+        # var_decl and ;
+        p[0].kind = 'Skip'
 
     # adding line range?
 
@@ -394,40 +385,30 @@ def p_expr(p):
          | unary_op expr
     '''
     p[0] = ast.Expression()
-    bin_operands = {
-        "+": "add",
-        "-": "sub", 
-        "*": "mul", 
-        "/": "div", 
-        "&&": "and", 
-        "||": "or", 
-        "==": "eq", 
-        "!=": "neq", 
-        "<": "lt", 
-        "<=": "leq", 
-        ">": "gt", 
-        ">=": "geq"
-    }
-    un_ops = {
-        "-": "neg"
-    }
 
     if len(p) == 2: # primary or assign
         p[0] = p[1]
     elif len(p) == 3: # unary
         p[0].kind = "Unary"
-        if p[1] in un_ops.keys():
-            p[0].attributes.update({"operator": un_ops[p[1]]})
+        p[0].attributes.update({"operator": p[1]})
         p[0].attributes.update({"operand": p[2]})
     elif len(p) == 4: # arith or bool op (Binary)
         p[0].kind = "Binary"
-        p[0].attributes.update({"operator": bin_operands[p[2]]})
+        p[0].attributes.update({"operator": p[2]})
         p[0].attributes.update({"operand1": p[1]})
         p[0].attributes.update({"operand2": p[3]})
 
 # works when tested individually
 # TODO resolve what the single ID is supposed to do
 #   what is supposed to be returned with just ID?
+# all programs will ALWAYS have len == 4
+# i.e. x = 2 will never be encountered
+# only this.x = 2 or class.x = 2 will happen
+# check out the Scopes section on the hw doc
+# primary in this case can only be a
+# this, super, or a class
+# For assign, field_access needs to 
+# be either Field-access or Variable(table index)
 def p_field_access(p):
     '''
     field_access : primary '.' ID
@@ -445,9 +426,29 @@ def p_field_access(p):
         # e.g. variables being used now have a 'This' prepended
         # Using the Out class for methods will result in This.Out
         # as opposed to just Out
-        p[0].attributes.update({"base": ast.Expression(kind='This')})
-        p[0].attributes.update({"field-name": p[1]})
-        # @SEAN is field access supposed to resolve to 1 id?
+        #p[0].attributes.update({"base": ast.Expression(kind='This')})
+        #p[0].attributes.update({"field-name": p[1]})
+        
+        # I think return a Variable here
+        # might have something to do with field_access id
+        # scoping rules for variables with the same name
+        # needs to be handled somewhere
+        p[0].kind = "Variable"
+        id = -1
+        # TODO find the connection between id and variable table id
+        # @SEAN
+        p[0].attributes.update({"ID": id})
+
+        # ********** REMOVE THIS (testing) ************
+        p[0].attributes.update({"tmp": p[1]})
+
+        # this can also be resolved to as a class instance i think? not sure..
+        # Out.print('...') 
+        # resolves to
+        # Expr(Method-call(Variable(-1), print, Constant(String-constant(Hello World!\n))))
+        # when it should be
+        # Expr(Method-call(Class-reference(Out), print, Constant(String-constant(Hello World!\n))))
+        # TODO determine if class (p[1]) exists and replace Variable with Class-reference
 
 # parses assign and auto expressions   
 # works when testing individually
@@ -484,6 +485,7 @@ def p_assign_auto(p):
         p[0].kind = "Assign"
         # this check is needed bc it can be just ID
         # so uh field_access rule needs to be checkout out
+        # p[1] should be an expression that is a Field-access or Variable(table index)
         if type(p[1]) is ast.Expression:
             p[0].attributes.update({"left": p[1]})
         p[0].attributes.update({"right": p[3]})
@@ -491,6 +493,10 @@ def p_assign_auto(p):
 # I think field access and method prefix needs to be reworked
 # since the base and method name are needed
 # this.method() => {base: ast.Expression(kind='This'), method-name: "method"}
+# actually, methods are only used in conjunction with class/object
+# so never just func(), always this.func() or class.func()
+# note that field_access might sometimes return Variable(table index)
+# unless the design is changed
 # TODO fix the grammar then implement
 def p_method_invocation(p):
     '''
@@ -500,12 +506,14 @@ def p_method_invocation(p):
     p[0] = ast.Expression()
     p[0].kind = "Method-call"
 
-    if type(p[1]) is ast.Expression:
-            p[0].attributes.update({"base": p[1].attributes['base']})
-            p[0].attributes.update({"method-name": p[1].attributes['field-name']})
+    if p[1].kind == 'Field-access':
+        p[0].attributes.update({"base": p[1].attributes['base']})
+        p[0].attributes.update({"method-name": p[1].attributes['field-name']})
 
     if len(p) == 5: # including args
         p[0].attributes.update({"arguments": p[3]})
+    else:
+        p[0].attributes.update({"arguments": []})
 
 # let arguments be a [list] of expressions
 def p_arguments(p):
@@ -549,6 +557,8 @@ def p_expressions(p):
         p[0].attributes.update({"class-name": p[2]})
         if type(p[4]) is list:
             p[0].attributes.update({"arguments": p[4]})
+        else:
+            p[0].attributes.update({"arguments": []})
     elif len(p) == 4:
         # ( expr )
         p[0] = p[2]
@@ -576,7 +586,7 @@ def p_expressions(p):
         p[0].attributes.update({"class-name": p[1]})
 
 # returns the string value of whatever operator is read in p[1]
-def p_operators(p):
+def p_binary_op(p):
     """arith_op : PLUS
             | MINUS
             | TIMES
@@ -588,12 +598,35 @@ def p_operators(p):
             | LESSER
             | GREATER
             | LEQ
-            | GEQ
+            | GEQ"""
+
+    bin_operands = {
+        "+": "add",
+        "-": "sub", 
+        "*": "mul", 
+        "/": "div", 
+        "&&": "and", 
+        "||": "or", 
+        "==": "eq", 
+        "!=": "neq", 
+        "<": "lt", 
+        "<=": "leq", 
+        ">": "gt", 
+        ">=": "geq"
+    }
+    p[0] = bin_operands[p[1]]
+
+def p_unary_op(p):
+    '''
     unary_op : PLUS
             | MINUS
-            | NOT"""
-    p[0] = p[1]
-
+            | NOT
+    '''
+    un_ops = {
+        "-": "uminus",
+        "!": "neg"
+    }
+    p[0] = un_ops[p[1]]
 
 # Error rule for syntax errors
 def p_error(p):
