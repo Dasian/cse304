@@ -40,11 +40,20 @@ def p_program(p):
     if len(p) != 3:
         tree.print_table()
 
+
+def p_class_id(p):
+    '''
+    class_id : ID
+    '''
+    global currentClass
+    currentClass = p[1]
+    p[0] = p[1]
+
 # done
 # The class declaration with or without inheritance and one or more class body declarations
 def p_class_decl(p):
-    '''class_decl : CLASS ID EXTENDS ID '{' class_body_decl '}'
-                  | CLASS ID '{' class_body_decl '}'
+    '''class_decl : CLASS class_id EXTENDS ID '{' class_body_decl '}'
+                  | CLASS class_id '{' class_body_decl '}'
                   '''
     # Reset Global vars
     global fieldID
