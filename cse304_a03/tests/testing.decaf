@@ -1,8 +1,22 @@
-class testing{
-    public static void main(String args) {
-        // class for testing things that don't work
-	int a;
-	int b;
-	a = 10;
+// file for testing things that don't work
+class Circle
+{
+    public static float pi;
+    public float center;
+    public float radius;
+    
+    public Circle(float c, float r)
+    {
+        this.center = c;
+        this.radius = r;
+        Circle.pi = 3.14159;
+    }
+}
+
+class test033
+{
+    public static void main()
+    {   
+        Circle.Circle(10.0, 14.2);
     }
 }
