@@ -160,6 +160,13 @@ class AST:
         self.classes.append(inClass)
         self.classes.append(outClass)
 
+    # returns a list of class names in the tree (str)
+    def get_classes(self):
+        cnames = []
+        for c in self.classes:
+            cnames.append(c.name)
+        return cnames
+
     # adds class to the tree
     # the class must be completed at this point
     def add_class(self, c):

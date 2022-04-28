@@ -417,38 +417,22 @@ def p_field_access(p):
     p[0] = ast.Expression()
     p[0].kind = "Field-access"
     if len(p) == 4:
-        p[0].attributes.update({"base": p[1]})
-        p[0].attributes.update({"field-name": p[3]})
+        p[0].attributes.update({"base": p[1]}) # expression
+        p[0].attributes.update({"field-name": p[3]}) # str
     else: 
-        # this is in response to resolving to just ID
-        # it sometimes works, sometimes doesn't
-        # I think this gets overloaded and creates uninitended behavior
-        # e.g. variables being used now have a 'This' prepended
-        # Using the Out class for methods will result in This.Out
-        # as opposed to just Out
-        #p[0].attributes.update({"base": ast.Expression(kind='This')})
-        #p[0].attributes.update({"field-name": p[1]})
-        
-        # I think return a Variable here
-        # might have something to do with field_access id
-        # scoping rules for variables with the same name
-        # needs to be handled somewhere
-        p[0].kind = "Variable"
-        id = -1
-        # TODO find the connection between id and variable table id
-        # @SEAN
-        p[0].attributes.update({"ID": id})
-
-        # ********** REMOVE THIS (testing) ************
-        p[0].attributes.update({"tmp": p[1]})
-
-        # this can also be resolved to as a class instance i think? not sure..
-        # Out.print('...') 
-        # resolves to
-        # Expr(Method-call(Variable(-1), print, Constant(String-constant(Hello World!\n))))
-        # when it should be
-        # Expr(Method-call(Class-reference(Out), print, Constant(String-constant(Hello World!\n))))
-        # TODO determine if class (p[1]) exists and replace Variable with Class-reference
+        # check if id is a class
+        if p[1] in tree.get_classes() or p[1] == currentClass:
+            p[0].kind = "Class-reference"
+            # denotes the value of literal class names
+            p[0].attributes.update({"class-name": p[1]})
+        else:
+            # ********** REMOVE THIS (testing if vars are linked to correct vtable id) ************
+            # p[0].attributes.update({"primary or id": p[1]})
+            p[0].kind = "Variable"
+            id = -1
+            # TODO find the connection between id and variable table id
+            # @SEAN
+            p[0].attributes.update({"ID": id})
 
 # parses assign and auto expressions   
 # works when testing individually
