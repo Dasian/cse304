@@ -160,6 +160,13 @@ class AST:
         self.classes.append(inClass)
         self.classes.append(outClass)
 
+    # returns a list of class names in the tree (str)
+    def get_classes(self):
+        cnames = []
+        for c in self.classes:
+            cnames.append(c.name)
+        return cnames
+
     # adds class to the tree
     # the class must be completed at this point
     def add_class(self, c):
@@ -320,5 +327,5 @@ class AST:
     def expr_list_str(self, list):
         content = ''
         for expr in list:
-            content += self.expr_str(expr)
-        return content
+            content += self.expr_str(expr) + ', '
+        return '[' + content[0:-2] + ']'

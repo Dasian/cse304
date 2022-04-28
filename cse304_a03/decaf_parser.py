@@ -394,7 +394,6 @@ def p_literal(p):
     p[0].attributes.update({"Expression": const_expr})
 
 # works when tested on its own
-# check to make sure unary expr and ops are done correctly
 def p_expr(p):
     '''
     expr : primary
@@ -412,7 +411,8 @@ def p_expr(p):
         p[0] = p[1]
     elif len(p) == 3: # unary
         p[0].kind = "Unary"
-        p[0].attributes.update({"operator": p[1]})
+        if p[1] != "":
+            p[0].attributes.update({"operator": p[1]})
         p[0].attributes.update({"operand": p[2]})
     elif len(p) == 4: # arith or bool op (Binary)
         p[0].kind = "Binary"
@@ -420,17 +420,7 @@ def p_expr(p):
         p[0].attributes.update({"operand1": p[1]})
         p[0].attributes.update({"operand2": p[3]})
 
-# works when tested individually
-# TODO resolve what the single ID is supposed to do
-#   what is supposed to be returned with just ID?
-# all programs will ALWAYS have len == 4
-# i.e. x = 2 will never be encountered
-# only this.x = 2 or class.x = 2 will happen
-# check out the Scopes section on the hw doc
-# primary in this case can only be a
-# this, super, or a class
-# For assign, field_access needs to 
-# be either Field-access or Variable(table index)
+# TODO link variable to vtable id
 def p_field_access(p):
     '''
     field_access : primary '.' ID
@@ -442,42 +432,24 @@ def p_field_access(p):
     start_right,end_right = p.linespan(len(p)-1)    # Start,end lines of the right-most symbol
     p[0].lineRange = [start_left, end_right]
     if len(p) == 4:
-        p[0].attributes.update({"base": p[1]})
-        p[0].attributes.update({"field-name": p[3]})
+        p[0].attributes.update({"base": p[1]}) # expression
+        p[0].attributes.update({"field-name": p[3]}) # str
     else: 
-        # this is in response to resolving to just ID
-        # it sometimes works, sometimes doesn't
-        # I think this gets overloaded and creates uninitended behavior
-        # e.g. variables being used now have a 'This' prepended
-        # Using the Out class for methods will result in This.Out
-        # as opposed to just Out
-        #p[0].attributes.update({"base": ast.Expression(kind='This')})
-        #p[0].attributes.update({"field-name": p[1]})
-        
-        # I think return a Variable here
-        # might have something to do with field_access id
-        # scoping rules for variables with the same name
-        # needs to be handled somewhere
-        p[0].kind = "Variable"
-        id = -1
-        # TODO find the connection between id and variable table id
-        # @SEAN
-        p[0].attributes.update({"ID": id})
-
-        # ********** REMOVE THIS (testing) ************
-        p[0].attributes.update({"tmp": p[1]})
-
-        # this can also be resolved to as a class instance i think? not sure..
-        # Out.print('...') 
-        # resolves to
-        # Expr(Method-call(Variable(-1), print, Constant(String-constant(Hello World!\n))))
-        # when it should be
-        # Expr(Method-call(Class-reference(Out), print, Constant(String-constant(Hello World!\n))))
-        # TODO determine if class (p[1]) exists and replace Variable with Class-reference
+        # check if id is a class
+        if p[1] in tree.get_classes() or p[1] == currentClass:
+            p[0].kind = "Class-reference"
+            # denotes the value of literal class names
+            p[0].attributes.update({"class-name": p[1]})
+        else:            
+            p[0].attributes.update({"primary or id": p[1]})
+            p[0].kind = "Variable"
+            id = -1
+            # TODO find the connection between id and variable table id
+            # @SEAN
+            p[0].attributes.update({"ID": id})
 
 # parses assign and auto expressions   
 # works when testing individually
-# TODO work on dealing with field_access
 def p_assign_auto(p):
     '''
     assign : field_access ASSIGN expr
@@ -511,21 +483,12 @@ def p_assign_auto(p):
     else:
         # Assign
         p[0].kind = "Assign"
-        # this check is needed bc it can be just ID
-        # so uh field_access rule needs to be checkout out
-        # p[1] should be an expression that is a Field-access or Variable(table index)
-        if type(p[1]) is ast.Expression:
-            p[0].attributes.update({"left": p[1]})
+        p[0].attributes.update({"left": p[1]})
         p[0].attributes.update({"right": p[3]})
 
-# I think field access and method prefix needs to be reworked
-# since the base and method name are needed
-# this.method() => {base: ast.Expression(kind='This'), method-name: "method"}
-# actually, methods are only used in conjunction with class/object
-# so never just func(), always this.func() or class.func()
-# note that field_access might sometimes return Variable(table index)
-# unless the design is changed
-# TODO fix the grammar then implement
+# should work
+# TODO: test with class names that don't exist
+# TODO: test with objects that do/don't exist
 def p_method_invocation(p):
     '''
     method_invocation : field_access '(' arguments ')'
@@ -558,7 +521,7 @@ def p_arguments(p):
     if len(p) == 4:
         p[0] += p[3]
 
-# TODO: class ref, var
+# done
 def p_expressions(p):
     '''
     primary : literal
@@ -587,37 +550,17 @@ def p_expressions(p):
             p[0] = p[1]
     elif p[1] == 'new':
         # New-object
+        # TODO also figure out object field access/method invocations
         p[0].kind = "New-object"
         p[0].attributes.update({"class-name": p[2]})
         if type(p[4]) is list:
             p[0].attributes.update({"arguments": p[4]})
+            print('ARGUMENTS', p[4])
         else:
             p[0].attributes.update({"arguments": []})
     elif len(p) == 4:
         # ( expr )
         p[0] = p[2]
-
-    # added to prevent the expression template code from running
-    value = True
-    if value:
-        return
-
-    # Var
-    # might have something to do with field_access id
-    # ***Remember to change the indices!***
-    # scoping rules for variables with the same name
-    # needs to be handled somewhere
-    p[0].kind = "Var"
-    if type(p[1]) is ast.VariableRecord:
-        p[0].attributes.update({"ID": p[1].id})
-
-    # Class-reference
-    # might be used when using method prefix instead of field_access
-    # ***Remember to change the indices!***
-    p[0].kind = "Class-reference"
-    # denotes the value of literal class names
-    if type(p[1]) is str:
-        p[0].attributes.update({"class-name": p[1]})
 
 # returns the string value of whatever operator is read in p[1]
 def p_binary_op(p):
@@ -650,6 +593,7 @@ def p_binary_op(p):
     }
     p[0] = bin_operands[p[1]]
 
+# done
 def p_unary_op(p):
     '''
     unary_op : PLUS
@@ -658,7 +602,8 @@ def p_unary_op(p):
     '''
     un_ops = {
         "-": "uminus",
-        "!": "neg"
+        "!": "neg",
+        "+": ""
     }
     p[0] = un_ops[p[1]]
 
