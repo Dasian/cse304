@@ -251,10 +251,10 @@ class AST:
     # prints the body object
     # input: stmnt is a Statement Object
     def print_body(self, stmnt):
-        if stmnt is None:
+        if stmnt is None or stmnt is list:
             return
         content = ''
-        if(stmnt.kind == 'Block'):
+        if stmnt.kind == 'Block':
             content = self.block_str(stmnt.attributes['stmnts'])
         else:
             content = self.stmnt_str(stmnt)
@@ -266,7 +266,9 @@ class AST:
     def block_str(self, stmnts):
         content = ''
         for stmnt in stmnts:
-            if stmnt.kind == 'Block':
+            if type(stmnt) is list:
+                continue
+            elif stmnt.kind == 'Block':
                 content += self.block_str(stmnt.attributes['stmnts']) + ', '
             else:
                 tmp = self.stmnt_str(stmnt)
