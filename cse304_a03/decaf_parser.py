@@ -375,7 +375,11 @@ def p_literal(p):
     p[0].attributes.update({"Expression": const_expr})
 
 # works when tested on its own
-# check to make sure unary expr and ops are done correctly
+# TODO: determine the format for unary_op 
+# ex: +25 just represented as 25?
+# check the doc for unary expressions
+# right now it just represents it as a variable
+# (which i think is intended)
 def p_expr(p):
     '''
     expr : primary
@@ -390,7 +394,8 @@ def p_expr(p):
         p[0] = p[1]
     elif len(p) == 3: # unary
         p[0].kind = "Unary"
-        p[0].attributes.update({"operator": p[1]})
+        if p[1] != "":
+            p[0].attributes.update({"operator": p[1]})
         p[0].attributes.update({"operand": p[2]})
     elif len(p) == 4: # arith or bool op (Binary)
         p[0].kind = "Binary"
@@ -398,17 +403,7 @@ def p_expr(p):
         p[0].attributes.update({"operand1": p[1]})
         p[0].attributes.update({"operand2": p[3]})
 
-# works when tested individually
-# TODO resolve what the single ID is supposed to do
-#   what is supposed to be returned with just ID?
-# all programs will ALWAYS have len == 4
-# i.e. x = 2 will never be encountered
-# only this.x = 2 or class.x = 2 will happen
-# check out the Scopes section on the hw doc
-# primary in this case can only be a
-# this, super, or a class
-# For assign, field_access needs to 
-# be either Field-access or Variable(table index)
+# TODO link variable to vtable id
 def p_field_access(p):
     '''
     field_access : primary '.' ID
@@ -436,7 +431,6 @@ def p_field_access(p):
 
 # parses assign and auto expressions   
 # works when testing individually
-# TODO work on dealing with field_access
 def p_assign_auto(p):
     '''
     assign : field_access ASSIGN expr
@@ -467,21 +461,12 @@ def p_assign_auto(p):
     else:
         # Assign
         p[0].kind = "Assign"
-        # this check is needed bc it can be just ID
-        # so uh field_access rule needs to be checkout out
-        # p[1] should be an expression that is a Field-access or Variable(table index)
-        if type(p[1]) is ast.Expression:
-            p[0].attributes.update({"left": p[1]})
+        p[0].attributes.update({"left": p[1]})
         p[0].attributes.update({"right": p[3]})
 
-# I think field access and method prefix needs to be reworked
-# since the base and method name are needed
-# this.method() => {base: ast.Expression(kind='This'), method-name: "method"}
-# actually, methods are only used in conjunction with class/object
-# so never just func(), always this.func() or class.func()
-# note that field_access might sometimes return Variable(table index)
-# unless the design is changed
-# TODO fix the grammar then implement
+# should work
+# TODO: test with class names that don't exist
+# TODO: test with objects that do/don't exist
 def p_method_invocation(p):
     '''
     method_invocation : field_access '(' arguments ')'
@@ -511,7 +496,7 @@ def p_arguments(p):
     if len(p) == 4:
         p[0] += p[3]
 
-# TODO: class ref, var
+# done
 def p_expressions(p):
     '''
     primary : literal
@@ -549,28 +534,6 @@ def p_expressions(p):
         # ( expr )
         p[0] = p[2]
 
-    # added to prevent the expression template code from running
-    value = True
-    if value:
-        return
-
-    # Var
-    # might have something to do with field_access id
-    # ***Remember to change the indices!***
-    # scoping rules for variables with the same name
-    # needs to be handled somewhere
-    p[0].kind = "Var"
-    if type(p[1]) is ast.VariableRecord:
-        p[0].attributes.update({"ID": p[1].id})
-
-    # Class-reference
-    # might be used when using method prefix instead of field_access
-    # ***Remember to change the indices!***
-    p[0].kind = "Class-reference"
-    # denotes the value of literal class names
-    if type(p[1]) is str:
-        p[0].attributes.update({"class-name": p[1]})
-
 # returns the string value of whatever operator is read in p[1]
 def p_binary_op(p):
     """arith_op : PLUS
@@ -602,6 +565,7 @@ def p_binary_op(p):
     }
     p[0] = bin_operands[p[1]]
 
+# done
 def p_unary_op(p):
     '''
     unary_op : PLUS
@@ -613,8 +577,6 @@ def p_unary_op(p):
         "!": "neg",
         "+": ""
     }
-    # TODO add check to remove emptry str (+) 
-    # when creating Unary expr
     p[0] = un_ops[p[1]]
 
 # Error rule for syntax errors
