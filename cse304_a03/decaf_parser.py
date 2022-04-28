@@ -375,11 +375,6 @@ def p_literal(p):
     p[0].attributes.update({"Expression": const_expr})
 
 # works when tested on its own
-# TODO: determine the format for unary_op 
-# ex: +25 just represented as 25?
-# check the doc for unary expressions
-# right now it just represents it as a variable
-# (which i think is intended)
 def p_expr(p):
     '''
     expr : primary
@@ -421,8 +416,9 @@ def p_field_access(p):
             # denotes the value of literal class names
             p[0].attributes.update({"class-name": p[1]})
         else:
-            # ********** REMOVE THIS (testing if vars are linked to correct vtable id) ************
-            # p[0].attributes.update({"primary or id": p[1]})
+            # ********** REMOVE THIS (testing if vars are linked to correct vtable id) ***********
+            
+            p[0].attributes.update({"primary or id": p[1]})
             p[0].kind = "Variable"
             id = -1
             # TODO find the connection between id and variable table id
