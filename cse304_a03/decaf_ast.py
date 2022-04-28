@@ -266,7 +266,9 @@ class AST:
     def block_str(self, stmnts):
         content = ''
         for stmnt in stmnts:
-            if stmnt.kind == 'Block':
+            if type(stmnt) is list:
+                continue
+            elif stmnt.kind == 'Block':
                 content += self.block_str(stmnt.attributes['stmnts']) + ', '
             else:
                 tmp = self.stmnt_str(stmnt)

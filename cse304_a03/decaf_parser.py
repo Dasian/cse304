@@ -15,6 +15,7 @@ conID = 1
 fieldID = 1
 methodID = 1
 varID = 1
+currentVariableTable = []
 
 tree = ast.AST()
 
@@ -52,6 +53,7 @@ def p_class_decl(p):
     global varID
     global conID
     global currentClass
+    global currentVariableTable
 
     p[0] = ast.ClassRecord()        # Initializes an empty class record
     p[0].name = p[2]            # Set class record's name to p[2]
@@ -198,6 +200,7 @@ def p_method_decl(p):
     variableTable = []
     for param in parameters:
         param.id = varID
+        param.kind = "formal"
         varID = varID + 1
         variableTable.append(param)
 
@@ -357,9 +360,6 @@ def p_statements(p):
         p[0] = p[1]
     else:
         p[0].kind = 'Skip'
-
-    debug.print_p(p, msg="Printing p from stmt")
-
 
     # adding line range?
 
