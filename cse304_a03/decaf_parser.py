@@ -7,6 +7,8 @@ import ply.yacc as yacc
 from decaf_lexer import tokens
 import decaf_lexer as lexer
 import decaf_ast as ast
+import debug
+
 
 currentClass = ""
 conID = 1
@@ -79,7 +81,6 @@ def p_class_decl(p):
                 field.id = fieldID
                 fieldID = fieldID + 1
                 p[0].fields.append(field)
-
     tree.add_class(p[0])
 
 # done
@@ -222,14 +223,14 @@ def p_formals(p):
     if len(p) == 2:
         p[0] = [p[1]]
 
-# TODO: field_id, variable table, field_id again
+# done
 def p_formal_param(p):
     '''formal_param : type variable'''
     p[0] = ast.VariableRecord(name = p[2], id = 1, kind = "formal", type= p[1])
 
 # A method declaration with modifiers, return type, method name, and optional parameters
 # A constructor declaration with modifiers, class name, and optional parameters
-# TODO: method_body variable table
+# TODO: constructor_body variable table
 def p_constructor_decl(p):
     '''constructor_decl : modifier ID '(' optional_formals ')' block'''
 
@@ -261,10 +262,17 @@ def p_block(p):
     p[0] = ast.Statement()
     p[0].kind = 'Block'
     # { }
-    if len(p) == 3:
+
+    if len(p) == 3:     # EMPTY
         p[0].attributes['stmnts'] = []
     else:
         p[0].attributes['stmnts'] = p[2]
+
+    start_left,end_left = p.linespan(1)    # Start,end lines of the left-most symbol
+    start_right,end_right = p.linespan(len(p)-1)    # Start,end lines of the right-most symbol
+    p[0].lineRange = [start_left, end_right]     # From the left bracket to the right bracket
+
+
 
 # if there are ordering problems check this recursion magic
 # returns a list of statements
@@ -296,6 +304,9 @@ def p_statements(p):
     '''
 
     p[0] = ast.Statement()
+    start_left,end_left = p.linespan(1)    # Start,end lines of the left-most symbol
+    start_right,end_right = p.linespan(len(p)-1)    # Start,end lines of the right-most symbol
+    p[0].lineRange = [start_left, end_right]
 
     if p[1] == 'if':
         p[0].kind = 'If'
@@ -325,9 +336,13 @@ def p_statements(p):
         p[0].kind = 'Continue'
     elif type(p[1]) is ast.Statement and p[1].kind == 'Block':
         p[0] = p[1]
-    else:
-        # var_decl and ;
+    elif p[1] == ';':
         p[0].kind = 'Skip'
+    else:
+        p[0].kind = 'Var'
+
+    debug.print_p(p, msg="Printing p from stmt")
+
 
     # adding line range?
 
@@ -353,6 +368,10 @@ def p_literal(p):
     '''
 
     p[0] = ast.Expression()
+    start_left,end_left = p.linespan(1)    # Start,end lines of the left-most symbol
+    start_right,end_right = p.linespan(len(p)-1)    # Start,end lines of the right-most symbol
+    p[0].lineRange = [start_left, end_right]
+
     p[0].kind = "Constant"
     const_expr = ast.Expression() # inner expression for printing
     values = ['true', 'false', 'null']
@@ -385,6 +404,9 @@ def p_expr(p):
          | unary_op expr
     '''
     p[0] = ast.Expression()
+    start_left,end_left = p.linespan(1)    # Start,end lines of the left-most symbol
+    start_right,end_right = p.linespan(len(p)-1)    # Start,end lines of the right-most symbol
+    p[0].lineRange = [start_left, end_right]
 
     if len(p) == 2: # primary or assign
         p[0] = p[1]
@@ -416,6 +438,9 @@ def p_field_access(p):
     '''
     p[0] = ast.Expression()
     p[0].kind = "Field-access"
+    start_left,end_left = p.linespan(1)    # Start,end lines of the left-most symbol
+    start_right,end_right = p.linespan(len(p)-1)    # Start,end lines of the right-most symbol
+    p[0].lineRange = [start_left, end_right]
     if len(p) == 4:
         p[0].attributes.update({"base": p[1]})
         p[0].attributes.update({"field-name": p[3]})
@@ -462,6 +487,9 @@ def p_assign_auto(p):
             | DECREMENT field_access
     '''
     p[0] = ast.Expression()
+    start_left,end_left = p.linespan(1)    # Start,end lines of the left-most symbol
+    start_right,end_right = p.linespan(len(p)-1)    # Start,end lines of the right-most symbol
+    p[0].lineRange = [start_left, end_right]
     ops = {
         '++': 'inc',
         '--': 'dec'
@@ -504,6 +532,9 @@ def p_method_invocation(p):
                     | field_access '(' ')'
     '''
     p[0] = ast.Expression()
+    start_left,end_left = p.linespan(1)    # Start,end lines of the left-most symbol
+    start_right,end_right = p.linespan(len(p)-1)    # Start,end lines of the right-most symbol
+    p[0].lineRange = [start_left, end_right]
     p[0].kind = "Method-call"
 
     if p[1].kind == 'Field-access':
@@ -542,6 +573,9 @@ def p_expressions(p):
               | method_invocation'''
 
     p[0] = ast.Expression()
+    start_left,end_left = p.linespan(1)    # Start,end lines of the left-most symbol
+    start_right,end_right = p.linespan(len(p)-1)    # Start,end lines of the right-most symbol
+    p[0].lineRange = [start_left, end_right]
 
     if len(p) == 2:
         if p[1] == "this":

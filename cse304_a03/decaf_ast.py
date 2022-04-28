@@ -84,7 +84,7 @@ class TypeRecord:
         self.name = name # string; int, float, boolean, or custom user defined type
 
 class Statement:
-    # kinds: If, While, For, Return, Expr, Block, Break, Continue, Skip
+    # kinds: If, While, For, Return, Expr, Block, Break, Continue, Skip, Var
     # attributes: key is the attribute name and the value is mapped
     # @Sean for Block statements have the key in attributes named 'stmnts'
     def __init__(self, lineRange=None, kind='', attributes=None):
