@@ -2,7 +2,7 @@ class hello_world{
     private int method1(int x, String y, double z){
         if(10<=x){
             main();
-        }
+            }
         else{
             Out.print("x is less than 10 \n");
         }

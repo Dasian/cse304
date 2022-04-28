@@ -84,7 +84,7 @@ class TypeRecord:
         self.name = name # string; int, float, boolean, or custom user defined type
 
 class Statement:
-    # kinds: If, While, For, Return, Expr, Block, Break, Continue, Skip, Var
+    # kinds: If, While, For, Return, Expr, Block, Break, Continue, Skip
     # attributes: key is the attribute name and the value is mapped
     # @Sean for Block statements have the key in attributes named 'stmnts'
     def __init__(self, lineRange=None, kind='', attributes=None):
@@ -251,10 +251,10 @@ class AST:
     # prints the body object
     # input: stmnt is a Statement Object
     def print_body(self, stmnt):
-        if stmnt is None:
+        if stmnt is None or stmnt is list:
             return
         content = ''
-        if(stmnt.kind == 'Block'):
+        if stmnt.kind == 'Block':
             content = self.block_str(stmnt.attributes['stmnts'])
         else:
             content = self.stmnt_str(stmnt)

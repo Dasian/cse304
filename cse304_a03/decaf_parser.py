@@ -121,7 +121,9 @@ def p_modifier(p):
 # will need to add to variable table (i think)
 def p_var_decl(p):
     '''var_decl : type variables ';' '''
-    p[0] = {"type" : p[1], "variables" : p[2]}
+    p[0] = []
+    for var_name in p[2]:
+        p[0] += [ast.VariableRecord(name = var_name, id = -1, kind = "local", type = p[1])]
 
 # done
 def p_variables(p):
@@ -155,13 +157,12 @@ def p_field_decl(p):
     else:
         applicability = 'instance'
 
-    var_decl = p[2]
-    type = var_decl["type"]
+    variables = p[2]     # list of VariableRecords
+    type = variables[0].type
     p[0] = []
-    if var_decl["variables"] is not None:
-        for var in var_decl["variables"]:
-            field = ast.FieldRecord(name = var, id = 1, containingClass= currentClass, visibility= visibility, applicability= applicability, type= type)
-            p[0] += [field]
+    for var in variables:
+        field = ast.FieldRecord(name = var.name, id = var.id, containingClass= currentClass, visibility= visibility, applicability= applicability, type= type)
+        p[0] += [field]
 
 # TODO: method_body variable table
 def p_method_decl(p):
@@ -199,6 +200,14 @@ def p_method_decl(p):
         param.id = varID
         varID = varID + 1
         variableTable.append(param)
+
+    for stmt in method_body.attributes['stmnts']:
+        if type(stmt) is list:
+            for variable in stmt:
+                variable.id = varID
+                variable.kind = "local"
+                varID = varID + 1
+                variableTable.append(variable)
 
     # TODO replace empty list with variable table
     p[0] = ast.MethodRecord(name= p[3], id=1, containingClass=currentClass
@@ -250,6 +259,14 @@ def p_constructor_decl(p):
         param.id = varID
         varID = varID + 1
         variableTable.append(param)
+
+    for stmt in body.attributes['stmnts']:
+        if type(stmt) is list:
+            for variable in stmt:
+                variable.id = varID
+                variable.kind = "local"
+                varID = varID + 1
+                variableTable.append(variable)
 
     p[0] = ast.ConstructorRecord(id=1, visibility=visibility, parameters=parameters,variableTable=variableTable, body=body)
 
@@ -336,10 +353,10 @@ def p_statements(p):
         p[0].kind = 'Continue'
     elif type(p[1]) is ast.Statement and p[1].kind == 'Block':
         p[0] = p[1]
-    elif p[1] == ';':
-        p[0].kind = 'Skip'
+    elif type(p[1]) is list and len(p[1]) != 0:      # IF variable declaration, return list of variables
+        p[0] = p[1]
     else:
-        p[0].kind = 'Var'
+        p[0].kind = 'Skip'
 
     debug.print_p(p, msg="Printing p from stmt")
 

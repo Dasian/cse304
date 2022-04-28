@@ -12,4 +12,8 @@ def print_p(p, msg="Printing p"):
         if type(p[i]) is ast.Statement:
             print(p.lexer.lineno,"Name:",p[i].kind,"Statement Line Range:", p[i].lineRange)
             for symbol in p[1:]:
-                print(symbol )
+                print(symbol)
+        elif type(p[i]) is ast.Expression:
+            print(p.lexer.lineno,"Name:",p[i].kind,"Expression Line Range:", p[i].lineRange)
+            for symbol in p[1:]:
+                print(symbol)
