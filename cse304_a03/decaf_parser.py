@@ -415,9 +415,7 @@ def p_field_access(p):
             p[0].kind = "Class-reference"
             # denotes the value of literal class names
             p[0].attributes.update({"class-name": p[1]})
-        else:
-            # ********** REMOVE THIS (testing if vars are linked to correct vtable id) ***********
-            
+        else:            
             p[0].attributes.update({"primary or id": p[1]})
             p[0].kind = "Variable"
             id = -1
