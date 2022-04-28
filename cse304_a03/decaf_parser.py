@@ -553,6 +553,8 @@ def p_expressions(p):
             p[0] = p[1]
     elif p[1] == 'new':
         # New-object
+        # TODO fix argument printing as a list
+        # TODO also figure out object field access/method invocations
         p[0].kind = "New-object"
         p[0].attributes.update({"class-name": p[2]})
         if type(p[4]) is list:
@@ -624,8 +626,11 @@ def p_unary_op(p):
     '''
     un_ops = {
         "-": "uminus",
-        "!": "neg"
+        "!": "neg",
+        "+": ""
     }
+    # TODO add check to remove emptry str (+) 
+    # when creating Unary expr
     p[0] = un_ops[p[1]]
 
 # Error rule for syntax errors
