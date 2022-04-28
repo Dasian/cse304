@@ -327,5 +327,5 @@ class AST:
     def expr_list_str(self, list):
         content = ''
         for expr in list:
-            content += self.expr_str(expr)
-        return content
+            content += self.expr_str(expr) + ', '
+        return '[' + content[0:-2] + ']'

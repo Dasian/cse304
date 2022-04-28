@@ -17,8 +17,6 @@ class test033
 {
     public static void main()
     {   
-        float a;
-        
-        a = Circle.pi;
+        Circle.Circle(10.0, 14.2);
     }
 }

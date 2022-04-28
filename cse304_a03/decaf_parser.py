@@ -516,12 +516,12 @@ def p_expressions(p):
             p[0] = p[1]
     elif p[1] == 'new':
         # New-object
-        # TODO fix argument printing as a list
         # TODO also figure out object field access/method invocations
         p[0].kind = "New-object"
         p[0].attributes.update({"class-name": p[2]})
         if type(p[4]) is list:
             p[0].attributes.update({"arguments": p[4]})
+            print('ARGUMENTS', p[4])
         else:
             p[0].attributes.update({"arguments": []})
     elif len(p) == 4:
