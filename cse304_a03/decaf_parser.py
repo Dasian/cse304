@@ -3,12 +3,10 @@
 
 #  PLY/yacc parser specification file
 
-from numpy import block
 import ply.yacc as yacc
 from decaf_lexer import tokens
 import decaf_lexer as lexer
 import decaf_ast as ast
-import debug
 
 
 currentClass = ""
@@ -16,8 +14,6 @@ conID = 1
 fieldID = 1
 methodID = 1
 varID = 1
-gVarTable = []
-
 tree = ast.AST()
 
 # Assignment is right-associative, relational operators are non-associative, and all others are left-associative
@@ -63,7 +59,6 @@ def p_class_decl(p):
     global varID
     global conID
     global currentClass
-    global gVarTable
 
     p[0] = ast.ClassRecord()        # Initializes an empty class record
     p[0].name = p[2]            # Set class record's name to p[2]
@@ -134,10 +129,8 @@ def p_modifier(p):
 def p_var_decl(p):
     '''var_decl : type variables ';' '''
     p[0] = []
-    global gVarTable
     for var_name in p[2]:
         p[0] += [ast.VariableRecord(name = var_name, id = -1, kind = "local", type = p[1])]
-        gVarTable += [ast.VariableRecord(name = var_name, id = -1, kind = "local", type = p[1])]
 
 # done
 def p_variables(p):
@@ -342,11 +335,11 @@ def add_var_ids(body=None, variableTable=None):
         # stmt should always be a Variable expression object
         for stmt in var_stmnts:
             target = stmt.attributes['name']
-            i = 0
+            level = 0
             found = False
             # match variable record to target
-            while i <= max:
-                for vr in available_vars[i]:
+            while level <= max:
+                for vr in available_vars[level]:
                     if vr.name == target:
                         # update variable expr to match id
                         id = vr.id
@@ -357,7 +350,7 @@ def add_var_ids(body=None, variableTable=None):
                     break
                 # an error can be thrown here if variable
                 # isn't found in variable table
-                i += 1
+                level += 1
 
 # done
 def p_block(p):
@@ -450,9 +443,6 @@ def p_block(p):
 def p_optional_stmts(p):
     '''optional_stmts : stmt optional_stmts
                        | empty'''
-
-    # TODO: you can filter out variable records here
-    # so they don't end up in block['stmnts'] attributes
     if len(p) == 3:
         if p[2] is None: # stmnt + empty
             p[0] = [p[1]]
@@ -514,8 +504,6 @@ def p_statements(p):
         p[0] = p[1]
     else:
         p[0].kind = 'Skip'
-
-    # adding line range?
 
 # needed to keep consistent typing
 def p_optional_expr(p):
