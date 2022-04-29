@@ -1,16 +1,20 @@
 // file for testing things that don't work
 class test033
 {
-    public static void main()
+    public static void main(int d)
     {   
         int a;
 	int b;
 
 	a = 5;
+	int e;
 	b = 4;
 	if(a < b) {
 		int c;
 		c = 4;
+		d = 10;
+		e = 4;
 	}
+	e = 5;
     }
 }

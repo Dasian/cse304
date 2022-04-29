@@ -178,7 +178,7 @@ def p_field_decl(p):
         field = ast.FieldRecord(name = var.name, id = var.id, containingClass= currentClass, visibility= visibility, applicability= applicability, type= type)
         p[0] += [field]
 
-# TODO: method_body variable table
+# done
 def p_method_decl(p):
     '''method_decl      : modifier type ID '(' optional_formals ')' block
                         | modifier VOID ID '(' optional_formals ')' block'''
@@ -224,9 +224,10 @@ def p_method_decl(p):
                 varID = varID + 1
                 variableTable.append(variable)
 
+    # TODO fix vtable to include variable declarations within nested blocks
+    # TODO also remove variable name from printing for hw3 submission
     add_var_ids(body=method_body, variableTable=variableTable)
 
-    # TODO replace empty list with variable table
     p[0] = ast.MethodRecord(name= p[3], id=1, containingClass=currentClass
     , visibility=visibility, applicability=applicability, body=method_body
     , variableTable = variableTable, returnType=methodType, parameters=parameters)
@@ -285,6 +286,8 @@ def p_constructor_decl(p):
                 varID = varID + 1
                 variableTable.append(variable)
 
+    # TODO fix vtable to include variable declarations within nested blocks
+    # TODO also remove variable name from printing for hw3 submission
     add_var_ids(body=body, variableTable=variableTable)
 
     p[0] = ast.ConstructorRecord(id=1, visibility=visibility, parameters=parameters,variableTable=variableTable, body=body)
@@ -294,19 +297,22 @@ def add_var_ids(body=None, variableTable=None):
     if body == None or variableTable == None:
         return
 
-    print("DEBUG body", body.kind)
-
-    # TODO add params (variable record) to body['vtable']
-
+    # adding method/constructor params to outermost block vtable
+    new_vtable = body.attributes['vtable']
+    formal_vrs = []
+    for vr in variableTable:
+        if vr.kind == 'formal':
+            formal_vrs.append(vr)
+    new_vtable += formal_vrs
+    body.attributes['vtable'] = new_vtable
 
     # for every block
     # place the id into the variable expression
     block_queue = [body]
     while len(block_queue) != 0:
-        print("DEBUG block_queue", block_queue)
 
         block = block_queue.pop(0)
-        
+
         # block statement objects found within the current block
         block_queue += block.attributes['inner-blocks']
         
@@ -318,10 +324,11 @@ def add_var_ids(body=None, variableTable=None):
         # key is priority (start at 0 and has most priority)
         # value is list of variable record objects 
         available_vars = {}
-        i = 0
+        i = 1
         max = -1
-        curr_block = block
-        while curr_block.attributes['outer-block'] != None:
+        available_vars[0] = block.attributes['vtable']
+        curr_block = block.attributes['outer-block']
+        while curr_block != None:
             available_vars[i] = curr_block.attributes['vtable']
             curr_block = curr_block.attributes['outer-block']
             i += 1
@@ -336,25 +343,23 @@ def add_var_ids(body=None, variableTable=None):
         for stmt in var_stmnts:
             target = stmt.attributes['name']
             i = 0
+            found = False
             # match variable record to target
-            for vr in available_vars[i]:
-                # the target doesn't exist
-                if i >= max:
-                    return
-                # add the variable record id to expr
-                if vr.name == target:
-                    id = vr.id
-                    stmt.attributes['id'] = id
-                    print("DEBUG UPDATED ID", id)
-                    print()
+            while i <= max:
+                for vr in available_vars[i]:
+                    if vr.name == target:
+                        # update variable expr to match id
+                        id = vr.id
+                        stmt.attributes['id'] = id
+                        found = True
+                        break
+                if found:
                     break
+                # an error can be thrown here if variable
+                # isn't found in variable table
                 i += 1
 
-# TODO include variable record id fields
-# TODO Blocks and Variable expr are almost definitely
-# nested inside of other expressions
-# so either make a global block variable
-# or try to traverse deep into the of accessible stmt/expr objs
+# done
 def p_block(p):
     '''block : '{' optional_stmts '}'
     '''
@@ -363,27 +368,46 @@ def p_block(p):
     p[0].kind = 'Block'
     p[0].attributes['stmnts'] = p[2]
 
-    # blocks exist in statment objects
-    # If, While, For, Block, potentially Return
-    
-    # Variable expr exist in expression objects
-    # definitely: Variable, 
-    # potentially: Unary, binary, assign, auto, field-access 
-
-    # inner blocks: list of block expr objects inside this one
     # vtable: list of variable records defined at the beginning of this block
-    # TODO: not sure if variable record ids are set yet here
-    # TODO: inner_blocks are nested inside other objs and not done here
-    # so uh someone needs to update those
-    inner_blocks = []
+    # fills vtable and inits stmt_queue
+    stmt_queue = []
     vtable = []
     for stmt in p[2]:
         if type(stmt) is list:
             for vr in stmt:
                 vtable.append(vr)
-        elif stmt.kind == 'Block':
+        else:
+            stmt_queue.append(stmt)
+    p[0].attributes['vtable'] = vtable
+
+    # inner blocks: list of block expr objects inside this one
+    # fills inner_blocks, stmt_queue
+    # inits expr_queue
+    inner_blocks = []
+    expr_queue = []
+    while len(stmt_queue) != 0:
+        stmt = stmt_queue.pop()
+        if stmt.kind == 'Block':
             inner_blocks.append(stmt)
-    p[0].attributes.update({'inner-blocks': inner_blocks})
+        elif stmt.kind == 'If':
+            stmt_queue.append(stmt.attributes['then'])
+            expr_queue.append(stmt.attributes['condition'])
+            if 'else' in stmt.attributes.keys():
+                stmt_queue.append(stmt.attributes['else'])
+        elif stmt.kind == 'While':
+            stmt_queue.append(stmt.attributes['loop-body'])
+            expr_queue.append(stmt.attributes['loop-condition'])
+        elif stmt.kind == 'For':
+            stmt_queue.append(stmt.attributes['loop-body'])
+            expr_queue.append(stmt.attributes['initialize-expression'])
+            expr_queue.append(stmt.attributes['loop-condition'])
+            expr_queue.append(stmt.attributes['update-expression'])
+        elif stmt.kind == 'Return':
+            expr_queue.append(stmt.attributes['return-expression'])
+        elif stmt.kind == 'Expr':
+            expr_queue.append(stmt.attributes['expression'])
+    p[0].attributes['inner-blocks'] = inner_blocks
+
 
     # outer block: block expr object this block is inside (parent/prev or None)
     # should be filled when the outer blocks are complete
@@ -392,9 +416,27 @@ def p_block(p):
     for block in inner_blocks:
         block.attributes.update({'outer-block': p[0]})
     
-    # var-exprs: list of var expr objects to be changed
-    # TODO figure out how to generate this
-    p[0].attributes['var-exprs'] = []
+    # var-exprs: list of var expr objects in this block
+    var_exprs = []
+    while len(expr_queue) != 0:
+        expr = expr_queue.pop()
+        if expr.kind == 'Variable':
+            var_exprs.append(expr)
+        elif expr.kind == 'Auto' or expr.kind == 'Unary':
+            expr_queue.append(expr.attributes['operand'])
+        elif expr.kind == 'Assign':
+            expr_queue.append(expr.attributes['left'])
+            expr_queue.append(expr.attributes['right'])            
+        elif expr.kind == 'Binary':
+            expr_queue.append(expr.attributes['operand1'])
+            expr_queue.append(expr.attributes['operand2'])
+        elif expr.kind == 'Method-call' or expr.kind == 'New-object':
+            if 'arguments' in expr.attributes.keys():
+                for e in expr.attributes['arguments']:
+                    expr_queue.append(e)
+            if expr.kind == 'Method-call':
+                expr_queue.append(expr.attributes['base'])
+    p[0].attributes['var-exprs'] = var_exprs
 
     # line range
     start_left,end_left = p.linespan(1)    # Start,end lines of the left-most symbol
@@ -420,7 +462,7 @@ def p_optional_stmts(p):
         p[0] = []
 
 
-# TODO line range, var_decl?
+# done
 def p_statements(p):
     '''stmt         : IF '(' expr ')' stmt ELSE stmt
                     | IF '(' expr ')' stmt
