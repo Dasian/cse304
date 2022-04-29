@@ -3,6 +3,7 @@
 
 #  PLY/yacc parser specification file
 
+from numpy import block
 import ply.yacc as yacc
 from decaf_lexer import tokens
 import decaf_lexer as lexer
@@ -15,7 +16,7 @@ conID = 1
 fieldID = 1
 methodID = 1
 varID = 1
-currentVariableTable = []
+gVarTable = []
 
 tree = ast.AST()
 
@@ -62,7 +63,7 @@ def p_class_decl(p):
     global varID
     global conID
     global currentClass
-    global currentVariableTable
+    global gVarTable
 
     p[0] = ast.ClassRecord()        # Initializes an empty class record
     p[0].name = p[2]            # Set class record's name to p[2]
@@ -133,8 +134,10 @@ def p_modifier(p):
 def p_var_decl(p):
     '''var_decl : type variables ';' '''
     p[0] = []
+    global gVarTable
     for var_name in p[2]:
         p[0] += [ast.VariableRecord(name = var_name, id = -1, kind = "local", type = p[1])]
+        gVarTable += [ast.VariableRecord(name = var_name, id = -1, kind = "local", type = p[1])]
 
 # done
 def p_variables(p):
@@ -286,55 +289,114 @@ def p_constructor_decl(p):
 
     p[0] = ast.ConstructorRecord(id=1, visibility=visibility, parameters=parameters,variableTable=variableTable, body=body)
 
+# fills variable ids into the proper expression
 def add_var_ids(body=None, variableTable=None):
     if body == None or variableTable == None:
         return
 
-    print("DEBUG VARIABLE_TABLE", variableTable)
-    
-     # add variable id mapping with scope here
-    block_queue = []
-    stmnt_queue = []
-    block_queue.append(body)
-    while len(block_queue) != 0:
-        print("DEBUG BLOCK_QUEUE", block_queue)
-        block = block_queue.pop(0)
-        stmnt_queue = block.attributes['stmnts']
-        var_stmts = [] # list of Variable statement objects
-        # get a list of variables for this scope
-        for stmnt in stmnt_queue:
-            #if type(stmnt) is list:
-                # stmnt is a list containting 
-            if type(stmnt) is ast.Statement:
-                if stmnt.kind == 'Variable':
-                    var_stmts.append(stmnt)
-                elif stmnt.kind == 'Block':
-                    block_queue.append(stmnt) # add to block queue
-        
-        print("DEBUG var stmts", var_stmts)
-        print("DEBUG block[stmnts]", block.attributes['stmnts'])
+    print("DEBUG body", body.kind)
 
-        # place the id into the expr
-        for stmt in var_stmts:
-            id = -1
-            for vr in variableTable:
-                if vr.name == stmt.attributes['name']:
+    # TODO add params (variable record) to body['vtable']
+
+
+    # for every block
+    # place the id into the variable expression
+    block_queue = [body]
+    while len(block_queue) != 0:
+        print("DEBUG block_queue", block_queue)
+
+        block = block_queue.pop(0)
+        
+        # block statement objects found within the current block
+        block_queue += block.attributes['inner-blocks']
+        
+        # list of variable expression objects present in the current block
+        var_stmnts = block.attributes['var-exprs']
+
+        # dict of variable record objects available to this block
+        # includes outer scopes
+        # key is priority (start at 0 and has most priority)
+        # value is list of variable record objects 
+        available_vars = {}
+        i = 0
+        max = -1
+        curr_block = block
+        while curr_block.attributes['outer-block'] != None:
+            available_vars[i] = curr_block.attributes['vtable']
+            curr_block = curr_block.attributes['outer-block']
+            i += 1
+        max = i
+        
+        # for every variable expression
+        # find the nearest variable record with the same name
+        # and fill in the id
+        # includes outer blocks 
+        # skips variables not found in the scope
+        # stmt should always be a Variable expression object
+        for stmt in var_stmnts:
+            target = stmt.attributes['name']
+            i = 0
+            # match variable record to target
+            for vr in available_vars[i]:
+                # the target doesn't exist
+                if i >= max:
+                    return
+                # add the variable record id to expr
+                if vr.name == target:
                     id = vr.id
                     stmt.attributes['id'] = id
                     print("DEBUG UPDATED ID", id)
+                    print()
                     break
+                i += 1
 
-# TODO include line range
+# TODO include variable record id fields
+# TODO Blocks and Variable expr are almost definitely
+# nested inside of other expressions
+# so either make a global block variable
+# or try to traverse deep into the of accessible stmt/expr objs
 def p_block(p):
     '''block : '{' optional_stmts '}'
     '''
-    # create block object
+    # block statement object
     p[0] = ast.Statement()
     p[0].kind = 'Block'
-    # { }
-
     p[0].attributes['stmnts'] = p[2]
 
+    # blocks exist in statment objects
+    # If, While, For, Block, potentially Return
+    
+    # Variable expr exist in expression objects
+    # definitely: Variable, 
+    # potentially: Unary, binary, assign, auto, field-access 
+
+    # inner blocks: list of block expr objects inside this one
+    # vtable: list of variable records defined at the beginning of this block
+    # TODO: not sure if variable record ids are set yet here
+    # TODO: inner_blocks are nested inside other objs and not done here
+    # so uh someone needs to update those
+    inner_blocks = []
+    vtable = []
+    for stmt in p[2]:
+        if type(stmt) is list:
+            for vr in stmt:
+                vtable.append(vr)
+        elif stmt.kind == 'Block':
+            inner_blocks.append(stmt)
+    p[0].attributes.update({'inner-blocks': inner_blocks})
+
+    # outer block: block expr object this block is inside (parent/prev or None)
+    # should be filled when the outer blocks are complete
+    # outermost block should have this attr as None
+    p[0].attributes['outer-block'] = None
+    for block in inner_blocks:
+        block.attributes.update({'outer-block': p[0]})
+    
+    # var-exprs: list of var expr objects to be changed
+    # TODO figure out how to generate this
+    p[0].attributes['var-exprs'] = []
+
+    # line range
     start_left,end_left = p.linespan(1)    # Start,end lines of the left-most symbol
     start_right,end_right = p.linespan(len(p)-1)    # Start,end lines of the right-most symbol
     p[0].lineRange = [start_left, end_right]     # From the left bracket to the right bracket
@@ -346,6 +408,9 @@ def p_block(p):
 def p_optional_stmts(p):
     '''optional_stmts : stmt optional_stmts
                        | empty'''
+
+    # TODO: you can filter out variable records here
+    # so they don't end up in block['stmnts'] attributes
     if len(p) == 3:
         if p[2] is None: # stmnt + empty
             p[0] = [p[1]]
@@ -404,8 +469,7 @@ def p_statements(p):
     elif type(p[1]) is ast.Statement and p[1].kind == 'Block':
         p[0] = p[1]
     elif type(p[1]) is list and len(p[1]) != 0:      # IF variable declaration, return list of variables
-        p[0].kind = 'Skip'
-    # Ep[0] = p[1] # list of Variable Record Objects
+        p[0] = p[1]
     else:
         p[0].kind = 'Skip'
 

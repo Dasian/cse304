@@ -110,7 +110,7 @@ class Statement:
 # You can change this design if you want, this is just how I have it currently
 #   implemented for printing; just change the prints or lmk
 class Expression:
-    # kinds: Constant, Var, Unary, Binary, Assign, Auto, Field-access, 
+    # kinds: Constant, Variable, Unary, Binary, Assign, Auto, Field-access, 
     #   Method-call, New-object, This, Super, Class-reference
     def __init__(self, lineRange=None, kind='', attributes=None):
         self.kind = kind # string; see above
