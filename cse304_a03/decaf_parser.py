@@ -221,6 +221,8 @@ def p_method_decl(p):
                 varID = varID + 1
                 variableTable.append(variable)
 
+    add_var_ids(body=method_body, variableTable=variableTable)
+
     # TODO replace empty list with variable table
     p[0] = ast.MethodRecord(name= p[3], id=1, containingClass=currentClass
     , visibility=visibility, applicability=applicability, body=method_body
@@ -280,22 +282,58 @@ def p_constructor_decl(p):
                 varID = varID + 1
                 variableTable.append(variable)
 
+    add_var_ids(body=body, variableTable=variableTable)
+
     p[0] = ast.ConstructorRecord(id=1, visibility=visibility, parameters=parameters,variableTable=variableTable, body=body)
+
+def add_var_ids(body=None, variableTable=None):
+    if body == None or variableTable == None:
+        return
+
+    print("DEBUG VARIABLE_TABLE", variableTable)
+    
+     # add variable id mapping with scope here
+    block_queue = []
+    stmnt_queue = []
+    block_queue.append(body)
+    while len(block_queue) != 0:
+        print("DEBUG BLOCK_QUEUE", block_queue)
+        block = block_queue.pop(0)
+        stmnt_queue = block.attributes['stmnts']
+        var_stmts = [] # list of Variable statement objects
+        # get a list of variables for this scope
+        for stmnt in stmnt_queue:
+            #if type(stmnt) is list:
+                # stmnt is a list containting 
+            if type(stmnt) is ast.Statement:
+                if stmnt.kind == 'Variable':
+                    var_stmts.append(stmnt)
+                elif stmnt.kind == 'Block':
+                    block_queue.append(stmnt) # add to block queue
+        
+        print("DEBUG var stmts", var_stmts)
+        print("DEBUG block[stmnts]", block.attributes['stmnts'])
+
+        # place the id into the expr
+        for stmt in var_stmts:
+            id = -1
+            for vr in variableTable:
+                if vr.name == stmt.attributes['name']:
+                    id = vr.id
+                    stmt.attributes['id'] = id
+                    print("DEBUG UPDATED ID", id)
+                    break
 
 # TODO include line range
 def p_block(p):
     '''block : '{' optional_stmts '}'
-             | '{' '}'
     '''
     # create block object
     p[0] = ast.Statement()
     p[0].kind = 'Block'
     # { }
 
-    if len(p) == 3:     # EMPTY
-        p[0].attributes['stmnts'] = []
-    else:
-        p[0].attributes['stmnts'] = p[2]
+    p[0].attributes['stmnts'] = p[2]
 
     start_left,end_left = p.linespan(1)    # Start,end lines of the left-most symbol
     start_right,end_right = p.linespan(len(p)-1)    # Start,end lines of the right-most symbol
@@ -366,7 +404,8 @@ def p_statements(p):
     elif type(p[1]) is ast.Statement and p[1].kind == 'Block':
         p[0] = p[1]
     elif type(p[1]) is list and len(p[1]) != 0:      # IF variable declaration, return list of variables
-        p[0] = p[1]
+        p[0].kind = 'Skip'
+    # Ep[0] = p[1] # list of Variable Record Objects
     else:
         p[0].kind = 'Skip'
 
@@ -467,12 +506,13 @@ def p_field_access(p):
             # denotes the value of literal class names
             p[0].attributes.update({"class-name": p[1]})
         else:            
-            p[0].attributes.update({"primary or id": p[1]})
+            # Remove this line
+            p[0].attributes.update({"name": p[1]})
             p[0].kind = "Variable"
             id = -1
             # TODO find the connection between id and variable table id
             # @SEAN
-            p[0].attributes.update({"ID": id})
+            p[0].attributes.update({"id": id})
 
 # parses assign and auto expressions   
 # works when testing individually
@@ -581,7 +621,6 @@ def p_expressions(p):
         p[0].attributes.update({"class-name": p[2]})
         if type(p[4]) is list:
             p[0].attributes.update({"arguments": p[4]})
-            print('ARGUMENTS', p[4])
         else:
             p[0].attributes.update({"arguments": []})
     elif len(p) == 4:
