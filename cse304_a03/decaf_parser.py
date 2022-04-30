@@ -593,6 +593,8 @@ def p_field_access(p):
     if len(p) == 4:
         p[0].attributes.update({"base": p[1]}) # expression
         p[0].attributes.update({"field-name": p[3]}) # str
+        # TODO link this to corresponding field id
+        p[0].attributes['id'] = -1
     else: 
         # check if id is a class
         if p[1] in tree.get_classes() or p[1] == currentClass:
@@ -646,6 +648,10 @@ def p_assign_auto(p):
         p[0].attributes.update({"left": p[1]})
         p[0].attributes.update({"right": p[3]})
 
+        # TODO link types
+        p[0].attributes['ltype'] = 'error'
+        p[0].attributes['rtype'] = 'error'
+
 # should work
 # TODO: test with class names that don't exist
 # TODO: test with objects that do/don't exist
@@ -668,6 +674,9 @@ def p_method_invocation(p):
         p[0].attributes.update({"arguments": p[3]})
     else:
         p[0].attributes.update({"arguments": []})
+
+    # TODO connect methodID
+    p[0].attributes['id'] = -1
 
 # let arguments be a [list] of expressions
 def p_arguments(p):
@@ -717,6 +726,8 @@ def p_expressions(p):
             p[0].attributes.update({"arguments": p[4]})
         else:
             p[0].attributes.update({"arguments": []})
+        # TODO link this to corresponding constructor id
+        p[0].attributes['id'] = -1
     elif len(p) == 4:
         # ( expr )
         p[0] = p[2]
