@@ -82,6 +82,7 @@ class VariableRecord:
 class TypeRecord:
     def __init__(self, name=""):
         self.name = name # string; int, float, boolean, or custom user defined type
+        # added for hw4: void, error, null, class-literal
 
 class Statement:
     # kinds: If, While, For, Return, Expr, Block, Break, Continue, Skip
@@ -310,6 +311,11 @@ class AST:
     # attribute values can only be other expressions/list of expressions, not a statement
     def expr_str(self, expr):
         content = ''
+
+        # prevent printing out variable name (vname)
+        if 'vname' in expr.attributes.keys():
+            del expr.attributes['vname']
+
         for val in expr.attributes.values():
             if type(val) is Expression:
                 content += self.expr_str(val)

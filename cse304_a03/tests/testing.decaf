@@ -1,7 +1,7 @@
 // file for testing things that don't work
 class test033
 {
-    public static void main(int d)
+    public static void main(int d, float f)
     {   
         int a;
 	int b;

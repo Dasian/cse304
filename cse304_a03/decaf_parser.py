@@ -218,7 +218,6 @@ def p_method_decl(p):
                 variableTable.append(variable)
 
     # TODO fix vtable to include variable declarations within nested blocks
-    # TODO also remove variable name from printing for hw3 submission
     add_var_ids(body=method_body, variableTable=variableTable)
 
     p[0] = ast.MethodRecord(name= p[3], id=1, containingClass=currentClass
@@ -280,7 +279,6 @@ def p_constructor_decl(p):
                 variableTable.append(variable)
 
     # TODO fix vtable to include variable declarations within nested blocks
-    # TODO also remove variable name from printing for hw3 submission
     add_var_ids(body=body, variableTable=variableTable)
 
     p[0] = ast.ConstructorRecord(id=1, visibility=visibility, parameters=parameters,variableTable=variableTable, body=body)
@@ -334,7 +332,7 @@ def add_var_ids(body=None, variableTable=None):
         # skips variables not found in the scope
         # stmt should always be a Variable expression object
         for stmt in var_stmnts:
-            target = stmt.attributes['name']
+            target = stmt.attributes['vname']
             level = 0
             found = False
             # match variable record to target
@@ -579,7 +577,7 @@ def p_expr(p):
         p[0].attributes.update({"operand1": p[1]})
         p[0].attributes.update({"operand2": p[3]})
 
-# TODO link variable to vtable id
+# done
 def p_field_access(p):
     '''
     field_access : primary '.' ID
@@ -600,13 +598,9 @@ def p_field_access(p):
             # denotes the value of literal class names
             p[0].attributes.update({"class-name": p[1]})
         else:            
-            # Remove this line
-            p[0].attributes.update({"name": p[1]})
+            p[0].attributes.update({"vname": p[1]})
             p[0].kind = "Variable"
-            id = -1
-            # TODO find the connection between id and variable table id
-            # @SEAN
-            p[0].attributes.update({"id": id})
+            p[0].attributes.update({"id": -1})
 
 # parses assign and auto expressions   
 # works when testing individually
