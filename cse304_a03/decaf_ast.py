@@ -100,6 +100,10 @@ class Statement:
         else:
             self.lineRange = lineRange
 
+        # hw4 type correctness 
+        # based on diff criteria for diff kinds
+        self.isTypeCorrect = False
+
 # If you want to nest expressions have a key that is 'Expression'
 #   that maps to a *list* of Expression object
 # Have 'Constant' kinds with an 'Expression' attribute that maps to
@@ -124,6 +128,10 @@ class Expression:
             self.lineRange = []
         else:
             self.lineRange = lineRange
+
+        # hw4 indicates the type of this expression
+        # boolean, int, str, null, error, etc.
+        self.type = None
 
 # Abstract Syntax Tree Table
 """
