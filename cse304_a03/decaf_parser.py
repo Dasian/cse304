@@ -102,7 +102,7 @@ def p_class_body_decl(p):
     if len(p) == 2:
         p[0] = [p[1]]
 
-# done
+# TODO add void, class literal, error, and null
 def p_type(p):
     '''type : INT
             | FLOAT
@@ -171,7 +171,7 @@ def p_field_decl(p):
         field = ast.FieldRecord(name = var.name, id = var.id, containingClass= currentClass, visibility= visibility, applicability= applicability, type= type)
         p[0] += [field]
 
-# done
+# TODO fix variableTable to include nested vars
 def p_method_decl(p):
     '''method_decl      : modifier type ID '(' optional_formals ')' block
                         | modifier VOID ID '(' optional_formals ')' block'''
@@ -218,7 +218,6 @@ def p_method_decl(p):
                 variableTable.append(variable)
 
     # TODO fix vtable to include variable declarations within nested blocks
-    # TODO also remove variable name from printing for hw3 submission
     add_var_ids(body=method_body, variableTable=variableTable)
 
     p[0] = ast.MethodRecord(name= p[3], id=1, containingClass=currentClass
@@ -248,9 +247,7 @@ def p_formal_param(p):
     '''formal_param : type variable'''
     p[0] = ast.VariableRecord(name = p[2], id = 1, kind = "formal", type= p[1])
 
-# A method declaration with modifiers, return type, method name, and optional parameters
-# A constructor declaration with modifiers, class name, and optional parameters
-# TODO: constructor_body variable table
+# TODO fix variableTable to include nested variables
 def p_constructor_decl(p):
     '''constructor_decl : modifier ID '(' optional_formals ')' block'''
 
@@ -280,7 +277,6 @@ def p_constructor_decl(p):
                 variableTable.append(variable)
 
     # TODO fix vtable to include variable declarations within nested blocks
-    # TODO also remove variable name from printing for hw3 submission
     add_var_ids(body=body, variableTable=variableTable)
 
     p[0] = ast.ConstructorRecord(id=1, visibility=visibility, parameters=parameters,variableTable=variableTable, body=body)
@@ -334,7 +330,7 @@ def add_var_ids(body=None, variableTable=None):
         # skips variables not found in the scope
         # stmt should always be a Variable expression object
         for stmt in var_stmnts:
-            target = stmt.attributes['name']
+            target = stmt.attributes['vname']
             level = 0
             found = False
             # match variable record to target
@@ -579,7 +575,7 @@ def p_expr(p):
         p[0].attributes.update({"operand1": p[1]})
         p[0].attributes.update({"operand2": p[3]})
 
-# TODO link variable to vtable id
+# TODO hw4: link field id
 def p_field_access(p):
     '''
     field_access : primary '.' ID
@@ -602,16 +598,14 @@ def p_field_access(p):
             # denotes the value of literal class names
             p[0].attributes.update({"class-name": p[1]})
         else:            
-            # Remove this line
-            p[0].attributes.update({"name": p[1]})
+            p[0].attributes.update({"vname": p[1]})
             p[0].kind = "Variable"
             id = -1
-            # TODO find the connection between id and variable table id
-            # @SEAN
             p[0].attributes.update({"id": id})
 
 # parses assign and auto expressions   
-# works when testing individually
+# TODO
+# hw4: assign - add ltype and rtype
 def p_assign_auto(p):
     '''
     assign : field_access ASSIGN expr
