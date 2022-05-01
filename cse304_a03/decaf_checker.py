@@ -14,6 +14,7 @@ from os.path import exists
 import ply.lex as lex
 import ply.yacc as yacc
 from decaf_parser import tree
+import Decaf_typecheck  
 
 def main():
     if len(sys.argv) != 2:  # Takes input from cmdline
@@ -34,6 +35,9 @@ def main():
     file.close()
 
     parser.parse(file_string, lexer=lexer)
+
+    # hw4: type checking and name resolution
+    Decaf_typecheck.check_types(tree)
 
     # hw3: printing the AST
     tree.print_table()
