@@ -82,6 +82,7 @@ class VariableRecord:
 class TypeRecord:
     def __init__(self, name=""):
         self.name = name # string; int, float, boolean, or custom user defined type
+        # added for hw4: void, error, null, class-literal
 
 class Statement:
     # kinds: If, While, For, Return, Expr, Block, Break, Continue, Skip
@@ -99,6 +100,9 @@ class Statement:
             self.lineRange = []
         else:
             self.lineRange = lineRange
+        
+        # hw4
+        self.isTypeCorrect = False
 
         # hw4 type correctness 
         # based on diff criteria for diff kinds
@@ -132,6 +136,7 @@ class Expression:
         # hw4 indicates the type of this expression
         # boolean, int, str, null, error, etc.
         self.type = None
+        self.isTypeCorrect = False
 
 # Abstract Syntax Tree Table
 """
@@ -304,8 +309,8 @@ class AST:
                     content += self.stmnt_str(val)
             elif type(val) is Expression:
                 content += self.expr_str(val)
-            else:
-                content += val
+            elif val != None:
+                content += str(val)
             content += ', '
         # remove () for statements without attributes
         if content == '':
@@ -318,6 +323,11 @@ class AST:
     # attribute values can only be other expressions/list of expressions, not a statement
     def expr_str(self, expr):
         content = ''
+
+        # prevent printing out variable name (vname)
+        if 'vname' in expr.attributes.keys():
+            del expr.attributes['vname']
+
         for val in expr.attributes.values():
             if type(val) is Expression:
                 content += self.expr_str(val)

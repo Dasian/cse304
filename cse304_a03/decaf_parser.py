@@ -35,9 +35,6 @@ def p_program(p):
                | empty
     class_decl : class_decl class_decl'''
 
-    if len(p) != 3:
-        tree.print_table()
-
 
 def p_class_id(p):
     '''
@@ -201,28 +198,33 @@ def p_method_decl(p):
     parameters = p[5]
     method_body = p[7]
 
-    varID = 1
-    variableTable = []
+    # adding formals
+    vtable = []
     for param in parameters:
-        param.id = varID
         param.kind = "formal"
-        varID = varID + 1
-        variableTable.append(param)
+        vtable.append(param)
 
-    for stmt in method_body.attributes['stmnts']:
-        if type(stmt) is list:
-            for variable in stmt:
-                variable.id = varID
-                variable.kind = "local"
-                varID = varID + 1
-                variableTable.append(variable)
+    # adding local vars
+    block_queue = [method_body]
+    while len(block_queue) != 0:
+        block = block_queue.pop()
+        block_queue += block.attributes['inner-blocks']
+        vtable += block.attributes['vtable']
+    
+    # creating var ids for the vtable
+    id = 1
+    for vr in vtable:
+        if vr.kind != 'formal':
+            vr.kind = 'local'
+        vr.id = id
+        id += 1
 
-    # TODO fix vtable to include variable declarations within nested blocks
-    add_var_ids(body=method_body, variableTable=variableTable)
+    # add var ids to the expression objects within this method
+    add_var_ids(body=method_body, variableTable=vtable)
 
     p[0] = ast.MethodRecord(name= p[3], id=1, containingClass=currentClass
     , visibility=visibility, applicability=applicability, body=method_body
-    , variableTable = variableTable, returnType=methodType, parameters=parameters)
+    , variableTable = vtable, returnType=methodType, parameters=parameters)
 
 # done
 def p_optional_formals(p):
@@ -261,25 +263,32 @@ def p_constructor_decl(p):
 
     parameters = p[4]
     body = p[6]
-    varID = 1
-    variableTable = []
+
+    # adding formals
+    vtable = []
     for param in parameters:
-        param.id = varID
-        varID = varID + 1
-        variableTable.append(param)
+        param.kind = "formal"
+        vtable.append(param)
 
-    for stmt in body.attributes['stmnts']:
-        if type(stmt) is list:
-            for variable in stmt:
-                variable.id = varID
-                variable.kind = "local"
-                varID = varID + 1
-                variableTable.append(variable)
+    # adding local vars
+    block_queue = [body]
+    while len(block_queue) != 0:
+        block = block_queue.pop()
+        block_queue += block.attributes['inner-blocks']
+        vtable += block.attributes['vtable']
+    
+    # creating var ids for the vtable
+    id = 1
+    for vr in vtable:
+        if vr.kind != 'formal':
+            vr.kind = 'local'
+        vr.id = id
+        id += 1
 
-    # TODO fix vtable to include variable declarations within nested blocks
-    add_var_ids(body=body, variableTable=variableTable)
+    # adding var ids to the expression objects in this constructor
+    add_var_ids(body=body, variableTable=vtable)
 
-    p[0] = ast.ConstructorRecord(id=1, visibility=visibility, parameters=parameters,variableTable=variableTable, body=body)
+    p[0] = ast.ConstructorRecord(id=1, visibility=visibility, parameters=parameters,variableTable=vtable, body=body)
 
 # fills variable ids into the proper expression
 def add_var_ids(body=None, variableTable=None):
@@ -409,6 +418,8 @@ def p_block(p):
     var_exprs = []
     while len(expr_queue) != 0:
         expr = expr_queue.pop()
+        if expr is None:
+            continue
         if expr.kind == 'Variable':
             var_exprs.append(expr)
         elif expr.kind == 'Auto' or expr.kind == 'Unary':
@@ -575,7 +586,6 @@ def p_expr(p):
         p[0].attributes.update({"operand1": p[1]})
         p[0].attributes.update({"operand2": p[3]})
 
-# TODO hw4: link field id
 def p_field_access(p):
     '''
     field_access : primary '.' ID
@@ -600,12 +610,9 @@ def p_field_access(p):
         else:            
             p[0].attributes.update({"vname": p[1]})
             p[0].kind = "Variable"
-            id = -1
-            p[0].attributes.update({"id": id})
+            p[0].attributes.update({"id": -1})
 
 # parses assign and auto expressions   
-# TODO
-# hw4: assign - add ltype and rtype
 def p_assign_auto(p):
     '''
     assign : field_access ASSIGN expr
@@ -713,7 +720,6 @@ def p_expressions(p):
             p[0] = p[1]
     elif p[1] == 'new':
         # New-object
-        # TODO also figure out object field access/method invocations
         p[0].kind = "New-object"
         p[0].attributes.update({"class-name": p[2]})
         if type(p[4]) is list:
