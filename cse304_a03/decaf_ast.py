@@ -100,6 +100,9 @@ class Statement:
             self.lineRange = []
         else:
             self.lineRange = lineRange
+        
+        # hw4
+        self.isTypeCorrect = False
 
 # If you want to nest expressions have a key that is 'Expression'
 #   that maps to a *list* of Expression object
@@ -125,6 +128,11 @@ class Expression:
             self.lineRange = []
         else:
             self.lineRange = lineRange
+
+        # hw4 indicates the type of this expression
+        # boolean, int, str, null, error, etc.
+        self.type = None
+        self.isTypeCorrect = False
 
 # Abstract Syntax Tree Table
 """
@@ -297,8 +305,8 @@ class AST:
                     content += self.stmnt_str(val)
             elif type(val) is Expression:
                 content += self.expr_str(val)
-            else:
-                content += val
+            elif val != None:
+                content += str(val)
             content += ', '
         # remove () for statements without attributes
         if content == '':

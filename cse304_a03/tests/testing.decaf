@@ -3,18 +3,6 @@ class test033
 {
     public static void main(int d, float f)
     {   
-        int a;
-	int b;
-
-	a = 5;
-	int e;
-	b = 4;
-	if(a < b) {
-		int c;
-		c = 4;
-		d = 10;
-		e = 4;
-	}
-	e = 5;
+        return;
     }
 }

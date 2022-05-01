@@ -420,6 +420,8 @@ def p_block(p):
     var_exprs = []
     while len(expr_queue) != 0:
         expr = expr_queue.pop()
+        if expr is None:
+            continue
         if expr.kind == 'Variable':
             var_exprs.append(expr)
         elif expr.kind == 'Auto' or expr.kind == 'Unary':
@@ -586,7 +588,6 @@ def p_expr(p):
         p[0].attributes.update({"operand1": p[1]})
         p[0].attributes.update({"operand2": p[3]})
 
-# done
 def p_field_access(p):
     '''
     field_access : primary '.' ID
@@ -612,7 +613,6 @@ def p_field_access(p):
             p[0].attributes.update({"id": -1})
 
 # parses assign and auto expressions   
-# works when testing individually
 def p_assign_auto(p):
     '''
     assign : field_access ASSIGN expr
@@ -713,7 +713,6 @@ def p_expressions(p):
             p[0] = p[1]
     elif p[1] == 'new':
         # New-object
-        # TODO also figure out object field access/method invocations
         p[0].kind = "New-object"
         p[0].attributes.update({"class-name": p[2]})
         if type(p[4]) is list:
