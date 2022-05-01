@@ -8,6 +8,7 @@
 currClass = None
 currFunc = None
 tree = None
+base_types = ['int', 'float', 'boolean']
 
 # checks the types of the ast input
 def check_types(ast):
@@ -114,7 +115,11 @@ def tc_stmt(stmt):
             # TODO should there be an error if 
             # a return is found in a constructor?
             # ret type of the current method
-            ret_type = currFunc.returnType.name
+            ret_type = ''
+            if currFunc.returnType.name not in base_types:
+                ret_type = 'user(' + currFunc.returnType.name + ')'
+            else:
+                ret_type = currFunc.returnType.name
 
             # expr must be type correct
             expr = stmt.attributes['return-expression']
@@ -211,11 +216,10 @@ def tc_var(expr):
     # type is the same as what it was declared
     global currFunc
     vtable = currFunc.variableTable
-    types = ['int', 'float', 'boolean']
     for vr in vtable:
         if vr.id == expr.attributes['id']:
             # class name
-            if vr.type.name not in types:
+            if vr.type.name not in base_types:
                 expr.type = 'user(' + vr.type.name + ')'
             else:
                 expr.type = vr.type.name
@@ -371,7 +375,10 @@ def tc_field(expr):
 
     # set tc and add id to field
     if fr != None and fr.applicability == applicability:
-        expr.type = fr.type.name
+        if fr.type.name not in base_types:
+            expr.type = 'user(' + fr.type.name + ')'
+        else:
+            expr.type = fr.type.name
         expr.isTypeCorrect = True
         expr.attributes['id'] = fr.id
     else:
@@ -423,7 +430,10 @@ def tc_method_call(expr):
 
     # set tc and add id to method
     if mr != None and mr.applicability == applicability:
-        expr.type = mr.returnType.name
+        if mr.returnType.name not in base_types:
+            expr.type = 'user(' + mr.returnType.name + ')'
+        else:
+            expr.type = mr.returnType.name
         expr.isTypeCorrect = True
         expr.attributes['id'] = mr.id
     else:
