@@ -8,7 +8,7 @@
 currClass = None
 currFunc = None
 tree = None
-base_types = ['int', 'float', 'boolean']
+base_types = ['int', 'float', 'boolean', 'string']
 
 # checks the types of the ast input
 def check_types(ast):
@@ -72,12 +72,20 @@ def tc_stmt(stmt):
 
         # then is type correct
         if stmt.isTypeCorrect:
-            stmt.isTypeCorrect = tc_expr(stmt.attributes['then'])
+            expr = stmt.attributes['then']
+            if expr.kind == 'Block':
+                stmt.isTypeCorrecet = tc_block(expr)
+            else:
+                stmt.isTypeCorrect = tc_expr(expr)
 
         # else is type correct
         c = True
         if 'else' in stmt.attributes.keys():
-            c = tc_expr(stmt.attributes['else'])
+            expr = stmt.attributes['else']
+            if expr.kind == 'Block':
+                c = tc_block(expr)
+            else:
+                c = tc_expr(stmt.attributes['else'])
 
         stmt.isTypeCorrect = c
     elif stmt.kind == 'While':
@@ -360,6 +368,7 @@ def tc_field(expr):
     # find the corresponding field record
     fr = None
     cr = None
+    # current class record
     for c in tree.classes:
         if c.name == cname:
             cr = c
@@ -368,10 +377,24 @@ def tc_field(expr):
         # class doesn't exist!
         tc_expr_err(expr)
         return
+    # super class record
+    scr = None
+    if cr.superName != "":
+        for c in tree.classes:
+            if cr.superName == c.superName:
+                scr = c
+                break
+    # find field record in base class
     for f in cr.fields:
         if f.name == fname:
             fr = f
             break
+    # find field record in super class
+    if fr == None and scr != None:
+        for f in scr.fields:
+            if f.name == fname:
+                fr = f
+                break
 
     # set tc and add id to field
     if fr != None and fr.applicability == applicability:
