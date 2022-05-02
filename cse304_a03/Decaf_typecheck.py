@@ -52,7 +52,10 @@ def tc_block(block):
     for stmt in block.attributes['stmnts']:
         if not tc_stmt(stmt):
             block.isTypeCorrect = False
-            return False
+            return False # comment out to keep things running
+            # causes issues with overloaded Out class
+            # everything after an out class call
+            # doesn't get its type checked
 
     block.isTypeCorrect = True
     return True
@@ -338,8 +341,6 @@ def tc_auto(expr):
     else:
         tc_expr_err(expr)
 
-# TODO name resolution
-# TODO super class fields
 def tc_field(expr):
     # p.x corresponds to field id z
     # expr.type = z.type iff
@@ -381,7 +382,7 @@ def tc_field(expr):
     scr = None
     if cr.superName != "":
         for c in tree.classes:
-            if cr.superName == c.superName:
+            if cr.superName == c.name:
                 scr = c
                 break
     # find field record in base class
@@ -396,7 +397,7 @@ def tc_field(expr):
                 fr = f
                 break
 
-    # set tc and add id to field
+    # set tc and name resolution
     if fr != None and fr.applicability == applicability:
         if fr.type.name not in base_types:
             expr.type = 'user(' + fr.type.name + ')'
@@ -405,11 +406,9 @@ def tc_field(expr):
         expr.isTypeCorrect = True
         expr.attributes['id'] = fr.id
     else:
-        # field doesn't exist!
+        # field doesn't exist/bad typing
         tc_expr_err(expr)
 
-# TODO name resolution
-# TODO superclass methods
 def tc_method_call(expr):
     # p.f(e1, e2, ...) correspondes with method h
     # expr.type = h.type iff
@@ -419,6 +418,7 @@ def tc_method_call(expr):
 
     base = expr.attributes['base']
     mname = expr.attributes['method-name']
+    args = expr.attributes['arguments']
     if not tc_expr(base):
         tc_expr_err(expr)
         return
@@ -436,8 +436,8 @@ def tc_method_call(expr):
         tc_expr_err(expr)
 
     # find the corresponding method record
-    mr = None
     cr = None
+    # current class record
     for c in tree.classes:
         if c.name == cname:
             cr = c
@@ -446,13 +446,43 @@ def tc_method_call(expr):
         # class doesn't exist!
         tc_expr_err(expr)
         return
+    # super class record
+    scr = None
+    if cr.superName != "":
+        for c in tree.classes:
+            if c.name == cr.superName:
+                scr = c
+                break
+    # method record in original class
+    mr = None
     for m in cr.methods:
         if m.name == mname:
             mr = m
             break
+    # method record in super class
+    if mr == None and scr != None:
+        for m in scr.methods:
+            if m.name == mname:
+                mr = m
+                break
+    if mr == None:
+        # method doesn't exist
+        tc_expr_err(expr)
+        return
 
-    # set tc and add id to method
-    if mr != None and mr.applicability == applicability:
+    # applicability: check if every arg is a subtype of 
+    # the paramaters in the method definition
+    if not is_subtype(args, mr.parameters):
+        tc_expr_err(expr)
+        return
+
+    # accessibility: check if accessible (public/private)
+    if mr.name != currClass.name and mr.visibility == 'private':
+        tc_expr_err(expr)
+        return
+
+    # set tc and name resolution
+    if mr.applicability == applicability:
         if mr.returnType.name not in base_types:
             expr.type = 'user(' + mr.returnType.name + ')'
         else:
@@ -460,15 +490,13 @@ def tc_method_call(expr):
         expr.isTypeCorrect = True
         expr.attributes['id'] = mr.id
     else:
-        # method doesn't exist!
+        # bad typing
         tc_expr_err(expr)
 
 # TODO name resolution
-# TODO argument expr list?
-# TODO super?
 def tc_new_obj(expr):
     cname = expr.attributes['class-name']
-    args = expr.attributes['arguments'] # tc_expr the list?
+    args = expr.attributes['arguments']
     
     # find class and constructor
     classRecord = None
@@ -485,9 +513,18 @@ def tc_new_obj(expr):
         if len(r.parameters) == len(args):
             constructorRecord = r
             break
-    
-    # add type and id if it exists
-    if constructorRecord != None:
+    if constructorRecord == None:
+        tc_expr_err(expr)
+        return
+
+    # applicability: check if args are subtype of constructor args
+    if not is_subtype(args, constructorRecord.paramaters):
+        tc_expr_err(expr)
+        return
+
+    # accessibility: check if public/private
+    # add type and name resolution
+    if constructorRecord.visibility == "public" or constructorRecord.visibility == "":
         expr.type = 'user(' + cname + ')'
         expr.isTypeCorrect = True
         expr.attributes['id'] = constructorRecord.id
@@ -513,6 +550,22 @@ def tc_class_ref(expr):
 
 # returns whether type1 is a subtype of type2
 def is_subtype(type1, type2):
+
+    # if all elements in list1 are subtypes of the
+    # corresponding elements in list2
+    # t1 is a list of expressions
+    # t2 is a list of variable records
+    if type(type1) is list and type(type2) is list:
+        if len(type1) != len(type2):
+            return False
+        for i in range(0, len(type1)):
+            tc_expr(type1[i])
+            t1 = type1[i].type
+            t2 = type2[i].type.name
+            if not is_subtype(t1, t2):
+                return False
+        return True
+
     # Type T is a subtype of itself (i.e., the subtype relation is reflexive).
     if type1 == type2:
         return True
