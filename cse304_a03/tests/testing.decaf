@@ -1,22 +1,17 @@
 // file for testing things that don't work
-class Circle
-{
-    public static float pi;
-    public float center;
-    public float radius;
-    
-    public Circle(float c, float r)
-    {
-        this.center = c;
-        this.radius = r;
-        Circle.pi = 3.14159;
-    }
-}
+class IntList{
+    int value;
+    IntList next;
 
-class test033
-{
-    public static void main()
-    {   
-        Circle.Circle(10.0, 14.2);
+    public IntList() {
+    }
+
+    public static IntList create_list(int v) {
+        IntList new_element;
+
+        new_element = new IntList();
+        new_element.value = v;
+        new_element.next = null;
+        return new_element;
     }
 }

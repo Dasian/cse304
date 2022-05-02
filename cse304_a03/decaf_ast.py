@@ -82,6 +82,7 @@ class VariableRecord:
 class TypeRecord:
     def __init__(self, name=""):
         self.name = name # string; int, float, boolean, or custom user defined type
+        # added for hw4: void, error, null, class-literal
 
 class Statement:
     # kinds: If, While, For, Return, Expr, Block, Break, Continue, Skip
@@ -99,6 +100,9 @@ class Statement:
             self.lineRange = []
         else:
             self.lineRange = lineRange
+        
+        # hw4
+        self.isTypeCorrect = False
 
 # If you want to nest expressions have a key that is 'Expression'
 #   that maps to a *list* of Expression object
@@ -110,7 +114,7 @@ class Statement:
 # You can change this design if you want, this is just how I have it currently
 #   implemented for printing; just change the prints or lmk
 class Expression:
-    # kinds: Constant, Var, Unary, Binary, Assign, Auto, Field-access, 
+    # kinds: Constant, Variable, Unary, Binary, Assign, Auto, Field-access, 
     #   Method-call, New-object, This, Super, Class-reference
     def __init__(self, lineRange=None, kind='', attributes=None):
         self.kind = kind # string; see above
@@ -124,6 +128,11 @@ class Expression:
             self.lineRange = []
         else:
             self.lineRange = lineRange
+
+        # hw4 indicates the type of this expression
+        # boolean, int, str, null, error, etc.
+        self.type = None
+        self.isTypeCorrect = False
 
 # Abstract Syntax Tree Table
 """
@@ -296,8 +305,8 @@ class AST:
                     content += self.stmnt_str(val)
             elif type(val) is Expression:
                 content += self.expr_str(val)
-            else:
-                content += val
+            elif val != None:
+                content += str(val)
             content += ', '
         # remove () for statements without attributes
         if content == '':
@@ -310,6 +319,11 @@ class AST:
     # attribute values can only be other expressions/list of expressions, not a statement
     def expr_str(self, expr):
         content = ''
+
+        # prevent printing out variable name (vname)
+        if 'vname' in expr.attributes.keys():
+            del expr.attributes['vname']
+
         for val in expr.attributes.values():
             if type(val) is Expression:
                 content += self.expr_str(val)
