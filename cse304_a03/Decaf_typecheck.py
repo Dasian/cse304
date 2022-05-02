@@ -79,7 +79,7 @@ def tc_stmt(stmt):
             if expr.kind == 'Block':
                 stmt.isTypeCorrecet = tc_block(expr)
             else:
-                stmt.isTypeCorrect = tc_expr(expr)
+                stmt.isTypeCorrect = tc_stmt(expr)
 
         # else is type correct
         c = True
@@ -88,7 +88,7 @@ def tc_stmt(stmt):
             if expr.kind == 'Block':
                 c = tc_block(expr)
             else:
-                c = tc_expr(stmt.attributes['else'])
+                c = tc_stmt(stmt.attributes['else'])
 
         stmt.isTypeCorrect = c
     elif stmt.kind == 'While':
@@ -409,6 +409,7 @@ def tc_field(expr):
         # field doesn't exist/bad typing
         tc_expr_err(expr)
 
+# TODO deal with this and super
 def tc_method_call(expr):
     # p.f(e1, e2, ...) correspondes with method h
     # expr.type = h.type iff
@@ -493,7 +494,6 @@ def tc_method_call(expr):
         # bad typing
         tc_expr_err(expr)
 
-# TODO name resolution
 def tc_new_obj(expr):
     cname = expr.attributes['class-name']
     args = expr.attributes['arguments']
@@ -509,7 +509,6 @@ def tc_new_obj(expr):
         tc_expr_err(expr)
         return
     for r in classRecord.constructors:
-        # should there be more checks?
         if len(r.parameters) == len(args):
             constructorRecord = r
             break
@@ -517,14 +516,16 @@ def tc_new_obj(expr):
         tc_expr_err(expr)
         return
 
+    print(constructorRecord.id)
     # applicability: check if args are subtype of constructor args
-    if not is_subtype(args, constructorRecord.paramaters):
+    if not is_subtype(args, constructorRecord.parameters):
         tc_expr_err(expr)
         return
 
     # accessibility: check if public/private
+    # can be private but this class is a subclass
     # add type and name resolution
-    if constructorRecord.visibility == "public" or constructorRecord.visibility == "":
+    if constructorRecord.visibility == "public" or constructorRecord.visibility == "" or currClass.superName == cname:
         expr.type = 'user(' + cname + ')'
         expr.isTypeCorrect = True
         expr.attributes['id'] = constructorRecord.id
