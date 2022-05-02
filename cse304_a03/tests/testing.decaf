@@ -1,8 +1,17 @@
 // file for testing things that don't work
-class test033
-{
-    public static void main(int d, float f)
-    {   
-        return;
+class IntList{
+    int value;
+    IntList next;
+
+    public IntList() {
+    }
+
+    public static IntList create_list(int v) {
+        IntList new_element;
+
+        new_element = new IntList();
+        new_element.value = v;
+        new_element.next = null;
+        return new_element;
     }
 }

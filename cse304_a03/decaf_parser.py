@@ -436,6 +436,9 @@ def p_block(p):
                     expr_queue.append(e)
             if expr.kind == 'Method-call':
                 expr_queue.append(expr.attributes['base'])
+        elif expr.kind == 'Field-access':
+            if expr.attributes['base'].kind == 'Variable':
+                var_exprs.append(expr.attributes['base'])
     p[0].attributes['var-exprs'] = var_exprs
 
     # line range
