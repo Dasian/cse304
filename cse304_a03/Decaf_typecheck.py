@@ -478,7 +478,15 @@ def tc_method_call(expr):
         return
 
     # accessibility: check if accessible (public/private)
-    if mr.name != currClass.name and mr.visibility == 'private':
+    # ignores private if the base is this class
+    # TODO does thsi still hold if you create an obj var in a class
+    # and try to access a private method?
+    # ex: a = new A(); a.f(); // but f is private in a and this is all in class A
+    
+    # TODO check this?? something is off and im hungry
+    isThis = cr.name != currClass.name
+    isSuper = cr.name != currClass.superName
+    if isThis and isSuper and mr.visibility == 'private':
         tc_expr_err(expr)
         return
 
@@ -516,7 +524,6 @@ def tc_new_obj(expr):
         tc_expr_err(expr)
         return
 
-    print(constructorRecord.id)
     # applicability: check if args are subtype of constructor args
     if not is_subtype(args, constructorRecord.parameters):
         tc_expr_err(expr)
