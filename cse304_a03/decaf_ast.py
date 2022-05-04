@@ -179,6 +179,27 @@ class AST:
     # adds class to the tree
     # the class must be completed at this point
     def add_class(self, c):
+        for item in this.classes:
+            if c.name == item.name:
+                raise Exception("Each class in a Decaf program must have a distinct name.")
+
+        for field in c.fields:
+            for field2 in c.fields:
+                if field.name == field2 and field.id != field2.id:
+                    raise Exception("Each field declared within a class must have a distinct name.")
+
+        for con in c.constructors:
+             for var in con.variableTable:
+                 for var2 in con.variableTable:
+                    if var.name == var2.name and var.id != var2.id:
+                        raise Exception("Each variable declared within a block must have a distinct name.")
+
+        for method in c.methods:
+             for var in method.variableTable:
+                 for var2 in method.variableTable:
+                    if var.name == var2.name and var.id != var2.id:
+                        raise Exception("Each variable declared within a block must have a distinct name.")
+
         self.classes.append(c)
 
     # prints the contents of the AST
