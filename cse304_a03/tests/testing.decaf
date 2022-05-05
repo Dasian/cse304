@@ -1,17 +1,17 @@
 // file for testing things that don't work
-class IntList{
-    int value;
-    IntList next;
+class Car extends Vehicle{
+    private int price;
+    private String name;
 
-    public IntList() {
-    }
-
-    public static IntList create_list(int v) {
-        IntList new_element;
-
-        new_element = new IntList();
-        new_element.value = v;
-        new_element.next = null;
-        return new_element;
+    public Car(int price, String name){
+        int year;
+        int i;
+        year = 2022;
+        for(i=0; i<10; i++){
+            if(price > 10000){
+                Out.print(name);
+                Out.print("Expensive");
+            }
+        }
     }
 }
