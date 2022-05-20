@@ -14,6 +14,10 @@ conID = 1
 fieldID = 1
 methodID = 1
 varID = 1
+class_column_position = 0
+field_column_position = 0
+var_column_position = 0
+
 tree = ast.AST()
 
 # Assignment is right-associative, relational operators are non-associative, and all others are left-associative
@@ -56,7 +60,7 @@ def p_class_decl(p):
     global varID
     global conID
     global currentClass
-
+    global class_column_position
     p[0] = ast.ClassRecord()        # Initializes an empty class record
     p[0].name = p[2]            # Set class record's name to p[2]
     currentClass = p[2]
@@ -85,7 +89,10 @@ def p_class_decl(p):
                 field.id = fieldID
                 fieldID = fieldID + 1
                 p[0].fields.append(field)
+    p[0].line = p.lineno(1)
+    p[0].column = p.lexpos(1)- class_column_position + 1
     tree.add_class(p[0])
+    class_column_position += lexer.line_start
 
 # done
 # One or more class body declarations that contains either fields, methods, and/or constructors
@@ -125,9 +132,14 @@ def p_modifier(p):
 # will need to add to variable table (i think)
 def p_var_decl(p):
     '''var_decl : type variables ';' '''
+    global var_column_position
     p[0] = []
     for var_name in p[2]:
-        p[0] += [ast.VariableRecord(name = var_name, id = -1, kind = "local", type = p[1])]
+        variable = ast.VariableRecord(name = var_name, id = -1, kind = "local", type = p[1])
+        variable.line = p.lineno(1)
+        variable.column = p.lexpos(1)- var_column_position + 1
+        p[0] += [variable]
+        var_column_position = lexer.line_start
 
 # done
 def p_variables(p):
@@ -147,6 +159,8 @@ def p_variable(p):
 # Field declaration with a type, variable name, and optional modifiers
 def p_field_decl(p):
     '''field_decl : modifier var_decl'''
+    global field_column_position
+
     visibility = ''
     applicability = ''
 
@@ -166,7 +180,10 @@ def p_field_decl(p):
     p[0] = []
     for var in variables:
         field = ast.FieldRecord(name = var.name, id = var.id, containingClass= currentClass, visibility= visibility, applicability= applicability, type= type)
+        field.line = p.lineno(1)
+        field.column = p.lexpos(1)- field_column_position + 1
         p[0] += [field]
+        field_column_position = lexer.line_start
 
 # done
 def p_method_decl(p):
@@ -251,7 +268,6 @@ def p_formal_param(p):
 
 # A method declaration with modifiers, return type, method name, and optional parameters
 # A constructor declaration with modifiers, class name, and optional parameters
-# TODO: constructor_body variable table
 def p_constructor_decl(p):
     '''constructor_decl : modifier ID '(' optional_formals ')' block'''
 
@@ -774,7 +790,7 @@ def p_unary_op(p):
 # Error rule for syntax errors
 def p_error(p):
     if p is not None:
-        print("Syntax error at line: %d column: %d" % (p.lexer.lineno, p.lexpos - lexer.line_start))
+        print("Syntax error at line: %d column: %d" % (p.lexer.lineno, p.lexpos(1) - lexer.line_start))
     else:
         print("Unexpected EOF")
     exit()

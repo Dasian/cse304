@@ -4,11 +4,13 @@ class Car extends Vehicle{
 
     public Car(int price, String name){
         int year;
-        year = 2022;
         int i;
+        int i;
+        year = 2022;
+
         for(i=0; i<10; i++){
             if(price > 10000){
-                Out.print(model);
+                Out.print(name);
                 Out.print("Expensive");
             }
         }
