@@ -1,8 +1,0 @@
-class test014
-{
-    public static void main()
-    {   
-        int a;
-        a = 18 - 6;
-    }
-}

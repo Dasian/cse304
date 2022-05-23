@@ -1,0 +1,26 @@
+class expression_test{
+    public static void main(String args) {
+        // just a class for testing out expressions
+        // constants
+	a = 10;
+        b = 1.5;
+        s = "Gaming";
+        bool = true;
+        bool2 = false;
+        n = null;
+  
+        // assign + binary expression
+	x = a + b;
+        y = -5; // unary expression
+	
+        // field access
+	k = this.field;
+
+	// auto 
+	++i;
+	i--;
+
+	// assign
+	a = b;
+    }
+}

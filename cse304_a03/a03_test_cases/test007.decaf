@@ -1,8 +1,0 @@
-class test007
-{
-    public static void main()
-    {   
-        boolean a;
-        a = 17 < 14;
-    }
-}

@@ -14,10 +14,6 @@ conID = 1
 fieldID = 1
 methodID = 1
 varID = 1
-class_column_position = 0
-field_column_position = 0
-var_column_position = 0
-
 tree = ast.AST()
 
 # Assignment is right-associative, relational operators are non-associative, and all others are left-associative
@@ -60,7 +56,7 @@ def p_class_decl(p):
     global varID
     global conID
     global currentClass
-    global class_column_position
+
     p[0] = ast.ClassRecord()        # Initializes an empty class record
     p[0].name = p[2]            # Set class record's name to p[2]
     currentClass = p[2]
@@ -89,10 +85,7 @@ def p_class_decl(p):
                 field.id = fieldID
                 fieldID = fieldID + 1
                 p[0].fields.append(field)
-    p[0].line = p.lineno(1)
-    p[0].column = p.lexpos(1)- class_column_position + 1
     tree.add_class(p[0])
-    class_column_position += lexer.line_start
 
 # done
 # One or more class body declarations that contains either fields, methods, and/or constructors
@@ -106,7 +99,7 @@ def p_class_body_decl(p):
     if len(p) == 2:
         p[0] = [p[1]]
 
-# done
+# TODO add void, class literal, error, and null
 def p_type(p):
     '''type : INT
             | FLOAT
@@ -125,16 +118,16 @@ def p_modifier(p):
     p[0] = p[1:]
 
 # done
+# this is a little sus
+# I feel like something needs to be done here
+# scope things and variable table things
+# causes printing errors when returned to stmt
+# will need to add to variable table (i think)
 def p_var_decl(p):
     '''var_decl : type variables ';' '''
-    global var_column_position
     p[0] = []
     for var_name in p[2]:
-        variable = ast.VariableRecord(name = var_name, id = -1, kind = "local", type = p[1])
-        variable.line = p.lineno(1)
-        variable.column = p.lexpos(1)- var_column_position + 1
-        p[0] += [variable]
-        var_column_position = lexer.line_start
+        p[0] += [ast.VariableRecord(name = var_name, id = -1, kind = "local", type = p[1])]
 
 # done
 def p_variables(p):
@@ -154,8 +147,6 @@ def p_variable(p):
 # Field declaration with a type, variable name, and optional modifiers
 def p_field_decl(p):
     '''field_decl : modifier var_decl'''
-    global field_column_position
-
     visibility = ''
     applicability = ''
 
@@ -175,12 +166,9 @@ def p_field_decl(p):
     p[0] = []
     for var in variables:
         field = ast.FieldRecord(name = var.name, id = var.id, containingClass= currentClass, visibility= visibility, applicability= applicability, type= type)
-        field.line = p.lineno(1)
-        field.column = p.lexpos(1)- field_column_position + 1
         p[0] += [field]
-        field_column_position = lexer.line_start
 
-# done
+# TODO fix variableTable to include nested vars
 def p_method_decl(p):
     '''method_decl      : modifier type ID '(' optional_formals ')' block
                         | modifier VOID ID '(' optional_formals ')' block'''
@@ -261,8 +249,7 @@ def p_formal_param(p):
     '''formal_param : type variable'''
     p[0] = ast.VariableRecord(name = p[2], id = 1, kind = "formal", type= p[1])
 
-# A method declaration with modifiers, return type, method name, and optional parameters
-# A constructor declaration with modifiers, class name, and optional parameters
+# TODO fix variableTable to include nested variables
 def p_constructor_decl(p):
     '''constructor_decl : modifier ID '(' optional_formals ')' block'''
 
@@ -448,10 +435,10 @@ def p_block(p):
                 for e in expr.attributes['arguments']:
                     expr_queue.append(e)
             if expr.kind == 'Method-call':
-                expr_queue.append(expr.attributes["base"])
+                expr_queue.append(expr.attributes['base'])
         elif expr.kind == 'Field-access':
-            if expr.attributes["base"].kind == 'Variable':
-                var_exprs.append(expr.attributes["base"])
+            if expr.attributes['base'].kind == 'Variable':
+                var_exprs.append(expr.attributes['base'])
     p[0].attributes['var-exprs'] = var_exprs
 
     # line range
@@ -615,6 +602,8 @@ def p_field_access(p):
     if len(p) == 4:
         p[0].attributes.update({"base": p[1]}) # expression
         p[0].attributes.update({"field-name": p[3]}) # str
+        # TODO link this to corresponding field id
+        p[0].attributes['id'] = -1
     else: 
         # check if id is a class
         if p[1] in tree.get_classes() or p[1] == currentClass:
@@ -663,6 +652,10 @@ def p_assign_auto(p):
         p[0].attributes.update({"left": p[1]})
         p[0].attributes.update({"right": p[3]})
 
+        # TODO link types
+        p[0].attributes['ltype'] = 'error'
+        p[0].attributes['rtype'] = 'error'
+
 # should work
 # TODO: test with class names that don't exist
 # TODO: test with objects that do/don't exist
@@ -678,13 +671,16 @@ def p_method_invocation(p):
     p[0].kind = "Method-call"
 
     if p[1].kind == 'Field-access':
-        p[0].attributes.update({"base": p[1].attributes["base"]})
+        p[0].attributes.update({"base": p[1].attributes['base']})
         p[0].attributes.update({"method-name": p[1].attributes['field-name']})
 
     if len(p) == 5: # including args
         p[0].attributes.update({"arguments": p[3]})
     else:
         p[0].attributes.update({"arguments": []})
+
+    # TODO connect methodID
+    p[0].attributes['id'] = -1
 
 # let arguments be a [list] of expressions
 def p_arguments(p):
@@ -733,6 +729,8 @@ def p_expressions(p):
             p[0].attributes.update({"arguments": p[4]})
         else:
             p[0].attributes.update({"arguments": []})
+        # TODO link this to corresponding constructor id
+        p[0].attributes['id'] = -1
     elif len(p) == 4:
         # ( expr )
         p[0] = p[2]
@@ -785,7 +783,7 @@ def p_unary_op(p):
 # Error rule for syntax errors
 def p_error(p):
     if p is not None:
-        print("Syntax error at line: %d column: %d" % (p.lexer.lineno, p.lexpos(1) - lexer.line_start))
+        print("Syntax error at line: %d column: %d" % (p.lexer.lineno, p.lexpos - lexer.line_start))
     else:
         print("Unexpected EOF")
     exit()
