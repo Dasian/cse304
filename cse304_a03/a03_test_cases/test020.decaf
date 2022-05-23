@@ -1,8 +1,0 @@
-class test020
-{
-    public static void main()
-    {   
-        string a;
-        a = "Hello";
-    }
-}

@@ -1,0 +1,10 @@
+/*
+Multiple comments
+*/
+
+class comments{
+    public static void main() {
+    // Prints "Program executed!"
+        Out.print("Program executed!");
+    }
+}
