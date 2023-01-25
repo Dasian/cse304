@@ -134,6 +134,10 @@ class Statement:
         # hw4
         self.isTypeCorrect = False
 
+        # hw4 type correctness 
+        # based on diff criteria for diff kinds
+        self.isTypeCorrect = False
+
 # If you want to nest expressions have a key that is 'Expression'
 #   that maps to a *list* of Expression object
 # Have 'Constant' kinds with an 'Expression' attribute that maps to
@@ -265,7 +269,7 @@ class AST:
             self.print_method(m)
 
     def print_field(self, f):
-        base_types = ['int', 'float', 'boolean']
+        base_types = ['int', 'float', 'boolean', 'string']
         type_name = f.type.name
         if type_name not in base_types:
                 type_name = 'user(' + str(f.type.name) + ')'
@@ -303,7 +307,7 @@ class AST:
 
     def print_var_table(self, vt):
         print("Variable Table:")
-        base_types = ['int', 'float', 'boolean']
+        base_types = ['int', 'float', 'boolean', 'string']
         # type needs to be represented as (int, float, boolean)
         # or user(name)
         # t is a VariableRecord
