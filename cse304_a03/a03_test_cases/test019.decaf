@@ -1,8 +1,0 @@
-class test019
-{
-    public static void main()
-    {   
-        boolean a;
-        a = false;
-    }
-}

@@ -5,13 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="853c4294-b785-47d0-9a3a-8f4effe4f134" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/decaf_checker.py" beforeDir="false" afterPath="$PROJECT_DIR$/decaf_checker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/decaf_lexer.py" beforeDir="false" afterPath="$PROJECT_DIR$/decaf_lexer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/decaf_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/decaf_parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parser.out" beforeDir="false" afterPath="$PROJECT_DIR$/parser.out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parsetab.py" beforeDir="false" afterPath="$PROJECT_DIR$/parsetab.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/only_fields.decaf" beforeDir="false" afterPath="$PROJECT_DIR$/tests/only_fields.decaf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cse304_a03/decaf_ast.py" beforeDir="false" afterPath="$PROJECT_DIR$/../cse304_a03/decaf_ast.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cse304_a03/decaf_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/../cse304_a03/decaf_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cse304_a03/tests/Car.decaf" beforeDir="false" afterPath="$PROJECT_DIR$/../cse304_a03/tests/Car.decaf" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

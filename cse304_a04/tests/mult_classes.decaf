@@ -1,0 +1,18 @@
+class A {
+	public A(String name) {
+		this.name = name;
+	}
+}
+
+class Car extends Vehicle{
+    private int price, year;
+    private String name;
+
+    public Car(int price, String name){
+        for(i=0; i<10; i++){
+            if(x == 10){
+            
+            }
+        }
+    }
+}

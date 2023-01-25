@@ -1,0 +1,5 @@
+class t{
+    void m(){
+        int x;
+        x = s + 10;
+    }

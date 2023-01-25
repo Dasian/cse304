@@ -7,7 +7,7 @@
 # All classes in this block are records
 # Part of Class Table
 class ClassRecord:
-    def __init__(self, name="", superName="", constructors=None, methods=None, fields=None, line = 0, column = 0):
+    def __init__(self, name="", superName="", constructors=None, methods=None, fields=None):
         self.name = name # string
         self.superName = superName # string
         # list of MethodRecord objects
@@ -24,18 +24,7 @@ class ClassRecord:
         if fields is None:
             self.fields = []
         else:
-            self.fields = fields
-
-        if line is None:
-            self.line = 0
-        else:
-            self.line = line
-
-        if column is None:
-            self.column = 0
-        else:
-            self.column = column
-
+            self.fields = fields 
 
 class ConstructorRecord:
     def __init__(self, id=-1, visibility="", parameters=None, variableTable=None, body=None):
@@ -74,7 +63,7 @@ class MethodRecord:
             self.parameters = parameters
 
 class FieldRecord:
-    def __init__(self, name="", id=-1, containingClass="", visibility="", applicability="", type=None, line = 0, column = 0):
+    def __init__(self, name="", id=-1, containingClass="", visibility="", applicability="", type=None):
         self.name = name # string
         self.id = id # unique int
         self.containingClass = containingClass # string
@@ -82,32 +71,13 @@ class FieldRecord:
         self.applicability = applicability # string; static/non-static
         self.type = type # a single TypeRecord object
 
-        if line is None:
-            self.line = 0
-        else:
-            self.line = line
-
-        if column is None:
-            self.column = 0
-        else:
-            self.column = column
-
 class VariableRecord:
     # Part of Variable Table
-    def __init__(self, name="", id=-1, kind="", type=None, line = 0, column = 0):
+    def __init__(self, name="", id=-1, kind="", type=None):
         self.name = name # string
         self.id = id # unique int
         self.kind = kind # string; formal/local
         self.type = type # a single TypeRecord object
-        if line is None:
-            self.line = 0
-        else:
-            self.line = line
-
-        if column is None:
-            self.column = 0
-        else:
-            self.column = column
 
 class TypeRecord:
     def __init__(self, name=""):
@@ -213,33 +183,6 @@ class AST:
     # adds class to the tree
     # the class must be completed at this point
     def add_class(self, c):
-        for item in self.classes:
-            if c.name == item.name:
-                print("Each class in a Decaf program must have a distinct name.")
-                print("Syntax error at line: %d column: %d" % (c.line, c.column))
-                exit()
-
-        for field in c.fields:
-            for field2 in c.fields:
-                if field.name == field2.name and field.id != field2.id:
-                    print("Each field declared within a class must have a distinct name.")
-                    print("Syntax error at line: %d column: %d" % (field.line, field.column))
-                    exit()
-
-        for con in c.constructors:
-             for var in con.variableTable:
-                 for var2 in con.variableTable:
-                    if var.name == var2.name and var.id != var2.id:
-                        print("Each variable declared within a block must have a distinct name.")
-                        print("Syntax error at line: %d column: %d" % (var.line, var.column))
-                        exit()
-        for method in c.methods:
-             for var in method.variableTable:
-                 for var2 in method.variableTable:
-                    if var.name == var2.name and var.id != var2.id:
-                        print("Each variable declared within a block must have a distinct name.")
-                        print("Syntax error at line: %d column: %d" % (var.line, var.column))
-                        exit()
         self.classes.append(c)
 
     # prints the contents of the AST
